@@ -18,10 +18,19 @@ TeamSnap / TeamSnapOne / GameChanger ─ Team Schedule ────────�
 School calendar feeds ───────────────── School Calendar ──────────┤
 Manual planner entries ──────────────── Overrides ────────────────┤
                                                                   ├──> AutoPilot planning engine
-Skylight Calendar ───────────────────── Parallel household display┘
+Skylight: separate household display; not connected to AutoPilot ingestion
 ```
 
-Skylight remains a family-facing display, while AutoPilot reads the original calendar sources directly rather than depending on Skylight or a Google mirror as its system of record.
+AutoPilot reads the original calendar sources directly. Skylight is not connected to or used as a feeder for AutoPilot.
+
+
+### Kira Schedule auto-detection
+
+**Kira Schedule** is derived automatically from events in the **Primary Family Calendar only**. AutoPilot looks for the configured shift indicators (North, Star, Late, Off) in that calendar and applies the weekday default when no indicator is present.
+
+Team Schedule, School Calendar, and Reference / Other sources are intentionally prohibited from changing Kira Schedule. Manual corrections remain available for exceptions.
+
+**Skylight is not an AutoPilot data source.** There is no Skylight → AutoPilot or Skylight → Google → AutoPilot ingestion path.
 
 ## What the app does
 
@@ -44,7 +53,7 @@ GameChanger calendars ─────────────────┤─�
 School/public ICS calendars ───────────┤
 Manual planner overrides ──────────────┘
 
-Those same family/team calendars ─────────> Skylight household display
+
 ```
 
 Calendar roles in v28:
@@ -57,7 +66,7 @@ Calendar roles in v28:
 | **Reference / Other** | Supplemental calendars | Lower |
 | **Manual Override** | Planner-specific exceptions and corrections | Explicit override |
 
-The planner deliberately does **not** depend on a Skylight→Google mirror as its master feed. Each source is connected directly so historical events, team schedules, cancellations, and source ownership remain visible to the planner.
+Each original calendar source is connected directly so historical events, team schedules, cancellations, and source ownership remain visible to AutoPilot.
 
 ## Supported calendar inputs
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Family Commute + Transport Optimizer — Skylight Import</title>
+<title>AutoPilot — Family Logistics Planner</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -142,7 +142,7 @@ td input,td select{margin:0;padding:7px}
  .marker{font-size:10px!important;right:4px;top:2px}
 }
 
-/* v28 Calendar Hub
+/* v29 Calendar Hub
 <div class="calendar-hygiene-grid">
   <div class="hygiene-card">
     <h3>Smart de-duplication</h3>
@@ -162,7 +162,7 @@ td input,td select{margin:0;padding:7px}
       <div>
         <label class="small">Prefer source</label>
         <select id="dedupePreference">
-          <option value="primary" selected>Main iPhone calendar</option>
+          <option value="primary" selected>Kira Family calendar</option>
           <option value="detail">Most detailed event</option>
           <option value="first">First imported</option>
         </select>
@@ -201,7 +201,7 @@ td input,td select{margin:0;padding:7px}
 .calendar-status-dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:#9aa4b2;margin-right:5px}.calendar-status-dot.ok{background:#34c759}.calendar-status-dot.warn{background:#ff9f0a}.calendar-status-dot.bad{background:#ff3b30}
 @media(max-width:800px){.calendar-hub-grid{grid-template-columns:1fr}.calendar-url-row{grid-template-columns:1fr}.calendar-source-item{grid-template-columns:1fr}}
 
-/* v28 Calendar Hygiene */
+/* v29 Calendar Hygiene */
 .calendar-hygiene-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .calendar-hygiene-grid textarea{min-height:110px}
 .hygiene-card{border:1px solid #d7dbe2;border-radius:14px;padding:12px;background:#fff}
@@ -212,7 +212,7 @@ td input,td select{margin:0;padding:7px}
 @media print{.calendar-hygiene-grid,.hygiene-card{display:none!important}}
 
 
-/* v28 Apple public-calendar safe import */
+/* v29 Apple public-calendar safe import */
 .apple-safe-box{margin-top:10px;padding:11px 12px;border:1px solid #cfd7e6;border-radius:13px;background:#f8fbff}
 .apple-safe-box strong{display:block;margin-bottom:3px}
 .apple-safe-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -222,7 +222,7 @@ td input,td select{margin:0;padding:7px}
 @media print{#appleCalendarFallback,.calendar-proxy-settings{display:none!important}}
 
 
-/* v28 source architecture + iOS mobile agenda */
+/* v29 source architecture + iOS mobile agenda */
 .source-role-select{font-size:12px;padding:5px 7px;min-width:145px}
 .source-role-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:850;background:#eef2f7;color:#475569;margin-left:5px}
 .source-role-badge.primary-family{background:#e9f2ff;color:#1859a9}
@@ -286,7 +286,7 @@ td input,td select{margin:0;padding:7px}
   </div>
 
   <div class="callout">
-    <strong>Decision variable:</strong> Chris’s work location, home departure, onsite arrival, work departure, and remote days. Skylight supplies the kids’ activities and Kira shift overrides; weekdays without a Kira override automatically use Early - Main Hospital. Kira is only treated as locally available for afternoon transport after her 30-minute commute home.
+    <strong>Decision variable:</strong> Chris’s work location, home departure, onsite arrival, work departure, and remote days. AutoPilot reads the Primary Family Calendar and connected source calendars directly. Kira’s schedule is auto-detected only from the Primary Family Calendar; weekdays without a detected schedule entry default to Early - Main Hospital. Kira is only treated as locally available for afternoon transport after her 30-minute commute home.
     <div class="small" style="margin-top:6px"><strong>Persistence:</strong> changes autosave in this browser. Permanent setup and the current 2-week cycle are stored separately, so starting a new cycle keeps your sites, addresses, child names, commute rules, and other standing assumptions. The toolbar also tells you whether your downloaded OneDrive backup is current or out of date. Use <strong>Download desktop/fridge family plan</strong> after your weekly sync to create a shareable snapshot for Kira.</div>
   </div>
 
@@ -328,8 +328,8 @@ td input,td select{margin:0;padding:7px}
   <div class="card">
     <div class="section-head">
       <div>
-        <h2>1. Kira’s work schedule — auto-detected from Skylight</h2>
-        <p class="muted small">Default assumption for every weekday is <strong>Early - Main Hospital (6:00 AM–2:30 PM)</strong>. Skylight import automatically overrides days labeled North, Star, Late, or Off. Kira’s configured commute is added to shift end before she is considered available for afternoon transport.</p>
+        <h2>1. Kira Schedule</h2>
+        <p class="muted small">AutoPilot detects Kira’s schedule from the <strong>Primary Family Calendar</strong> using entries labeled North, Star, Late, or Off. Weekdays without a detected schedule entry default to <strong>Early - Main Hospital (6:00 AM–2:30 PM)</strong>. Manual corrections remain available below. Kira’s configured commute is added to shift end before she is considered available for afternoon transport.</p>
       </div>
       <button id="copyWeekBtn">Copy manual corrections Week 1 → Week 2</button>
     </div>
@@ -344,7 +344,7 @@ td input,td select{margin:0;padding:7px}
       <div>
         <h2>2. Calendar Hub — family + team calendars</h2>
         <div class="callout" style="margin-top:8px">
-          <strong>Source architecture:</strong> Kira’s shared iOS calendar = <strong>Primary Family Calendar</strong>; TeamSnap / TeamSnapOne / GameChanger = <strong>Team Schedule</strong>; school feeds = <strong>School Calendar</strong>; manual entries = <strong>Override</strong>. The planner reads the original sources directly. Skylight remains a parallel family display, not the planner’s data intermediary.
+          <strong>Source architecture:</strong> Kira’s shared iOS calendar = <strong>Primary Family Calendar</strong> and is the only calendar used for Kira Schedule auto-detection; TeamSnap / TeamSnapOne / GameChanger = <strong>Team Schedule</strong>; school feeds = <strong>School Calendar</strong>; manual entries = <strong>Override</strong>. AutoPilot reads these original sources directly; no consolidated calendar intermediary is used.
         </div>
 
         <p class="muted small"><strong>Wire the original calendars directly into the planner.</strong> Use the main shared iPhone calendar as your family source of truth, then add GameChanger, TeamSnap, school, gymnastics, Ultimate, or any other ICS/webcal calendar separately.</p>
@@ -354,7 +354,7 @@ td input,td select{margin:0;padding:7px}
 
     <div class="calendar-hub">
       <div class="calendar-source-card primary-source">
-        <div class="calendar-source-title"><span>📅 Main shared iPhone calendar</span><span class="small muted">PRIMARY</span></div>
+        <div class="calendar-source-title"><span>📅 Kira Family Calendar</span><span class="small muted">PRIMARY</span></div>
         <div class="small muted" style="margin-top:5px"><strong>Role: Primary Family Calendar.</strong> This source wins de-duplication conflicts and should contain the family logistics you maintain in iOS. Best option: paste its public/subscription <code>webcal://</code> or <code>https://</code> ICS link. If you only have an exported <code>.ics</code> file, drop or upload it here. Re-importing the same source replaces its prior planning-window events instead of creating stale duplicates.</div>
         <div class="calendar-url-row">
           <input id="mainCalendarUrl" placeholder="Paste Apple Public Calendar “Share Link” (webcal://…)">
@@ -405,7 +405,7 @@ td input,td select{margin:0;padding:7px}
           <strong>iPhone/iCloud:</strong> paste the exact link produced by Calendar → Calendars → ⓘ → Public Calendar → Share Link. The planner accepts <code>webcal://</code>, <code>webcals://</code>, <code>http://</code>, and <code>https://</code>, extracts links even when surrounded by copied text, and retries Apple-specific host variants automatically. If Apple blocks browser access, the planner shows an Apple-specific download/import fallback instead of treating the link as invalid.
           <br><br><strong>GameChanger / TeamSnap:</strong> copy each team's calendar subscription link and add it directly above. Keeping each team separate allows refreshes to replace that team's events cleanly when practices move or games are cancelled.
           <br><br><strong>Recurring events:</strong> the importer expands common daily and weekly ICS recurrence rules into the active two-week planning window.
-          <br><br><strong>Optional automatic calendar proxy:</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v28, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
+          <br><br><strong>Optional automatic calendar proxy:</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v29, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
           <div class="calendar-proxy-settings">
             <div class="calendar-proxy-row">
               <input id="calendarProxyUrl" placeholder="Optional proxy URL, e.g. https://family-calendar-proxy.example.workers.dev">
@@ -890,7 +890,7 @@ async function fetchCalendarWithFallbacks(raw){
   err.attempts=errors;
   throw err;
 }
-function showAppleCalendarFallback(raw,label='Main iPhone'){
+function showAppleCalendarFallback(raw,label='Kira Family'){
   const box=document.getElementById('appleCalendarFallback'),msg=document.getElementById('appleFallbackMessage'),a=document.getElementById('appleDownloadIcsBtn');
   if(!box||!a)return;
   a.href=appleDownloadUrl(raw)||'#';
@@ -968,15 +968,15 @@ function processImportedRows(imported,sourceDescription,opts={}){
   const dedupedCount=privacyClean.length-cleaned.length;
   let shiftOverrides=0,activityCount=0;
   for(const item of dedupeImportedRows(cleaned)){
-    const shift=detectKiraShift(item.title,item.source);
+    const shift=item.calendarRole==='primaryFamily'?detectKiraShift(item.title,item.source):null;
     if(shift&&applyKiraShiftOverride(item.date,shift,item.source)){shiftOverrides++;continue}
     activityRow(item);activityCount++;
   }
-  const locationReview=cleaned.filter(x=>!detectKiraShift(x.title,x.source)&&locationNeedsReview(x.location)).length;
+  const locationReview=cleaned.filter(x=>!(x.calendarRole==='primaryFamily'&&detectKiraShift(x.title,x.source))&&locationNeedsReview(x.location)).length;
   const hygiene=[];
   if(sensitive.length)hygiene.push(`${sensitive.length} private event${sensitive.length===1?'':'s'} filtered`);
   if(dedupedCount)hygiene.push(`${dedupedCount} duplicate${dedupedCount===1?'':'s'} collapsed`);
-  $('importStatus').textContent=`${sourceDescription}: ${activityCount} activities imported · ${shiftOverrides} Kira shift override${shiftOverrides===1?'':'s'}${hygiene.length?' · '+hygiene.join(' · '):''}${locationReview?` · ${locationReview} location${locationReview===1?' needs':'s need'} review`:''}.`;
+  $('importStatus').textContent=`${sourceDescription}: ${activityCount} activities imported · ${shiftOverrides} Kira schedule entr${shiftOverrides===1?'y':'ies'} auto-detected${hygiene.length?' · '+hygiene.join(' · '):''}${locationReview?` · ${locationReview} location${locationReview===1?' needs':'s need'} review`:''}.`;
   scheduleAutosave();return{activityCount,shiftOverrides,total:cleaned.length,filtered:sensitive.length,deduped:dedupedCount};
 }
 async function importSharedCalendarLink(linkObj,saveIfNew=true){
@@ -1018,14 +1018,14 @@ async function importCalendarFiles(files,kind='team'){
   files=[...files];if(!files.length)return;let errors=[],total=0;
   for(const f of files){
     try{
-      const lower=f.name.toLowerCase(),label=kind==='main'?'Main iPhone':calendarSourceFromFilename(f.name),source=kind==='main'?'iPhone Calendar':'Uploaded ICS',sourceName=`${source}: ${label}`;let rows=[];
+      const lower=f.name.toLowerCase(),label=kind==='main'?'Kira Family':calendarSourceFromFilename(f.name),source=kind==='main'?'iPhone Calendar':'Uploaded ICS',sourceName=`${source}: ${label}`;let rows=[];
       if(lower.endsWith('.zip')){const nested=await extractZipICS(f);for(const x of nested)rows.push(...parseICS(x.text,`Uploaded ICS: ${calendarSourceFromFilename(x.name)}`));processImportedRows(rows,f.name);total+=rows.length}
       else{const text=await f.text();if(lower.endsWith('.ics'))rows=parseICS(text,sourceName);else if(lower.endsWith('.csv'))rows=parseCSV(text,sourceName);rows=rows.map(r=>({...r,calendarRole:kind==='main'?'primaryFamily':'team'}));const stats=processImportedRows(rows,label,{replaceSource:sourceName});total+=stats.total}
     }catch(err){errors.push(`${f.name}: ${err.message}`)}
   }
   if(errors.length)alert('Some calendar files could not be imported:\n'+errors.join('\n'));$('importStatus').textContent=`Calendar upload complete · ${total} planning-window event${total===1?'':'s'} processed.`;
 }
-$('connectMainCalendarBtn').onclick=async()=>{const url=$('mainCalendarUrl').value.trim();if(!url){$('importStatus').textContent='Paste the Apple Public Calendar Share Link first.';return}const ok=await importSharedCalendarLink({url,label:'Kira iOS Family Calendar',source:'iPhone Calendar',kind:'main',role:'primaryFamily'},true);if(ok)$('mainCalendarUrl').value=''};
+$('connectMainCalendarBtn').onclick=async()=>{const url=$('mainCalendarUrl').value.trim();if(!url){$('importStatus').textContent='Paste the Apple Public Calendar Share Link first.';return}const ok=await importSharedCalendarLink({url,label:'Kira Family Calendar',source:'iOS Calendar',kind:'main',role:'primaryFamily'},true);if(ok)$('mainCalendarUrl').value=''};
 $('uploadMainCalendarBtn').onclick=()=>$('mainCalendarFile').click();$('mainCalendarFile').onchange=async e=>{await importCalendarFiles(e.target.files,'main');e.target.value=''};
 $('chooseCalendarFilesBtn').onclick=()=>$('activityFile').click();$('activityFile').onchange=async e=>{await importCalendarFiles(e.target.files,'team');e.target.value=''};
 $('refreshAllCalendarsBtn').onclick=refreshAllCalendars;
@@ -1045,7 +1045,7 @@ if(appleChoose)appleChoose.onclick=()=>document.getElementById('mainCalendarFile
 const appleRetry=document.getElementById('appleRetryBtn');
 if(appleRetry)appleRetry.onclick=async()=>{
   const p=window.__pendingAppleCalendar;
-  if(p)await importSharedCalendarLink({url:p.raw,label:p.label||'Main iPhone',source:'iPhone Calendar',kind:'main'},true);
+  if(p)await importSharedCalendarLink({url:p.raw,label:p.label||'Kira Family Calendar',source:'iOS Calendar',kind:'main'},true);
 };
 
 renderSavedCalendarLinks();
@@ -1909,7 +1909,7 @@ function nextCycleStart(){
 }
 function startNewCycle(){
   const next=nextCycleStart();
-  if(!confirm(`Start a new 2-week cycle beginning ${shortDate(next)}? Permanent setup will be kept; Kira overrides, imported activities, and ad-hoc items will be cleared.`))return;
+  if(!confirm(`Start a new 2-week cycle beginning ${shortDate(next)}? Permanent setup will be kept; Kira Schedule corrections, imported activities, and ad-hoc items will be cleared.`))return;
   isApplying=true;
   try{
     $('startDate').value=iso(next);

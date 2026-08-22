@@ -2,6 +2,15 @@
 
 All notable changes to the AutoPilot are summarized here.
 
+
+## v29 — Primary Family Calendar schedule detection
+
+- Renamed the in-app section to **Kira Schedule**.
+- Kira Schedule is now auto-detected exclusively from the **Primary Family Calendar**.
+- Team, school, and reference feeds cannot modify Kira Schedule.
+- Removed Skylight from the AutoPilot ingestion architecture and all current setup guidance.
+- Updated product documentation, source diagrams, privacy/data-model language, and troubleshooting guidance.
+
 ## v28 — Source architecture + mobile agenda
 
 - Established explicit calendar-source roles.
