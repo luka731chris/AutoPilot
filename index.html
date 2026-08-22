@@ -1,0 +1,2184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Family Commute + Transport Optimizer — Skylight Import</title>
+<style>
+:root{
+  --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
+  --accent:#2f6fed;--soft:#edf3ff;--good:#eaf7ee;--warn:#fff5dc;--bad:#fdebed;
+  --shadow:0 5px 18px rgba(0,0,0,.055)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{max-width:1420px;margin:auto;padding:22px}
+h1,h2,h3{margin:0}.muted{color:var(--muted)}.small{font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;margin-top:14px;box-shadow:var(--shadow)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.callout{background:var(--soft);border-left:4px solid var(--accent);border-radius:10px;padding:13px 15px;margin-top:14px}
+.grid{display:grid;gap:10px}.rules{grid-template-columns:repeat(6,minmax(0,1fr))}
+label{font-size:12px;font-weight:700;display:block}
+input,select{width:100%;margin-top:5px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:7px;text-align:left;vertical-align:middle}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+td input,td select{margin:0;padding:7px}
+.table-wrap{overflow-x:auto}
+.section-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;flex-wrap:wrap}.route-note{font-size:9px;color:var(--muted);margin-top:3px}.holiday{background:#f7f1ff}.kira-line{font-size:9px;margin-top:4px;color:var(--muted)}.backup-current{color:#2d7a46;font-weight:700}.backup-stale{color:#a15c00;font-weight:700}.imported-row{background:#fbfdff}.source-note{font-size:9px;color:var(--muted)}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}
+.good{background:var(--good)}.warn{background:var(--warn)}.bad{background:var(--bad)}.remote{background:#eef1f5}
+.output-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.copybox{white-space:pre-line;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px}
+.dayrec{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px;background:#fff}.override-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end;margin-top:8px}.override-note{font-size:10px;color:var(--muted)}
+.week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+.daybox{min-height:210px;border:1px solid #d5d9df;border-radius:12px;background:#fff;padding:10px 10px 9px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.035)}
+.daybox.challenge-med{background:linear-gradient(180deg,#fffdf7 0%,#ffffff 23%);border-color:#e4c98a}
+.daybox.challenge-high{background:linear-gradient(180deg,#fff8f5 0%,#ffffff 23%);border-color:#e2a294}
+.tilehead{display:flex;justify-content:space-between;align-items:flex-start;gap:7px;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid #e6e8ec}
+.dateblock{display:flex;align-items:center;gap:7px;min-width:0}
+.datenum{font-size:34px;line-height:.88;font-weight:650;letter-spacing:-.055em;color:#111827;min-width:34px}
+.datewords{display:flex;flex-direction:column;justify-content:center;gap:1px;padding-top:1px}
+.dow{font-size:9px;line-height:1;font-weight:800;letter-spacing:.14em;color:#6b7280}
+.month{font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;color:#111827}
+.tilepill{display:inline-block;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:850;line-height:1;background:#f2f4f7;color:#4b5563;white-space:nowrap}
+.tilepill.challenge-med{background:#fff0c7;color:#805d00}
+.tilepill.challenge-high{background:#ffe1da;color:#9f3322}
+.tilesection{margin-top:0;padding:6px 0 0;border-radius:0;background:transparent}
+.tilesection + .tilesection{margin-top:6px;padding-top:7px;border-top:1px solid #eceef1}
+.tilelabel{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#8a929f;font-weight:800;margin-bottom:4px}
+.timechips{display:flex;flex-wrap:wrap;gap:3px}
+.timechip{display:inline-block;padding:3px 5px;border-radius:5px;background:#f5f7fa;border:0;font-size:9.6px;font-weight:800;line-height:1.15;color:#334155}
+.mode{font-weight:850;font-size:12.8px;margin:0 0 5px;line-height:1.05;padding-left:7px;border-left:3px solid #3478f6;color:#172033}
+.holiday .mode{border-left-color:#9b6bd4}
+.times{font-size:11.3px;line-height:1.28;margin-top:2px;font-weight:750}
+.event{margin-top:5px;padding-top:5px;border-top:1px solid #eceef1;font-size:9.8px;line-height:1.2;padding-left:7px;border-left:3px solid #8e8e93}
+.event:first-child{margin-top:0;padding-top:1px;border-top:0}
+.event strong{font-size:10.5px;font-weight:850;line-height:1.1}
+.driverline{display:block;margin-top:3px;padding:0;border-radius:0;background:transparent;border:0;font-size:9.1px;font-weight:750;line-height:1.12;color:#475569}
+.backup{margin-top:4px;padding:3px 5px;border-radius:5px;background:var(--bad);font-size:8.9px;font-weight:900}
+.kira-line{font-size:9.6px!important;line-height:1.18;font-weight:700;color:#667085!important;margin-top:4px}
+.marker{position:absolute;right:7px;top:5px;opacity:.35;font-size:14px}
+.print-only{display:none}
+@media(max-width:1100px){.rules{grid-template-columns:repeat(3,1fr)}.output-grid{grid-template-columns:1fr}.week-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.app{padding:10px}.rules,.week-grid{grid-template-columns:1fr}}
+@media print{
+ @page{size:Letter landscape;margin:.20in}
+ body{background:#fff;color:#111}
+ .no-print{display:none!important}.print-only{display:block!important}
+ .app{padding:0;max-width:none}
+ .print-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:5px}
+ .print-title{font-size:23px;font-weight:950;letter-spacing:.01em}
+ .print-range{font-size:13px;color:#333;font-weight:850}
+ .week-grid{grid-template-columns:repeat(5,1fr);gap:3px;margin-top:3px}
+ .daybox{
+   height:3.42in;
+   min-height:3.42in;
+   border:1.15px solid #aeb4bd;
+   border-radius:5px;
+   padding:7px 8px 6px;
+   box-shadow:none;
+   overflow:hidden;
+ }
+ .daybox.challenge-med{background:linear-gradient(180deg,#fff6df 0%,#ffffff 27%)!important}
+ .daybox.challenge-high{background:linear-gradient(180deg,#ffe6df 0%,#ffffff 29%)!important;border-color:#db9d90!important}
+ .tilehead{margin-bottom:5px!important;padding-bottom:5px!important;border-bottom:1px solid #d9dde3!important}
+ .tilepill{font-size:8.5px!important;padding:3px 5px!important}
+ .tilesection{padding:5px 0 0!important;border-radius:0!important;background:transparent!important}
+ .tilelabel{font-size:7.5px!important;letter-spacing:.11em!important;margin-bottom:3px!important}
+ .timechips{gap:2px!important}
+ .timechip{font-size:9.3px!important;padding:2px 4px!important;border-radius:4px!important;font-weight:850!important;background:#f3f5f7!important}
+ .datenum{font-size:29px!important;line-height:.88!important;font-weight:650!important;letter-spacing:-.055em!important}
+ .dateblock{gap:6px!important}
+ .dow{font-size:7.6px!important;letter-spacing:.14em!important}
+ .month{font-size:8.7px!important;letter-spacing:.08em!important}
+ .mode{
+   font-size:11.8px!important;
+   line-height:1.03;
+   margin:0 0 4px!important;
+   font-weight:850!important;
+   padding-left:6px!important;
+   border-left-width:3px!important;
+ }
+ .times{
+   font-size:11.2px!important;
+   line-height:1.10!important;
+   margin-top:1px!important;
+   font-weight:900!important;
+ }
+ .kira-line{
+   font-size:9.9px!important;
+   line-height:1.08!important;
+   margin-top:2px!important;
+   font-weight:850!important;
+   color:#333!important;
+ }
+ .event{
+   font-size:9.1px!important;
+   line-height:1.08!important;
+   margin-top:3px!important;
+   padding-top:3px!important;
+   padding-left:6px!important;
+   border-top:1px solid #e1e4e8!important;
+   border-left:3px solid #8e8e93!important;
+ }
+ .event strong{
+   font-size:9.8px!important;
+   line-height:1.04!important;
+   font-weight:950!important;
+ }
+ .driverline{font-size:8.5px!important;padding:0!important;margin-top:2px!important;font-weight:800!important}
+ .event .route-note{display:none!important}
+ .backup{
+   font-size:8.9px!important;
+   line-height:1.0!important;
+   padding:3px 4px!important;
+   margin-top:2px!important;
+   font-weight:950!important;
+   border:1px solid #c66;
+ }
+ .marker{font-size:10px!important;right:4px;top:2px}
+}
+
+/* v28 Calendar Hub
+<div class="calendar-hygiene-grid">
+  <div class="hygiene-card">
+    <h3>Smart de-duplication</h3>
+    <p class="small muted">Automatically collapse duplicate events imported from multiple calendars. Events are treated as duplicates when their normalized title, date, and start time match, with an optional time tolerance.</p>
+    <label class="small"><input id="dedupeEnabled" type="checkbox" checked> Enable automatic de-duplication</label>
+    <div class="row" style="margin-top:8px">
+      <div>
+        <label class="small">Time tolerance</label>
+        <select id="dedupeTolerance">
+          <option value="0">Exact time only</option>
+          <option value="5">±5 minutes</option>
+          <option value="10" selected>±10 minutes</option>
+          <option value="15">±15 minutes</option>
+          <option value="30">±30 minutes</option>
+        </select>
+      </div>
+      <div>
+        <label class="small">Prefer source</label>
+        <select id="dedupePreference">
+          <option value="primary" selected>Main iPhone calendar</option>
+          <option value="detail">Most detailed event</option>
+          <option value="first">First imported</option>
+        </select>
+      </div>
+    </div>
+    <div id="dedupeStatus" class="hygiene-status">De-duplication is enabled.</div>
+  </div>
+
+  <div class="hygiene-card">
+    <h3>Privacy keyword filter</h3>
+    <p class="small muted">Events containing any keyword below in the title, notes, or location are excluded locally before they enter the planner. One keyword or phrase per line.</p>
+    <textarea id="privacyKeywords" placeholder="therapy&#10;doctor&#10;confidential&#10;private"></textarea>
+    <label class="small"><input id="privacyFilterEnabled" type="checkbox" checked> Filter matching events automatically</label>
+    <div class="row" style="margin-top:8px">
+      <label class="small"><input id="privacyMatchWholeWord" type="checkbox"> Whole-word matching only</label>
+      <button id="previewPrivacyFilter" type="button">Preview filtered events</button>
+    </div>
+    <div id="privacyStatus" class="hygiene-status">No privacy keywords configured.</div>
+  </div>
+</div>
+ */
+.calendar-hub{margin-top:12px;border:1px solid #d9dee7;border-radius:16px;padding:14px;background:linear-gradient(180deg,#fff,#fbfcff)}
+.calendar-hub-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:12px;margin-top:10px}
+.calendar-source-card{border:1px solid #e1e5ec;border-radius:14px;padding:12px;background:#fff}
+.calendar-source-card.primary-source{border-color:#aac9ff;background:#f7fbff}
+.calendar-source-title{font-weight:850;font-size:15px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.calendar-drop{margin-top:10px;border:2px dashed #b9c6d9;border-radius:14px;padding:18px;text-align:center;background:#fbfcff;transition:.15s}
+.calendar-drop.dragover{border-color:#1677ff;background:#eef6ff}
+.calendar-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.calendar-url-row{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:8px}
+.calendar-source-list{display:grid;gap:8px;margin-top:10px}
+.calendar-source-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #e1e5ec;border-radius:12px;padding:9px 10px;background:#fff}
+.calendar-source-item .source-main{min-width:0}
+.calendar-source-item .source-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendar-source-item .source-meta{font-size:11px;color:#687386;margin-top:2px}
+.calendar-status-dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:#9aa4b2;margin-right:5px}.calendar-status-dot.ok{background:#34c759}.calendar-status-dot.warn{background:#ff9f0a}.calendar-status-dot.bad{background:#ff3b30}
+@media(max-width:800px){.calendar-hub-grid{grid-template-columns:1fr}.calendar-url-row{grid-template-columns:1fr}.calendar-source-item{grid-template-columns:1fr}}
+
+/* v28 Calendar Hygiene */
+.calendar-hygiene-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.calendar-hygiene-grid textarea{min-height:110px}
+.hygiene-card{border:1px solid #d7dbe2;border-radius:14px;padding:12px;background:#fff}
+.hygiene-card h3{margin:0 0 6px;font-size:15px}
+.hygiene-card p{margin:4px 0 8px}
+.hygiene-status{font-size:12px;color:#5b6472;margin-top:6px}
+@media(max-width:800px){.calendar-hygiene-grid{grid-template-columns:1fr}}
+@media print{.calendar-hygiene-grid,.hygiene-card{display:none!important}}
+
+
+/* v28 Apple public-calendar safe import */
+.apple-safe-box{margin-top:10px;padding:11px 12px;border:1px solid #cfd7e6;border-radius:13px;background:#f8fbff}
+.apple-safe-box strong{display:block;margin-bottom:3px}
+.apple-safe-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.apple-safe-actions button,.apple-safe-actions a{min-height:38px}
+.calendar-proxy-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}
+@media(max-width:720px){.calendar-proxy-row{grid-template-columns:1fr}}
+@media print{#appleCalendarFallback,.calendar-proxy-settings{display:none!important}}
+
+
+/* v28 source architecture + iOS mobile agenda */
+.source-role-select{font-size:12px;padding:5px 7px;min-width:145px}
+.source-role-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:850;background:#eef2f7;color:#475569;margin-left:5px}
+.source-role-badge.primary-family{background:#e9f2ff;color:#1859a9}
+.source-role-badge.team{background:#eef8f0;color:#23723b}
+.source-role-badge.school{background:#fff5df;color:#8a5a00}
+.source-role-badge.reference{background:#f2f2f7;color:#5b5b64}
+.mobile-plan-shell{margin-top:14px;border:1px solid #d8dde5;border-radius:18px;overflow:hidden;background:#f7f7fa}
+.mobile-plan-head{background:#fff;padding:14px 14px 10px;border-bottom:1px solid #e6e6eb}
+.mobile-plan-title{font-size:25px;line-height:1;font-weight:800;letter-spacing:-.04em}
+.mobile-plan-sub{font-size:12px;color:#777;margin-top:5px}
+.ios-segment{display:grid;grid-template-columns:repeat(3,1fr);background:#ececf1;border-radius:9px;padding:2px;margin-top:12px}
+.ios-segment button{border:0;background:transparent;padding:8px 6px;border-radius:7px;font-weight:700;font-size:13px;min-height:36px}
+.ios-segment button.active{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.mobile-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.mobile-nav button{min-width:44px;min-height:38px}
+.mobile-plan-body{padding:0;background:#fff}
+.ios-day-header{padding:12px 14px 6px;display:flex;align-items:baseline;gap:9px}
+.ios-date-number{font-size:38px;font-weight:500;letter-spacing:-.06em}
+.ios-date-words{display:flex;flex-direction:column}.ios-weekday{font-size:15px;font-weight:700}.ios-monthyear{font-size:12px;color:#777}
+.ios-agenda-row{display:grid;grid-template-columns:64px 4px minmax(0,1fr);gap:9px;padding:9px 14px;border-top:1px solid #ededf1}
+.ios-agenda-time{font-size:12px;color:#777;text-align:right;padding-top:1px;white-space:nowrap}
+.ios-event-bar{border-radius:4px;background:#3478f6}.ios-event-bar.family{background:#3478f6}.ios-event-bar.team{background:#34c759}.ios-event-bar.work{background:#8e8e93}.ios-event-bar.alert{background:#ff3b30}.ios-event-bar.kira{background:#af52de}
+.ios-event-title{font-size:14px;font-weight:750;line-height:1.18}.ios-event-meta{font-size:11.5px;color:#6b7280;margin-top:3px;line-height:1.3}.ios-driver{font-size:11.5px;font-weight:750;margin-top:4px}
+.ios-empty{padding:22px 14px;color:#8e8e93;text-align:center}
+.ios-week-day{border-top:1px solid #ededf1;background:#fff}
+.ios-week-summary{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:10px 14px}
+.ios-week-date{text-align:center}.ios-week-dow{font-size:10px;color:#777;text-transform:uppercase}.ios-week-num{font-size:25px;line-height:1.05}
+.ios-week-items{font-size:12px;line-height:1.4}.ios-week-items strong{font-size:13px}
+.ios-month-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e5e5ea;border-left:1px solid #e5e5ea}
+.ios-month-label{font-size:9px;text-align:center;color:#777;padding:6px 2px;background:#fafafa;border-right:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea}
+.ios-month-cell{min-height:64px;padding:5px;border-right:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;background:#fff;cursor:pointer}
+.ios-month-cell.out{color:#bbb;background:#fafafa}.ios-month-cell.selected .ios-month-num{background:#ff3b30;color:white}
+.ios-month-num{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:12px;margin:auto}
+.ios-dots{display:flex;justify-content:center;gap:2px;margin-top:5px;flex-wrap:wrap}.ios-dot{width:4px;height:4px;border-radius:50%;background:#3478f6}.ios-dot.team{background:#34c759}.ios-dot.alert{background:#ff3b30}.ios-dot.work{background:#8e8e93}
+.mobile-output-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+@media(max-width:620px){
+  .mobile-plan-shell{border-radius:0;margin-left:-12px;margin-right:-12px;border-left:0;border-right:0}
+  .mobile-plan-title{font-size:28px}
+  .ios-agenda-row{grid-template-columns:54px 4px minmax(0,1fr);padding-left:8px;padding-right:10px}
+  .ios-month-cell{min-height:55px}
+}
+@media print{#mobilePlanCard{display:none!important}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<section class="no-print">
+  <h1>Family Commute + Transport Optimizer</h1>
+  <p class="muted">Fixed family inputs in. Recommended Chris commute schedule and transport plan out.</p>
+
+  <div class="toolbar">
+    <button class="primary" id="generateBtn">Generate recommended 2-week plan</button>
+    <button id="newCycleBtn">Start New 2-Week Cycle</button>
+    <button id="exportBackupBtn">Download Current Backup</button>
+    <button id="importBackupBtn">Import Backup</button>
+    <input id="backupFile" type="file" accept=".json,application/json" style="display:none">
+    <button id="publishBtn">Download desktop/fridge family plan</button>
+    <button id="printBtn">Print 1-page refrigerator calendar</button>
+    <span id="saveStatus" class="small muted" style="align-self:center">Autosave ready</span><span id="backupStatus" class="small" style="align-self:center;margin-left:6px"></span>
+  </div>
+
+  <div class="callout">
+    <strong>Decision variable:</strong> Chris’s work location, home departure, onsite arrival, work departure, and remote days. Skylight supplies the kids’ activities and Kira shift overrides; weekdays without a Kira override automatically use Early - Main Hospital. Kira is only treated as locally available for afternoon transport after her 30-minute commute home.
+    <div class="small" style="margin-top:6px"><strong>Persistence:</strong> changes autosave in this browser. Permanent setup and the current 2-week cycle are stored separately, so starting a new cycle keeps your sites, addresses, child names, commute rules, and other standing assumptions. The toolbar also tells you whether your downloaded OneDrive backup is current or out of date. Use <strong>Download desktop/fridge family plan</strong> after your weekly sync to create a shareable snapshot for Kira.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <div><h2>A. One-time setup — Chris work sites</h2><p class="muted small">Fully editable. Wheeling is treated as the primary destination, Weirton as secondary, and other sites as limited-use unless you change their role.</p></div>
+      <button id="addSiteBtn">+ Add site</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Site name</th><th>Role</th><th>Use frequency</th><th>Site address</th><th>Commute from home (fallback min)</th><th>Typical office departure</th><th>Min useful onsite hrs</th><th>Soft arrival preference</th><th></th></tr></thead>
+      <tbody id="siteBody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h2>B. One-time setup — standing rules</h2>
+    <div class="grid rules">
+      <label>Plan starts<input id="startDate" type="date"></label>
+      <label>Target onsite days / week<input id="onsiteTarget" type="number" min="0" max="5" value="3"></label>
+      <label>School bus time<input id="busTime" type="time" value="07:50"></label>
+      <label>Default bus plan<select id="defaultBus"><option value="chris">Chris waits for bus</option><option value="kids">Kids handle independently</option><option value="kira">Kira covers</option></select></label>
+      <label>Morning cushion target / month<input id="cushionTarget" type="number" min="0" max="8" value="2"></label>
+      <label>Cushions already used<input id="cushionUsed" type="number" min="0" max="8" value="0"></label>
+    </div>
+    <div class="grid rules" style="margin-top:9px">
+      <label>Cushion duration (min)<input id="cushionMinutes" type="number" value="30"></label>
+      <label>Transport safety buffer (min)<input id="transportBuffer" type="number" value="20"></label>
+      <label>Oldest child name<input id="childOldest" value="Oldest"></label>
+      <label>Middle child name<input id="childMiddle" value="Middle"></label>
+      <label>Youngest child name<input id="childYoungest" value="Youngest"></label>
+      <label>Home address<input id="homeAddress" placeholder="Home street address, city, state"></label>
+      <label>Live address routing<select id="liveRouting"><option value="yes">Use when online</option><option value="no">Use fallback times only</option></select></label>
+      <label>Oldest child can drive?<select id="oldestCanDrive"><option value="no">No</option><option value="yes">Yes</option></select></label>
+      <label>Remote allowed?<select id="remoteAllowed"><option value="yes">Yes</option><option value="no">No</option></select></label>
+      <label>Kira commute each way (min)<input id="kiraCommute" type="number" min="0" value="30"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <div>
+        <h2>1. Kira’s work schedule — auto-detected from Skylight</h2>
+        <p class="muted small">Default assumption for every weekday is <strong>Early - Main Hospital (6:00 AM–2:30 PM)</strong>. Skylight import automatically overrides days labeled North, Star, Late, or Off. Kira’s configured commute is added to shift end before she is considered available for afternoon transport.</p>
+      </div>
+      <button id="copyWeekBtn">Copy manual corrections Week 1 → Week 2</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Kira shift</th><th>Auto hours</th><th>Work location</th><th>Home arrival (before activity drive)</th></tr></thead>
+      <tbody id="kiraBody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <div>
+        <h2>2. Calendar Hub — family + team calendars</h2>
+        <div class="callout" style="margin-top:8px">
+          <strong>Source architecture:</strong> Kira’s shared iOS calendar = <strong>Primary Family Calendar</strong>; TeamSnap / TeamSnapOne / GameChanger = <strong>Team Schedule</strong>; school feeds = <strong>School Calendar</strong>; manual entries = <strong>Override</strong>. The planner reads the original sources directly. Skylight remains a parallel family display, not the planner’s data intermediary.
+        </div>
+
+        <p class="muted small"><strong>Wire the original calendars directly into the planner.</strong> Use the main shared iPhone calendar as your family source of truth, then add GameChanger, TeamSnap, school, gymnastics, Ultimate, or any other ICS/webcal calendar separately.</p>
+      </div>
+      <button id="addActivityBtn">+ Add one missing activity</button>
+    </div>
+
+    <div class="calendar-hub">
+      <div class="calendar-source-card primary-source">
+        <div class="calendar-source-title"><span>📅 Main shared iPhone calendar</span><span class="small muted">PRIMARY</span></div>
+        <div class="small muted" style="margin-top:5px"><strong>Role: Primary Family Calendar.</strong> This source wins de-duplication conflicts and should contain the family logistics you maintain in iOS. Best option: paste its public/subscription <code>webcal://</code> or <code>https://</code> ICS link. If you only have an exported <code>.ics</code> file, drop or upload it here. Re-importing the same source replaces its prior planning-window events instead of creating stale duplicates.</div>
+        <div class="calendar-url-row">
+          <input id="mainCalendarUrl" placeholder="Paste Apple Public Calendar “Share Link” (webcal://…)">
+          <button id="connectMainCalendarBtn" class="primary">Connect calendar</button>
+        </div>
+        
+        <div id="appleCalendarFallback" class="apple-safe-box" style="display:none">
+          <strong>Apple calendar link recognized</strong>
+          <div id="appleFallbackMessage" class="small muted">The link is valid, but the browser could not read Apple’s calendar response directly.</div>
+          <div class="apple-safe-actions">
+            <a id="appleDownloadIcsBtn" class="button" href="#" target="_blank" rel="noopener">1. Download Apple .ics</a>
+            <button id="appleChooseDownloadedBtn" type="button">2. Import downloaded .ics</button>
+            <button id="appleRetryBtn" type="button">Retry connection</button>
+          </div>
+          <div class="small muted" style="margin-top:7px">Apple’s own export instructions use this same public-calendar link with <code>webcal</code> changed to <code>http</code>. After the file downloads, choose it here; the planner will replace the prior events from this source rather than duplicating them.</div>
+        </div>
+
+<div class="calendar-actions">
+          <button id="uploadMainCalendarBtn">Upload main .ics</button>
+          <input id="mainCalendarFile" type="file" accept=".ics,text/calendar" style="display:none">
+          <button id="refreshAllCalendarsBtn">Refresh all web calendars</button>
+        </div>
+      </div>
+
+      <div class="calendar-hub-grid">
+        <div class="calendar-source-card">
+          <div class="calendar-source-title"><span>Team / activity calendars</span><span class="source-role-badge team">TEAM SCHEDULE</span></div>
+          <div class="small muted" style="margin-top:5px">Paste one calendar link per line. TeamSnap, TeamSnapOne, GameChanger, Google public ICS, Apple/iCloud, and generic ICS/webcal subscription links are accepted. Optional label format: <strong>Ryan Soccer | webcal://…</strong>. Plain links work too.</div>
+          <textarea id="bulkCalendarLinks" rows="5" placeholder="Ryan Soccer | webcal://…&#10;Whitney Gymnastics | https://…/calendar.ics&#10;TeamSnap | webcal://…" style="margin-top:8px;min-height:100px"></textarea>
+          <div class="calendar-actions"><button id="addBulkCalendarLinksBtn" class="primary">Add these calendars</button></div>
+        </div>
+        <div class="calendar-source-card">
+          <div class="calendar-source-title"><span>Upload calendar files</span></div>
+          <div id="calendarDropZone" class="calendar-drop"><strong>Drop .ics files here</strong><br><span class="small muted">or choose multiple team/calendar files at once</span><div class="calendar-actions" style="justify-content:center"><button id="chooseCalendarFilesBtn">Choose .ics / ZIP files</button></div></div>
+          <input id="activityFile" type="file" accept=".ics,.csv,.zip,text/calendar,text/csv,application/zip" multiple style="display:none">
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div class="calendar-source-title"><span>Connected calendar sources</span><span id="calendarSourceCount" class="small muted"></span></div>
+        <div id="savedCalendarLinks" class="calendar-source-list"></div>
+        <div id="importStatus" class="small muted" style="margin-top:9px">No calendar source imported yet.</div>
+      </div>
+
+      <details style="margin-top:12px">
+        <summary><strong>Connection notes & troubleshooting</strong></summary>
+        <div class="small muted" style="margin-top:7px;line-height:1.5">
+          <strong>iPhone/iCloud:</strong> paste the exact link produced by Calendar → Calendars → ⓘ → Public Calendar → Share Link. The planner accepts <code>webcal://</code>, <code>webcals://</code>, <code>http://</code>, and <code>https://</code>, extracts links even when surrounded by copied text, and retries Apple-specific host variants automatically. If Apple blocks browser access, the planner shows an Apple-specific download/import fallback instead of treating the link as invalid.
+          <br><br><strong>GameChanger / TeamSnap:</strong> copy each team's calendar subscription link and add it directly above. Keeping each team separate allows refreshes to replace that team's events cleanly when practices move or games are cancelled.
+          <br><br><strong>Recurring events:</strong> the importer expands common daily and weekly ICS recurrence rules into the active two-week planning window.
+          <br><br><strong>Optional automatic calendar proxy:</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v28, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
+          <div class="calendar-proxy-settings">
+            <div class="calendar-proxy-row">
+              <input id="calendarProxyUrl" placeholder="Optional proxy URL, e.g. https://family-calendar-proxy.example.workers.dev">
+              <button id="saveCalendarProxyBtn" type="button">Save proxy</button>
+            </div>
+            <div id="calendarProxyStatus" class="small muted" style="margin-top:5px"></div>
+          </div>
+
+        </div>
+      </details>
+    </div>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Child</th><th>Activity</th><th>Start</th><th>End</th><th>Activity site / address</th><th>Fallback drive from home (min)</th><th>Drop-off?</th><th>Pickup?</th><th></th></tr></thead>
+      <tbody id="activityBody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <div>
+        <h2>3. Recurring sports practices</h2>
+        <p class="muted small">Create a practice pattern once. It automatically populates every applicable 2-week cycle and remains saved with your permanent setup.</p>
+      </div>
+      <button id="addPracticeBtn">+ Add recurring practice</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Child</th><th>Sport / practice</th><th>Days</th><th>Start</th><th>End</th><th>Site / address</th><th>Drive fallback</th><th>Effective from</th><th>Through</th><th>Drop</th><th>Pickup</th><th></th></tr></thead>
+      <tbody id="practiceBody"></tbody>
+    </table></div>
+    <div class="small muted" style="margin-top:8px">Use recurring practices for stable weekly patterns. GameChanger/TeamSnap subscriptions remain the source of truth for games, tournaments, and practices that change frequently. Imported venue/location fields are used for live routing when the feed supplies them.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <div><h2>4. Fixed input — ad-hoc commitments</h2><p class="muted small">Only enter items that constrain the two-week period.</p></div>
+      <button id="addAdhocBtn">+ Add commitment</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Who</th><th>Type</th><th>Start</th><th>End</th><th>Location / address</th><th>Fallback drive from home</th><th>Impact</th><th></th></tr></thead>
+      <tbody id="adhocBody"></tbody>
+    </table></div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="callout"><strong>Recommended commute schedule</strong><div id="summary" style="margin-top:5px"></div></div>
+
+
+    <div id="mobilePlanCard" class="card">
+      <div class="section-head">
+        <div>
+          <h3>Mobile family agenda</h3>
+          <p class="muted small">Phone-first view for Chris or Kira. Same plan as the fridge output, rendered like an iOS agenda.</p>
+        </div>
+        <div class="mobile-output-actions">
+          <button id="downloadMobilePlanBtn">Download mobile family view</button>
+        </div>
+      </div>
+      <div id="mobilePlanShell" class="mobile-plan-shell">
+        <div class="mobile-plan-head">
+          <div id="mobilePlanTitle" class="mobile-plan-title">Family</div>
+          <div id="mobilePlanSub" class="mobile-plan-sub"></div>
+          <div class="ios-segment">
+            <button type="button" data-mobile-view="day" class="active">Day</button>
+            <button type="button" data-mobile-view="week">Week</button>
+            <button type="button" data-mobile-view="month">Month</button>
+          </div>
+          <div class="mobile-nav">
+            <button id="mobilePrevBtn" type="button" aria-label="Previous">‹</button>
+            <button id="mobileTodayBtn" type="button">Today</button>
+            <button id="mobileNextBtn" type="button" aria-label="Next">›</button>
+          </div>
+        </div>
+        <div id="mobilePlanBody" class="mobile-plan-body"></div>
+      </div>
+    </div>
+
+    <div class="output-grid">
+      <div class="card">
+        <h3>Chris — recommended day-by-day commute</h3><p class="muted small" style="margin-top:5px"><strong>To override a day:</strong> choose the final site/Remote/Holiday under <em>Final Work Plan</em>, then click <strong>Apply & Recalculate</strong>. The tool will recalculate commute timing and all transport assignments before you publish.</p>
+        <div id="commutePlan" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <h3>Work-facing schedule for boss signoff</h3>
+        <textarea id="bossMessage" class="copybox" style="margin-top:10px;min-height:250px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
+        <div class="small muted" style="margin-top:8px">You can edit this text before copying it into email.</div>
+        <div class="toolbar"><button id="copyBossBtn">Copy schedule</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1-page refrigerator calendar preview</h3>
+      <p class="muted small">Each workday shows Chris’s commute, Kira’s work location, evening transport assignments, and backup-driver needs. Activity addresses are used for live drive-time estimates when available.</p>
+      <div id="calendarPreview" class="week-grid"></div>
+    </div>
+
+    <div class="card">
+      <h3>Activity coverage audit</h3>
+      <div id="coverageAudit" style="margin-top:8px;font-size:13px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Backup-driver watchlist</h3>
+      <div id="watchouts" style="margin-top:8px;font-size:13px"></div>
+    </div>
+  </div>
+</section>
+
+<section class="print-only">
+  <div class="print-header">
+    <div class="print-title">2-Week Family Logistics + Commute Plan</div>
+    <div id="printRange" class="print-range"></div>
+  </div>
+  <div id="printCalendar" class="week-grid"></div>
+</section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let plans=[];
+
+function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function nextMonday(){const d=new Date();d.setHours(0,0,0,0);return addDays(d,(8-d.getDay())%7||7)}
+function dayName(d){return d.toLocaleDateString(undefined,{weekday:'long'})}
+function shortDate(d){return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}
+function calendarDateParts(d){return {dow:d.toLocaleDateString(undefined,{weekday:'short'}).toUpperCase(),month:d.toLocaleDateString(undefined,{month:'short'}).toUpperCase(),num:d.getDate()}}
+function toMin(t){if(!t)return null;const [h,m]=t.split(':').map(Number);return h*60+m}
+function fmt(m){if(m==null)return '—';m=((Math.round(m)%1440)+1440)%1440;let h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM';return `${h%12||12}:${String(mm).padStart(2,'0')} ${ap}`}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+$('startDate').value=iso(nextMonday());
+
+function siteRow(d={}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input class="s-name" value="${esc(d.name||'New Site')}"></td>
+  <td><select class="s-role"><option value="primary">Primary</option><option value="secondary">Secondary</option><option value="limited">Limited-use</option><option value="disabled">Disabled</option></select></td>
+  <td><select class="s-frequency"><option value="normal">Normal</option><option value="occasional">Occasional only</option><option value="rare">Rare / only when needed</option></select></td>
+  <td><input class="s-address" value="${esc(d.address||'')}"></td>
+  <td><input class="s-commute" type="number" min="0" value="${d.commute??60}"></td>
+  <td><input class="s-leave" type="time" value="${d.leave||'16:30'}"></td>
+  <td><input class="s-hours" type="number" step=".25" value="${d.hours??6}"></td>
+  <td><input class="s-pref" type="time" value="${d.pref||'08:00'}"></td>
+  <td><button class="remove">Remove</button></td>`;
+  tr.querySelector('.s-role').value=d.role||'limited';
+  tr.querySelector('.s-frequency').value=d.frequency||'rare';
+  tr.querySelector('.remove').onclick=()=>{tr.remove();refreshPreferredSite()};
+  $('siteBody').appendChild(tr); refreshPreferredSite();
+}
+[
+  {name:'Wheeling',role:'primary',frequency:'normal',address:'Wheeling, WV',commute:75,leave:'16:30',hours:6,pref:'08:00'},
+  {name:'Weirton',role:'secondary',frequency:'normal',address:'Weirton, WV',commute:75,leave:'16:30',hours:6,pref:'08:00'},
+  {name:'Butler',role:'limited',frequency:'occasional',address:'Butler, PA',commute:60,leave:'16:30',hours:6,pref:'08:00'},
+  {name:'Southpointe',role:'limited',frequency:'rare',address:'Southpointe, PA',commute:45,leave:'16:30',hours:6,pref:'08:00'},
+  {name:'Other',role:'limited',frequency:'rare',address:'',commute:60,leave:'16:30',hours:6,pref:'08:00'}
+].forEach(siteRow);
+$('addSiteBtn').onclick=()=>siteRow();
+
+function getSites(){return [...$('siteBody').children].map(tr=>({name:tr.querySelector('.s-name').value.trim()||'Site',role:tr.querySelector('.s-role').value,frequency:tr.querySelector('.s-frequency').value,address:tr.querySelector('.s-address').value.trim(),commute:+tr.querySelector('.s-commute').value||0,leave:tr.querySelector('.s-leave').value||'16:30',hours:+tr.querySelector('.s-hours').value||6,pref:tr.querySelector('.s-pref').value||'08:00'}))}
+function refreshPreferredSite(){}
+
+function kiraShiftInfo(code){
+  if(code==='early-main')return{label:'Early - Main Hospital',location:'Main Hospital',start:'06:00',end:'14:30'};
+  if(code==='early-north')return{label:'Early - North',location:'North',start:'06:00',end:'14:30'};
+  if(code==='star')return{label:'Star',location:'Star',start:'06:00',end:'14:30'};
+  if(code==='late-main')return{label:'Late - Main Hospital',location:'Main Hospital',start:'09:30',end:'18:00'};
+  return{label:'Off',location:'Off',start:'',end:''};
+}
+function kiraPickupAvailableAt(code){
+  const x=kiraShiftInfo(code);
+  if(!x.start)return 0;
+  return toMin(x.end) + (+$('kiraCommute').value || 30);
+}
+function buildKiraRows(){
+  const start=parseDate($('startDate').value);$('kiraBody').innerHTML='';
+  Array.from({length:14},(_,i)=>addDays(start,i)).filter(d=>![0,6].includes(d.getDay())).forEach(d=>{
+    const tr=document.createElement('tr');tr.dataset.date=iso(d);
+    tr.innerHTML=`<td><strong>${dayName(d)} ${shortDate(d)}</strong></td>
+    <td><select class="k-shift"><option value="early-main">Early - Main Hospital</option><option value="early-north">Early - North</option><option value="star">Star</option><option value="late-main">Late - Main Hospital</option><option value="off">Off</option></select></td>
+    <td class="k-hours muted small">Off</td><td class="k-location muted small">Main Hospital</td><td class="k-pm muted small">Available</td>`;
+    const sel=tr.querySelector('.k-shift');
+    sel.value='early-main';
+    sel.onchange=()=>{const x=kiraShiftInfo(sel.value);tr.querySelector('.k-hours').textContent=x.start?`${fmt(toMin(x.start))}–${fmt(toMin(x.end))}`:'Off';tr.querySelector('.k-location').textContent=x.location;tr.querySelector('.k-pm').textContent=x.start?`~${fmt(kiraPickupAvailableAt(sel.value))}`:'Available'};
+    sel.onchange();
+    $('kiraBody').appendChild(tr);
+  });
+}
+buildKiraRows();$('startDate').onchange=buildKiraRows;
+$('copyWeekBtn').onclick=()=>{const rows=[...$('kiraBody').children];for(let i=0;i<5;i++){rows[i+5].querySelector('.k-shift').value=rows[i].querySelector('.k-shift').value;rows[i+5].querySelector('.k-shift').onchange()}};
+$('kiraCommute').oninput=()=>{[...$('kiraBody').children].forEach(r=>r.querySelector('.k-shift').onchange())};
+
+function guessChild(title='', source=''){
+  const t=(title+' '+source).toLowerCase();
+  if(/\b(oldest|ryan)\b/.test(t))return 'Oldest';
+  if(/\b(middle)\b/.test(t))return 'Middle';
+  if(/\b(youngest)\b/.test(t))return 'Youngest';
+  return 'Middle';
+}
+
+function detectKiraShift(title='', source=''){
+  const t=(title+' '+source).toLowerCase();
+  // Require either Kira's name or a standalone shift-like title to reduce false positives.
+  const mentionsKira=/\bkira\b/.test(t);
+  const compact=t.replace(/[^a-z0-9]+/g,' ').trim();
+  const standalone=/^(north|star|late|off|early main|early-main|main hospital)$/.test(compact);
+  if(!(mentionsKira||standalone))return null;
+  if(/\boff\b/.test(t))return 'off';
+  if(/\blate\b/.test(t))return 'late-main';
+  if(/\bstar\b/.test(t))return 'star';
+  if(/\bnorth\b/.test(t))return 'early-north';
+  if(/\bearly\b.*\bmain\b|\bmain hospital\b/.test(t))return 'early-main';
+  return null;
+}
+function applyKiraShiftOverride(dateStr, shiftCode, sourceName=''){
+  const row=[...$('kiraBody').children].find(r=>r.dataset.date===dateStr);
+  if(!row)return false;
+  row.querySelector('.k-shift').value=shiftCode;
+  row.querySelector('.k-shift').onchange();
+  row.dataset.importedShift='true';
+  if(sourceName)row.dataset.importedShiftSource=sourceName;
+  return true;
+}
+
+function childLabel(key){
+  if(key==='Oldest')return $('childOldest').value.trim()||'Oldest';
+  if(key==='Middle')return $('childMiddle').value.trim()||'Middle';
+  if(key==='Youngest')return $('childYoungest').value.trim()||'Youngest';
+  return key;
+}
+function childOptions(selected=''){
+  return ['Oldest','Middle','Youngest'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
+}
+function refreshChildLabels(){
+  [...$('activityBody').children].forEach(r=>{
+    const sel=r.querySelector('.a-child'),v=sel.value;sel.innerHTML=childOptions(v);sel.value=v;
+  });
+  [...$('practiceBody').children].forEach(r=>{
+    const sel=r.querySelector('.p-child'),v=sel.value;sel.innerHTML=childOptions(v);sel.value=v;
+  });
+}
+['childOldest','childMiddle','childYoungest'].forEach(id=>$(id).oninput=refreshChildLabels);
+function activityRow(d={}){
+  const tr=document.createElement('tr');
+  if(d.source)tr.classList.add('imported-row');
+  tr.dataset.source=d.source||'Manual';
+  tr.innerHTML=`<td><input class="a-date" type="date" value="${d.date||''}"></td>
+  <td><select class="a-child">${childOptions(d.child||'Middle')}</select></td>
+  <td><input class="a-title" value="${esc(d.title||'')}">${d.source?`<div class="source-note">Imported: ${esc(d.source)}</div>`:''}</td>
+  <td><input class="a-start" type="time" value="${d.start||''}"></td><td><input class="a-end" type="time" value="${d.end||''}"></td>
+  <td><input class="a-loc" value="${esc(d.location||'')}" placeholder="Full street address preferred">
+  <div class="route-note">${d.source&&/GameChanger|TeamSnap/i.test(d.source)
+    ? (d.location ? 'Imported venue/location — used for routing' : '⚠ No venue/address supplied by calendar')
+    : (d.location ? 'Used for routing' : 'Add address for accurate routing')}</div></td>
+  <td><input class="a-home-drive" type="number" min="0" value="${d.homeDrive??20}"><div class="route-note">Used if live routing is unavailable</div></td>
+  <td><select class="a-drop"><option value="yes">Yes</option><option value="no">No</option></select></td>
+  <td><select class="a-pick"><option value="yes">Yes</option><option value="no">No</option></select></td>
+  <td><button class="remove">Remove</button></td>`;
+  tr.querySelector('.a-child').value=d.child||guessChild(d.title,d.source);
+  if(d.drop)tr.querySelector('.a-drop').value=d.drop;if(d.pick)tr.querySelector('.a-pick').value=d.pick;
+  tr.querySelector('.remove').onclick=()=>tr.remove();$('activityBody').appendChild(tr);
+}
+$('addActivityBtn').onclick=()=>activityRow();
+
+
+function unfoldICS(text){return text.replace(/\r?\n[ \t]/g,'')}
+function parseICSTime(raw){
+  if(!raw)return null;
+  const m=raw.match(/(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?)?/);
+  if(!m)return null;
+  return {date:`${m[1]}-${m[2]}-${m[3]}`,time:m[4]?`${m[4]}:${m[5]}`:''};
+}
+function icsDateToLocal(dateStr){const [y,m,d]=dateStr.split('-').map(Number);return new Date(y,m-1,d,12,0,0,0)}
+function addDaysIso(dateStr,n){const d=icsDateToLocal(dateStr);d.setDate(d.getDate()+n);return iso(d)}
+function parseRRule(raw=''){
+  const out={};String(raw).split(';').forEach(part=>{const [k,...v]=part.split('=');if(k)out[k.toUpperCase()]=v.join('=')});return out;
+}
+function recurrenceDates(start,ruleRaw){
+  if(!ruleRaw||!start?.date)return[start.date];
+  const rule=parseRRule(ruleRaw),freq=(rule.FREQ||'').toUpperCase();
+  if(!['DAILY','WEEKLY'].includes(freq))return[start.date];
+  const windowStart=$('startDate').value||start.date,windowEnd=iso(addDays(parseDate(windowStart),14));
+  const untilRaw=rule.UNTIL||'',until=parseICSTime(untilRaw)?.date||'';
+  const count=Math.max(0,Math.min(500,Number(rule.COUNT)||500));
+  const dayMap={SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+  const byDays=(rule.BYDAY||'').split(',').map(x=>dayMap[x.replace(/^[-+]?\d+/,'')]).filter(x=>x!==undefined);
+  const interval=Math.max(1,Number(rule.INTERVAL)||1),results=[];
+  let d=icsDateToLocal(start.date),generated=0,guard=0;
+  const startD=icsDateToLocal(start.date),winS=icsDateToLocal(windowStart),winE=icsDateToLocal(windowEnd);
+  while(d<winE && guard++<1000 && generated<count){
+    const ds=iso(d); if(until&&ds>until)break;
+    let include=false;
+    if(freq==='DAILY'){
+      const days=Math.round((d-startD)/86400000);include=days>=0&&days%interval===0;
+    }else{
+      const days=Math.round((d-startD)/86400000),week=Math.floor(days/7);
+      const allowed=byDays.length?byDays:[startD.getDay()];include=days>=0&&week%interval===0&&allowed.includes(d.getDay());
+    }
+    if(include){generated++;if(d>=winS&&d<winE)results.push(ds)}
+    d.setDate(d.getDate()+1);
+  }
+  return results.length?results:[];
+}
+function parseICS(text,sourceName='Calendar'){
+  const unfolded=unfoldICS(text);
+  const blocks=unfolded.split('BEGIN:VEVENT').slice(1).map(x=>x.split('END:VEVENT')[0]);
+  const rows=[];
+  for(const b of blocks){
+    const get=(key)=>{const m=b.match(new RegExp('(?:^|\\n)'+key+'[^:]*:(.*)','i'));return m?m[1].trim():''};
+    const s=parseICSTime(get('DTSTART')), e=parseICSTime(get('DTEND')); if(!s)continue;
+    let title=get('SUMMARY').replace(/\\,/g,',').replace(/\\n/g,' ');
+    let location=get('LOCATION').replace(/\\,/g,',').replace(/\\n/g,' ');
+    let description=get('DESCRIPTION').replace(/\\,/g,',').replace(/\\n/g,' ');
+    if(!location){const apple=get('X-APPLE-STRUCTURED-LOCATION');const tm=apple.match(/X-TITLE=([^;:]+)/i);if(tm)location=tm[1].replace(/\\,/g,',').replace(/\\n/g,' ')}
+    const rule=get('RRULE');
+    const durationDays=e?.date?Math.max(0,Math.round((icsDateToLocal(e.date)-icsDateToLocal(s.date))/86400000)):0;
+    const occurrences=rule?recurrenceDates(s,rule):[s.date];
+    for(const date of occurrences){
+      const endDate=durationDays?addDaysIso(date,durationDays):date;
+      rows.push({date,start:s.time,end:e?.time||'',endDate,title:title||'Calendar event',location,description,homeDrive:20,child:guessChild(title,sourceName),drop:'yes',pick:'yes',source:sourceName});
+    }
+  }
+  return rows;
+}
+function parseCSVLine(line){
+  let out=[],cur='',q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}
+    else if(c===','&&!q){out.push(cur);cur=''}
+    else cur+=c;
+  }
+  out.push(cur);return out;
+}
+function normalizeCSVDate(v){
+  const d=new Date(v);return isNaN(d)?String(v||'').trim():iso(d);
+}
+function normalizeCSVTime(v){
+  const m=String(v||'').match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if(!m)return '';
+  let h=+m[1],ap=(m[3]||'').toUpperCase();
+  if(ap==='PM'&&h<12)h+=12;if(ap==='AM'&&h===12)h=0;
+  return `${String(h).padStart(2,'0')}:${m[2]}`;
+}
+function parseCSV(text,sourceName='Calendar CSV'){
+  const lines=text.split(/\r?\n/).filter(Boolean);if(lines.length<2)return[];
+  const headers=parseCSVLine(lines[0]).map(x=>x.trim().toLowerCase());
+  const idx=(names)=>{for(const n of names){const i=headers.findIndex(h=>h===n||h.includes(n));if(i>=0)return i}return -1};
+  const di=idx(['start date','date']),si=idx(['start time']),ei=idx(['end time']),ti=idx(['subject','summary','title','event','activity']),li=idx(['location']);
+  return lines.slice(1).map(line=>{
+    const r=parseCSVLine(line),title=r[ti]||'Calendar event';
+    return {date:normalizeCSVDate(r[di]||''),start:normalizeCSVTime(r[si]||''),end:normalizeCSVTime(r[ei]||''),title,location:r[li]||'',child:guessChild(title,sourceName),drop:'yes',pick:'yes',source:sourceName};
+  }).filter(x=>x.date&&x.title);
+}
+async function inflateRaw(bytes){
+  if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot open ZIP files directly. Select the ICS files instead.');
+  const ds=new DecompressionStream('deflate-raw');
+  const stream=new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function extractZipICS(file){
+  const bytes=new Uint8Array(await file.arrayBuffer()),view=new DataView(bytes.buffer);
+  let eocd=-1;
+  for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){
+    if(view.getUint32(i,true)===0x06054b50){eocd=i;break}
+  }
+  if(eocd<0)throw new Error('ZIP directory not found.');
+  const count=view.getUint16(eocd+10,true),cdOffset=view.getUint32(eocd+16,true);
+  let pos=cdOffset,files=[];
+  for(let n=0;n<count;n++){
+    if(view.getUint32(pos,true)!==0x02014b50)break;
+    const method=view.getUint16(pos+10,true),compSize=view.getUint32(pos+20,true),nameLen=view.getUint16(pos+28,true),extraLen=view.getUint16(pos+30,true),commentLen=view.getUint16(pos+32,true),localOffset=view.getUint32(pos+42,true);
+    const name=new TextDecoder().decode(bytes.slice(pos+46,pos+46+nameLen));
+    if(name.toLowerCase().endsWith('.ics')){
+      const ln=view.getUint16(localOffset+26,true),le=view.getUint16(localOffset+28,true),dataStart=localOffset+30+ln+le;
+      let data=bytes.slice(dataStart,dataStart+compSize);
+      if(method===8)data=await inflateRaw(data);else if(method!==0)throw new Error('Unsupported ZIP compression method.');
+      files.push({name,text:new TextDecoder().decode(data)});
+    }
+    pos+=46+nameLen+extraLen+commentLen;
+  }
+  return files;
+}
+function inPlanningWindow(dateStr){
+  if(!dateStr||!$('startDate').value)return true;
+  const d=parseDate(dateStr),s=parseDate($('startDate').value),e=addDays(s,14);
+  return d>=s&&d<e;
+}
+
+const STORAGE_CAL_LINKS='familyOptimizerV21.calendarLinks';
+
+const STORAGE_CAL_PROXY='familyOptimizerCalendarProxyV27';
+
+function decodeBasicHtmlEntities(s=''){
+  const el=document.createElement('textarea');
+  el.innerHTML=String(s);
+  return el.value;
+}
+function extractCalendarUrl(raw=''){
+  let s=decodeBasicHtmlEntities(raw).replace(/[\u200B-\u200D\uFEFF]/g,' ').trim();
+  const match=s.match(/(?:webcals?|https?):\/\/[^\s<>"']+/i);
+  if(match)s=match[0];
+  s=s.trim().replace(/^[("'[\{]+/,'').replace(/[)\]}>,"';.!?]+$/,'');
+  s=s.replace(/\s+/g,'');
+  return s;
+}
+function normalizeCalendarUrl(raw){
+  let u=extractCalendarUrl(raw);
+  if(/^webcal:\/\//i.test(u))u='https://'+u.slice(9);
+  if(/^webcals:\/\//i.test(u))u='https://'+u.slice(10);
+  if(/^http:\/\//i.test(u))u='https://'+u.slice(7);
+  return u;
+}
+function isApplePublicCalendarUrl(raw){
+  const u=normalizeCalendarUrl(raw);
+  try{
+    const x=new URL(u);
+    return /(^|\.)icloud\.com$/i.test(x.hostname) &&
+      (/\/published\//i.test(x.pathname)||/\/ca\/subscribe\//i.test(x.pathname));
+  }catch{return false}
+}
+function appleDownloadUrl(raw){
+  const u=extractCalendarUrl(raw);
+  if(!u)return '';
+  if(/^webcals?:\/\//i.test(u))return 'http://'+u.replace(/^webcals?:\/\//i,'');
+  if(/^https?:\/\//i.test(u))return 'http://'+u.replace(/^https?:\/\//i,'');
+  return u;
+}
+function appleCalendarCandidates(raw){
+  const base=normalizeCalendarUrl(raw),out=[];
+  const add=u=>{if(u && !out.includes(u))out.push(u)};
+  add(base);
+  try{
+    const u=new URL(base),h=u.hostname;
+    if(/-calendars\.icloud\.com$/i.test(h)){
+      const v=new URL(u);v.hostname=h.replace(/-calendars\.icloud\.com$/i,'-caldav.icloud.com');add(v.href);
+    }
+    if(/-caldav\.icloud\.com$/i.test(h)){
+      const v=new URL(u);v.hostname=h.replace(/-caldav\.icloud\.com$/i,'-calendars.icloud.com');add(v.href);
+    }
+  }catch{}
+  return out;
+}
+function getCalendarProxyUrl(){
+  return (localStorage.getItem(STORAGE_CAL_PROXY)||'').trim().replace(/\/+$/,'');
+}
+function setCalendarProxyUrl(raw=''){
+  const val=extractCalendarUrl(raw)||String(raw||'').trim();
+  if(val && !/^https:\/\//i.test(val))throw new Error('Proxy URL must begin with https://');
+  localStorage.setItem(STORAGE_CAL_PROXY,val.replace(/\/+$/,''));
+  renderCalendarProxyStatus();
+}
+function renderCalendarProxyStatus(){
+  const input=document.getElementById('calendarProxyUrl'),status=document.getElementById('calendarProxyStatus');
+  if(!input||!status)return;
+  const v=getCalendarProxyUrl();input.value=v;
+  status.textContent=v?'Automatic fallback proxy configured.':'No proxy configured; Apple links still have the built-in download/import fallback.';
+}
+function proxiedCalendarUrl(target){
+  const p=getCalendarProxyUrl();
+  return p?`${p}?url=${encodeURIComponent(target)}`:'';
+}
+async function fetchCalendarText(url){
+  const res=await fetch(url,{cache:'no-store',redirect:'follow',headers:{'Accept':'text/calendar,text/plain;q=0.9,*/*;q=0.5'}});
+  if(!res.ok)throw new Error(`HTTP ${res.status}`);
+  const body=(await res.text()).replace(/^\uFEFF/,'');
+  if(!/BEGIN:VCALENDAR/i.test(body)&&!/BEGIN:VEVENT/i.test(body))throw new Error('Response was not an ICS calendar.');
+  return body;
+}
+async function fetchCalendarWithFallbacks(raw){
+  const candidates=isApplePublicCalendarUrl(raw)?appleCalendarCandidates(raw):[normalizeCalendarUrl(raw)];
+  const errors=[];
+  for(const u of candidates){
+    try{return {text:await fetchCalendarText(u),usedUrl:u,via:'direct'}}catch(e){errors.push(`${u}: ${e.message}`)}
+  }
+  if(getCalendarProxyUrl()){
+    for(const u of candidates){
+      try{return {text:await fetchCalendarText(proxiedCalendarUrl(u)),usedUrl:u,via:'proxy'}}catch(e){errors.push(`proxy ${u}: ${e.message}`)}
+    }
+  }
+  const err=new Error(errors[errors.length-1]||'Calendar could not be fetched.');
+  err.attempts=errors;
+  throw err;
+}
+function showAppleCalendarFallback(raw,label='Main iPhone'){
+  const box=document.getElementById('appleCalendarFallback'),msg=document.getElementById('appleFallbackMessage'),a=document.getElementById('appleDownloadIcsBtn');
+  if(!box||!a)return;
+  a.href=appleDownloadUrl(raw)||'#';
+  msg.textContent=`${label} is a valid Apple public-calendar link, but this browser did not allow the page to read Apple’s response directly. Use the two-step fallback below; your calendar link has been preserved.`;
+  box.style.display='';
+  window.__pendingAppleCalendar={raw,label};
+}
+function hideAppleCalendarFallback(){
+  const box=document.getElementById('appleCalendarFallback');if(box)box.style.display='none';
+  window.__pendingAppleCalendar=null;
+}
+
+
+const CAL_ROLE_PRIORITY={primaryFamily:100,team:70,school:60,reference:30};
+function normalizeCalendarRole(role,kind='team'){
+  if(role)return role;
+  return kind==='main'?'primaryFamily':'team';
+}
+function calendarRoleLabel(role){
+  return ({primaryFamily:'Primary Family',team:'Team Schedule',school:'School Calendar',reference:'Reference / Other'})[role]||'Team Schedule';
+}
+function calendarRoleClass(role){return ({primaryFamily:'primary-family',team:'team',school:'school',reference:'reference'})[role]||'team'}
+function roleForSourceName(source=''){
+  const links=getSavedCalendarLinks();
+  const found=links.find(l=>sourceLabelFor(l)===source || source.includes(l.label||'__none__'));
+  return found?normalizeCalendarRole(found.role,found.kind):'reference';
+}
+function sourcePriorityForEvent(e){
+  const explicit=e.calendarRole||roleForSourceName(e.source||'');
+  return CAL_ROLE_PRIORITY[explicit]||0;
+}
+
+function getSavedCalendarLinks(){
+  try{return (JSON.parse(localStorage.getItem(STORAGE_CAL_LINKS)||'[]')||[]).map((x,i)=>({...x,id:x.id||('cal-'+i+'-'+Math.random().toString(36).slice(2,7)),kind:x.kind||'team',role:normalizeCalendarRole(x.role,x.kind||'team')}))}catch{return[]}
+}
+function saveCalendarLinks(links){localStorage.setItem(STORAGE_CAL_LINKS,JSON.stringify(links));renderSavedCalendarLinks()}
+function sourceLabelFor(link){return `${link.source||'Calendar'}: ${link.label||'Shared calendar'}`}
+function renderSavedCalendarLinks(){
+  const links=getSavedCalendarLinks(),el=$('savedCalendarLinks');$('calendarSourceCount').textContent=`${links.length} saved`;
+  if(!links.length){el.innerHTML='<div class="small muted">No saved web calendar subscriptions yet. Uploads work immediately but browsers cannot reopen local files automatically on a future visit.</div>';return}
+  el.innerHTML=links.map((x,i)=>`<div class="calendar-source-item">
+    <div class="source-main">
+      <div class="source-name"><span class="calendar-status-dot ${x.lastStatus==='ok'?'ok':x.lastStatus==='bad'?'bad':'warn'}"></span>${esc(x.label||('Calendar '+(i+1)))}<span class="source-role-badge ${calendarRoleClass(x.role)}">${calendarRoleLabel(x.role)}</span></div>
+      <div class="source-meta">${esc(x.source||'ICS')} · ${x.lastRefresh?`refreshed ${formatStamp(x.lastRefresh)}`:'not refreshed yet'}${x.lastCount!=null?` · ${x.lastCount} events`:''}${x.lastMethod==='proxy'?' · proxy':''}</div>
+    </div>
+    <div class="calendar-actions" style="margin:0">
+      <select class="source-role-select" data-role-id="${esc(x.id)}">
+        <option value="primaryFamily"${x.role==='primaryFamily'?' selected':''}>Primary Family</option>
+        <option value="team"${x.role==='team'?' selected':''}>Team Schedule</option>
+        <option value="school"${x.role==='school'?' selected':''}>School Calendar</option>
+        <option value="reference"${x.role==='reference'?' selected':''}>Reference / Other</option>
+      </select>
+      <button data-refresh-id="${esc(x.id)}">Refresh</button><button data-remove-id="${esc(x.id)}">Remove</button>
+    </div>
+  </div>`).join('');
+  el.querySelectorAll('[data-role-id]').forEach(s=>s.onchange=()=>{
+    const a=getSavedCalendarLinks(),x=a.find(y=>y.id===s.dataset.roleId);if(x){x.role=s.value;saveCalendarLinks(a);scheduleAutosave()}
+  });
+  el.querySelectorAll('[data-refresh-id]').forEach(b=>b.onclick=()=>{const l=getSavedCalendarLinks().find(x=>x.id===b.dataset.refreshId);if(l)importSharedCalendarLink(l,false)});
+  el.querySelectorAll('[data-remove-id]').forEach(b=>b.onclick=()=>{const a=getSavedCalendarLinks();const x=a.find(y=>y.id===b.dataset.removeId);if(x&&confirm(`Remove ${x.label}? Imported rows already in this cycle will also be removed.`)){removeImportedRowsForSource(sourceLabelFor(x));saveCalendarLinks(a.filter(y=>y.id!==b.dataset.removeId));scheduleAutosave()}})
+}
+function removeImportedRowsForSource(sourceName){
+  [...$('activityBody').children].filter(r=>r.dataset.source===sourceName).forEach(r=>r.remove());
+  [...$('kiraBody').children].filter(r=>r.dataset.importedShiftSource===sourceName).forEach(r=>{r.querySelector('.k-shift').value='early-main';r.querySelector('.k-shift').onchange();delete r.dataset.importedShift;delete r.dataset.importedShiftSource});
+}
+function dedupeImportedRows(rows){const existing=new Set(getActivities().map(a=>[a.date,a.start,a.end,a.title,a.location].join('|').toLowerCase()));return rows.filter(x=>{const k=[x.date,x.start,x.end,x.title,x.location].join('|').toLowerCase();if(existing.has(k))return false;existing.add(k);return true})}
+function locationNeedsReview(location=''){const s=location.trim();if(!s)return true;return !(/\d/.test(s)||/,\s*[A-Z]{2}\b/.test(s))}
+function processImportedRows(imported,sourceDescription,opts={}){
+  const replaceSource=opts.replaceSource||'';if(replaceSource)removeImportedRowsForSource(replaceSource);
+  const within=imported.filter(x=>inPlanningWindow(x.date));
+  const cfg=loadCalendarHygiene();
+  const sensitive=within.filter(x=>isSensitiveCalendarEvent(x,cfg));
+  const privacyClean=within.filter(x=>!isSensitiveCalendarEvent(x,cfg));
+  const cleaned=dedupeCalendarEvents(privacyClean,cfg);
+  const dedupedCount=privacyClean.length-cleaned.length;
+  let shiftOverrides=0,activityCount=0;
+  for(const item of dedupeImportedRows(cleaned)){
+    const shift=detectKiraShift(item.title,item.source);
+    if(shift&&applyKiraShiftOverride(item.date,shift,item.source)){shiftOverrides++;continue}
+    activityRow(item);activityCount++;
+  }
+  const locationReview=cleaned.filter(x=>!detectKiraShift(x.title,x.source)&&locationNeedsReview(x.location)).length;
+  const hygiene=[];
+  if(sensitive.length)hygiene.push(`${sensitive.length} private event${sensitive.length===1?'':'s'} filtered`);
+  if(dedupedCount)hygiene.push(`${dedupedCount} duplicate${dedupedCount===1?'':'s'} collapsed`);
+  $('importStatus').textContent=`${sourceDescription}: ${activityCount} activities imported · ${shiftOverrides} Kira shift override${shiftOverrides===1?'':'s'}${hygiene.length?' · '+hygiene.join(' · '):''}${locationReview?` · ${locationReview} location${locationReview===1?' needs':'s need'} review`:''}.`;
+  scheduleAutosave();return{activityCount,shiftOverrides,total:cleaned.length,filtered:sensitive.length,deduped:dedupedCount};
+}
+async function importSharedCalendarLink(linkObj,saveIfNew=true){
+  const rawUrl=linkObj.url||'',url=normalizeCalendarUrl(rawUrl),label=(linkObj.label||'Shared calendar').trim(),source=linkObj.source||'ICS',kind=linkObj.kind||'team';
+  const apple=isApplePublicCalendarUrl(rawUrl);
+  if(!/^https?:\/\//i.test(url)){
+    $('importStatus').textContent='That text did not contain a calendar subscription URL.';
+    return false;
+  }
+  const sourceName=`${source}: ${label}`;
+  $('importStatus').textContent=`Connecting ${label}…`;
+  try{
+    const fetched=await fetchCalendarWithFallbacks(rawUrl);
+    const rows=parseICS(fetched.text,sourceName).map(r=>({...r,calendarRole:normalizeCalendarRole(linkObj.role,kind)})),stats=processImportedRows(rows,label,{replaceSource:sourceName});
+    let links=getSavedCalendarLinks(),idx=links.findIndex(x=>normalizeCalendarUrl(x.url)===url);
+    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:normalizeCalendarRole(linkObj.role,kind),lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via};
+    if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
+    saveCalendarLinks(links);
+    if(kind==='main')hideAppleCalendarFallback();
+    $('importStatus').textContent=`${label} connected · ${stats.total} planning-window events processed${fetched.via==='proxy'?' · automatic proxy used':''}.`;
+    return true;
+  }catch(err){
+    let links=getSavedCalendarLinks(),idx=links.findIndex(x=>normalizeCalendarUrl(x.url)===url);
+    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:normalizeCalendarRole(linkObj.role,kind),lastRefresh:new Date().toISOString(),lastStatus:apple?'needs-file':'bad',lastError:err.message};
+    if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
+    saveCalendarLinks(links);
+    if(apple){
+      showAppleCalendarFallback(rawUrl,label);
+      $('importStatus').textContent=`${label}: Apple link accepted. Browser access was blocked, so use the Apple download/import fallback below.`;
+      return false;
+    }
+    $('importStatus').textContent=`${label}: link saved, but this browser could not read it. Use .ics upload or configure the optional proxy.`;
+    return false;
+  }
+}
+async function refreshAllCalendars(){const links=getSavedCalendarLinks();if(!links.length){$('importStatus').textContent='No saved web calendars to refresh.';return}let ok=0;for(const l of links){if(await importSharedCalendarLink(l,false))ok++}$('importStatus').textContent=`Refresh complete: ${ok}/${links.length} web calendars updated.`}
+function calendarSourceFromFilename(name){const n=name.replace(/\.(ics|csv|zip)$/i,'').replace(/[_-]+/g,' ').trim();return n||'Uploaded calendar'}
+async function importCalendarFiles(files,kind='team'){
+  files=[...files];if(!files.length)return;let errors=[],total=0;
+  for(const f of files){
+    try{
+      const lower=f.name.toLowerCase(),label=kind==='main'?'Main iPhone':calendarSourceFromFilename(f.name),source=kind==='main'?'iPhone Calendar':'Uploaded ICS',sourceName=`${source}: ${label}`;let rows=[];
+      if(lower.endsWith('.zip')){const nested=await extractZipICS(f);for(const x of nested)rows.push(...parseICS(x.text,`Uploaded ICS: ${calendarSourceFromFilename(x.name)}`));processImportedRows(rows,f.name);total+=rows.length}
+      else{const text=await f.text();if(lower.endsWith('.ics'))rows=parseICS(text,sourceName);else if(lower.endsWith('.csv'))rows=parseCSV(text,sourceName);rows=rows.map(r=>({...r,calendarRole:kind==='main'?'primaryFamily':'team'}));const stats=processImportedRows(rows,label,{replaceSource:sourceName});total+=stats.total}
+    }catch(err){errors.push(`${f.name}: ${err.message}`)}
+  }
+  if(errors.length)alert('Some calendar files could not be imported:\n'+errors.join('\n'));$('importStatus').textContent=`Calendar upload complete · ${total} planning-window event${total===1?'':'s'} processed.`;
+}
+$('connectMainCalendarBtn').onclick=async()=>{const url=$('mainCalendarUrl').value.trim();if(!url){$('importStatus').textContent='Paste the Apple Public Calendar Share Link first.';return}const ok=await importSharedCalendarLink({url,label:'Kira iOS Family Calendar',source:'iPhone Calendar',kind:'main',role:'primaryFamily'},true);if(ok)$('mainCalendarUrl').value=''};
+$('uploadMainCalendarBtn').onclick=()=>$('mainCalendarFile').click();$('mainCalendarFile').onchange=async e=>{await importCalendarFiles(e.target.files,'main');e.target.value=''};
+$('chooseCalendarFilesBtn').onclick=()=>$('activityFile').click();$('activityFile').onchange=async e=>{await importCalendarFiles(e.target.files,'team');e.target.value=''};
+$('refreshAllCalendarsBtn').onclick=refreshAllCalendars;
+$('addBulkCalendarLinksBtn').onclick=async()=>{const lines=$('bulkCalendarLinks').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return;let added=0;for(const line of lines){let label='Team calendar',url=line;if(line.includes('|')){const parts=line.split('|');label=parts.shift().trim()||label;url=parts.join('|').trim()}else{try{const u=new URL(normalizeCalendarUrl(url));label=u.hostname.replace(/^www\./,'')}catch{}}if(await importSharedCalendarLink({url,label,source:'Team Calendar',kind:'team',role:'team'},true))added++}$('bulkCalendarLinks').value='';$('importStatus').textContent=`Added/refreshed ${added}/${lines.length} calendar subscriptions.`};
+const drop=$('calendarDropZone');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover')}));drop.addEventListener('drop',e=>importCalendarFiles(e.dataTransfer.files,'team'));
+
+const proxySaveBtn=document.getElementById('saveCalendarProxyBtn');
+if(proxySaveBtn)proxySaveBtn.onclick=()=>{
+  try{
+    setCalendarProxyUrl(document.getElementById('calendarProxyUrl').value);
+    $('importStatus').textContent=getCalendarProxyUrl()?'Calendar proxy saved.':'Calendar proxy cleared.';
+  }catch(e){$('importStatus').textContent=e.message}
+};
+renderCalendarProxyStatus();
+const appleChoose=document.getElementById('appleChooseDownloadedBtn');
+if(appleChoose)appleChoose.onclick=()=>document.getElementById('mainCalendarFile').click();
+const appleRetry=document.getElementById('appleRetryBtn');
+if(appleRetry)appleRetry.onclick=async()=>{
+  const p=window.__pendingAppleCalendar;
+  if(p)await importSharedCalendarLink({url:p.raw,label:p.label||'Main iPhone',source:'iPhone Calendar',kind:'main'},true);
+};
+
+renderSavedCalendarLinks();
+
+
+const DAYS=[
+  {v:1,l:'Mon'},{v:2,l:'Tue'},{v:3,l:'Wed'},{v:4,l:'Thu'},{v:5,l:'Fri'},{v:6,l:'Sat'},{v:0,l:'Sun'}
+];
+function practiceRow(d={}){
+  const tr=document.createElement('tr');
+  const selected=new Set((d.days||[]).map(Number));
+  tr.innerHTML=`<td><select class="p-child">${childOptions(d.child||'Middle')}</select></td>
+  <td><input class="p-title" value="${esc(d.title||'Practice')}" placeholder="Soccer practice"></td>
+  <td><div style="display:flex;gap:3px;flex-wrap:wrap">${DAYS.map(x=>`<label style="font-size:10px;font-weight:600;display:flex;align-items:center;gap:2px"><input class="p-day" type="checkbox" value="${x.v}" ${selected.has(x.v)?'checked':''} style="width:auto;margin:0">${x.l}</label>`).join('')}</div></td>
+  <td><input class="p-start" type="time" value="${d.start||'18:00'}"></td>
+  <td><input class="p-end" type="time" value="${d.end||'19:30'}"></td>
+  <td><input class="p-location" value="${esc(d.location||'')}" placeholder="Full address preferred"></td>
+  <td><input class="p-drive" type="number" min="0" value="${d.homeDrive??20}" style="width:70px"></td>
+  <td><input class="p-from" type="date" value="${d.from||''}"></td>
+  <td><input class="p-through" type="date" value="${d.through||''}"></td>
+  <td><select class="p-drop"><option value="yes">Yes</option><option value="no">No</option></select></td>
+  <td><select class="p-pick"><option value="yes">Yes</option><option value="no">No</option></select></td>
+  <td><button class="remove">Remove</button></td>`;
+  tr.querySelector('.p-child').value=d.child||'Middle';
+  tr.querySelector('.p-drop').value=d.drop||'yes';
+  tr.querySelector('.p-pick').value=d.pick||'yes';
+  tr.querySelector('.remove').onclick=()=>{tr.remove();scheduleAutosave()};
+  $('practiceBody').appendChild(tr);
+}
+function getPractices(){
+  return [...$('practiceBody').children].map(r=>({
+    child:r.querySelector('.p-child').value,
+    title:r.querySelector('.p-title').value.trim()||'Practice',
+    days:[...r.querySelectorAll('.p-day:checked')].map(x=>+x.value),
+    start:r.querySelector('.p-start').value,
+    end:r.querySelector('.p-end').value,
+    location:r.querySelector('.p-location').value.trim(),
+    homeDrive:+r.querySelector('.p-drive').value||20,
+    from:r.querySelector('.p-from').value,
+    through:r.querySelector('.p-through').value,
+    drop:r.querySelector('.p-drop').value,
+    pick:r.querySelector('.p-pick').value
+  })).filter(x=>x.days.length&&x.start);
+}
+function recurringActivitiesForWindow(){
+  if(!$('startDate').value)return[];
+  const start=parseDate($('startDate').value),end=addDays(start,14),rows=[];
+  for(const p of getPractices()){
+    const from=p.from?parseDate(p.from):null,through=p.through?parseDate(p.through):null;
+    for(let d=new Date(start);d<end;d=addDays(d,1)){
+      if(!p.days.includes(d.getDay()))continue;
+      if(from&&d<from)continue;
+      if(through&&d>through)continue;
+      rows.push({
+        date:iso(d),child:p.child,title:p.title,start:p.start,end:p.end,
+        location:p.location,homeDrive:p.homeDrive,drop:p.drop,pick:p.pick,
+        source:'Recurring practice'
+      });
+    }
+  }
+  return rows;
+}
+$('addPracticeBtn').onclick=()=>{practiceRow();scheduleAutosave()};
+
+function adhocRow(d={}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input class="h-date" type="date" value="${d.date||''}"></td>
+  <td><select class="h-who"><option>Chris</option><option>Kira</option><option>Oldest</option><option>Middle</option><option>Youngest</option><option>Family</option></select></td>
+  <td><select class="h-type"><option>Dinner/social</option><option>Appointment</option><option>Work event</option><option>School</option><option>Practice</option><option>Game</option><option>Transport</option><option>Other</option></select></td>
+  <td><input class="h-start" type="time" value="${d.start||''}"></td><td><input class="h-end" type="time" value="${d.end||''}"></td>
+  <td><input class="h-location" value="${esc(d.location||'')}" placeholder="Full address preferred"></td>
+  <td><input class="h-drive" type="number" min="0" value="${d.homeDrive??20}" style="width:80px"></td>
+  <td><select class="h-impact"><option value="reference">Reference only</option><option value="chrisUnavailable">Chris unavailable</option><option value="kiraUnavailable">Kira unavailable</option><option value="preferRemote">Makes remote preferable</option><option value="holiday">Holiday / Chris no work</option><option value="mustOnsite">Requires Chris onsite</option><option value="kidsBus">Kids handle bus</option><option value="kiraBus">Kira handles bus</option><option value="chrisBus">Chris waits for bus</option></select></td>
+  <td><button class="remove">Remove</button></td>`;
+  if(d.who)tr.querySelector('.h-who').value=d.who;if(d.type)tr.querySelector('.h-type').value=d.type;if(d.impact)tr.querySelector('.h-impact').value=d.impact;if(d.location)tr.querySelector('.h-location').value=d.location;if(d.homeDrive!=null)tr.querySelector('.h-drive').value=d.homeDrive;
+  tr.querySelector('.remove').onclick=()=>tr.remove();$('adhocBody').appendChild(tr);
+}
+$('addAdhocBtn').onclick=()=>adhocRow();
+
+function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
+function getActivities(){
+  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual'})).filter(x=>x.date&&x.title);
+  const recurring=recurringActivitiesForWindow();
+  const keys=new Set(explicit.map(a=>[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase()));
+  for(const a of recurring){
+    const k=[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase();
+    if(!keys.has(k)){explicit.push(a);keys.add(k)}
+  }
+  return explicit;
+}
+function getAdhoc(){return [...$('adhocBody').children].map(r=>({date:r.querySelector('.h-date').value,who:r.querySelector('.h-who').value,type:r.querySelector('.h-type').value,start:r.querySelector('.h-start').value,end:r.querySelector('.h-end').value,location:r.querySelector('.h-location').value.trim(),homeDrive:+r.querySelector('.h-drive').value||20,impact:r.querySelector('.h-impact').value})).filter(x=>x.date)}
+
+function personUnavailable(day,person,time){
+  if(person==='Chris' && day.chrisUnavailable)return true;
+  if(person==='Kira' && day.kiraUnavailable)return true;
+  if(person==='Kira' && !day.kiraOff && day.kiraStart!=null && day.kiraEnd!=null && time>=day.kiraStart && time<day.kiraEnd)return true;
+  return false;
+}
+function canChrisDo(day,time){
+  if(day.chrisUnavailable)return false;
+  if(!day.onsite)return true;
+  if(day.leaveWork==null)return false;
+  return day.leaveWork <= time-(+$('transportBuffer').value||20);
+}
+function canKiraDo(day,time){
+  if(day.kiraUnavailable)return false;
+  if(day.kiraOff)return true;
+  return day.kiraPickupAvailable!=null && time>=day.kiraPickupAvailable;
+}
+function chooseDriver(day,time,child){
+  const opts=[];
+  if(canKiraDo(day,time))opts.push({n:'Kira',s:day.kiraOff?6:5});
+  if(canChrisDo(day,time))opts.push({n:'Chris',s:day.onsite?4:6});
+  if($('oldestCanDrive').value==='yes' && child!=='Oldest')opts.push({n:childLabel('Oldest'),s:3});
+  opts.push({n:'Backup',s:1});
+  opts.sort((a,b)=>b.s-a.s);
+  return {primary:opts[0].n,secondary:opts[1]?.n||'Backup'};
+}
+
+async function kiraCanCoverLeg(day,leg){
+  if(day.kiraUnavailable)return false;
+  if(day.kiraOff)return true;
+
+  // Kira's normal family-transport path is:
+  // work -> home -> activity.
+  // She is not considered available merely when she reaches home.
+  const shiftEnd=day.kiraEnd;
+  if(shiftEnd==null)return false;
+
+  const commuteHome=+$('kiraCommute').value||30;
+  const homeArrival=shiftEnd+commuteHome;
+  const homeToActivity=await homeToActivityMinutes(leg.activity);
+  const buffer=+$('transportBuffer').value||20;
+
+  // For drop-off: she must arrive at the activity by the start time.
+  // For pickup: she must arrive by the pickup/end time.
+  const latestLeaveHome=leg.time-buffer-homeToActivity;
+  return homeArrival<=latestLeaveHome;
+}
+
+async function assignTransport(day){
+  const legs=[];
+  for(const a of day.activities){
+    if(a.drop==='yes' && a.start)legs.push({activity:a,kind:'Drop',time:toMin(a.start)});
+    if(a.pick==='yes' && a.end)legs.push({activity:a,kind:'Pickup',time:toMin(a.end)});
+  }
+  legs.sort((a,b)=>a.time-b.time);
+  const assignments=[];
+  const site=day.onsite?getSites().find(s=>s.name===day.site):null;
+
+  for(const leg of legs){
+    const opts=[];
+
+    if(await kiraCanCoverLeg(day,leg))opts.push({n:'Kira',s:6});
+
+    let chrisCan=false;
+    if(!day.chrisUnavailable){
+      if(!day.onsite) chrisCan=true;
+      else if(site){
+        const travel=await workToActivityMinutes(site,leg.activity);
+        const requiredLeave=leg.time-(+$('transportBuffer').value||20)-travel;
+        chrisCan=day.leaveWork!=null && day.leaveWork<=requiredLeave;
+      }
+    }
+    if(chrisCan)opts.push({n:'Chris',s:5});
+
+    if($('oldestCanDrive').value==='yes' && leg.activity.child!=='Oldest'){
+      opts.push({n:childLabel('Oldest'),s:4});
+    }
+
+    opts.push({n:'Backup',s:1});
+    opts.sort((a,b)=>b.s-a.s);
+    assignments.push({...leg,primary:opts[0].n,secondary:opts[1]?.n||'Backup'});
+  }
+
+  // Split overlapping transport legs when one person cannot realistically do both.
+  const threshold=20;
+  for(let i=0;i<assignments.length;i++){
+    for(let j=i+1;j<assignments.length;j++){
+      const a=assignments[i],b=assignments[j];
+      if(Math.abs(a.time-b.time)<=threshold && a.activity.child!==b.activity.child && a.primary===b.primary){
+        const candidates=[b.secondary,'Backup'].filter(Boolean);
+        const alt=candidates.find(x=>x!==a.primary);
+        b.primary=alt||'Backup';
+        b.secondary=b.primary==='Backup'?'—':'Backup';
+      }
+    }
+  }
+  return assignments;
+}
+
+const routeCache=new Map();
+async function geocodeAddress(address){
+  if(!address)return null;
+  const key='geo|'+address.toLowerCase();
+  if(routeCache.has(key))return routeCache.get(key);
+  try{
+    const url='https://photon.komoot.io/api/?limit=1&q='+encodeURIComponent(address);
+    const res=await fetch(url); if(!res.ok)throw new Error('geocode');
+    const data=await res.json(),f=data.features?.[0];
+    const value=f?{lon:f.geometry.coordinates[0],lat:f.geometry.coordinates[1]}:null;
+    routeCache.set(key,value);return value;
+  }catch{return null}
+}
+async function routeMinutes(fromAddress,toAddress,fallback){
+  if($('liveRouting').value!=='yes'||!fromAddress||!toAddress)return fallback;
+  const key='route|'+fromAddress.toLowerCase()+'|'+toAddress.toLowerCase();
+  if(routeCache.has(key))return routeCache.get(key);
+  try{
+    const [a,b]=await Promise.all([geocodeAddress(fromAddress),geocodeAddress(toAddress)]);
+    if(!a||!b)return fallback;
+    const url=`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`;
+    const res=await fetch(url); if(!res.ok)throw new Error('route');
+    const data=await res.json(),mins=data.routes?.[0]?.duration/60;
+    const value=mins?Math.ceil(mins):fallback;
+    routeCache.set(key,value);return value;
+  }catch{return fallback}
+}
+async function workToActivityMinutes(site,activity){
+  const fallback=Math.max(10,site.commute+(activity.homeDrive||20)-10);
+  return routeMinutes(site.address,activity.location,fallback);
+}
+async function homeToActivityMinutes(activity){
+  return routeMinutes($('homeAddress').value.trim(),activity.location,activity.homeDrive||20);
+}
+function scoreDay(day){
+  if(day.weekend||day.holiday)return -999;
+  let s=0;if(day.kiraOff)s+=7;
+  const evening=day.activities.filter(a=>(a.start&&toMin(a.start)>=15*60)||(a.end&&toMin(a.end)>=15*60));
+  s-=evening.length*1.5;
+  if(day.preferRemote)s-=8;if(day.mustOnsite)s+=100;if(day.busPlan!=='chris')s+=2;
+  return s;
+}
+async function evaluateSite(day,site){
+  if(site.role==='disabled')return {site,departHome:null,arrive:null,leave:null,usable:-9999,ok:false,score:-999999};
+  const bus=toMin($('busTime').value)||470, cushion=+$('cushionMinutes').value||30;
+  let departHome;
+  if(day.opportunity)departHome=bus+cushion+5;
+  else if(day.busPlan==='chris')departHome=bus+5;
+  else departHome=Math.max(6*60,toMin(site.pref)-site.commute);
+  let arrive=departHome+site.commute;
+  let leave=toMin(site.leave);
+  const eveningLegs=[];
+  for(const a of day.activities){
+    if(a.drop==='yes'&&a.start)eveningLegs.push({time:toMin(a.start),activity:a});
+    if(a.pick==='yes'&&a.end)eveningLegs.push({time:toMin(a.end),activity:a});
+  }
+  for(const leg of eveningLegs){
+    // Kira must have time for work -> home -> activity, not just work -> home.
+    // If she cannot cover the leg, Chris is treated as the preferred parent driver.
+    if(!(await kiraCanCoverLeg({...day,onsite:false},leg))){
+      const travel=await workToActivityMinutes(site,leg.activity);
+      const requiredLeave=leg.time-(+$('transportBuffer').value||20)-travel;
+      leave=Math.min(leave,requiredLeave);
+    }
+  }
+  const usable=leave-arrive;
+  const ok=usable>=site.hours*60;
+  const roleWeight={primary:5000,secondary:2500,limited:500,disabled:-100000}[site.role]||0;
+  const freqWeight={normal:500,occasional:-250,rare:-1000}[site.frequency]||0;
+  const feasibleWeight=ok?10000:-6000;
+  const usefulness=Math.max(-1000,usable);
+  const softPenalty=Math.abs(arrive-toMin(site.pref))*0.02;
+  return {site,departHome,arrive,leave,usable,ok,score:feasibleWeight+roleWeight+freqWeight+usefulness-softPenalty};
+}
+
+function adhocActivitiesForDay(day){
+  return day.adhoc
+    .filter(a=>['Practice','Game'].includes(a.type) && a.start)
+    .map(a=>{
+      let child='Middle';
+      if(a.who===childLabel('Oldest') || a.who==='Oldest')child='Oldest';
+      else if(a.who===childLabel('Youngest') || a.who==='Youngest')child='Youngest';
+      else if(a.who===childLabel('Middle') || a.who==='Middle')child='Middle';
+      return {
+        date:day.dateStr,
+        child,
+        title:a.type,
+        start:a.start,
+        end:a.end,
+        location:a.location||'',
+        homeDrive:a.homeDrive||20,
+        drop:'yes',
+        pick:a.end?'yes':'no',
+        source:'Ad-hoc '+a.type
+      };
+    });
+}
+
+
+let __calendarRefreshInProgress=false;
+async function refreshReachableCalendarsBeforeGenerate(){
+  const links=getSavedCalendarLinks();
+  if(!links.length)return {ok:0,total:0};
+  if(__calendarRefreshInProgress)return {ok:0,total:links.length};
+  __calendarRefreshInProgress=true;
+  let ok=0;
+  $('importStatus').textContent=`Refreshing ${links.length} connected calendar${links.length===1?'':'s'} before planning…`;
+  try{
+    for(const l of links){
+      try{if(await importSharedCalendarLink(l,false))ok++}catch{}
+    }
+    return {ok,total:links.length};
+  }finally{__calendarRefreshInProgress=false}
+}
+async function generate(){
+  const links=getSavedCalendarLinks();
+  if(links.length){
+    const refreshed=await refreshReachableCalendarsBeforeGenerate();
+    if(refreshed.ok<refreshed.total){
+      $('importStatus').textContent=`Planning with ${refreshed.ok}/${refreshed.total} feeds freshly refreshed; saved events remain available for feeds the browser could not reach.`;
+    }
+  }
+  await generateCore();
+}
+
+async function generateCore(){
+  const start=parseDate($('startDate').value), kira=getKira(), acts=getActivities(), adh=getAdhoc(), target=+$('onsiteTarget').value||3;
+  let base=Array.from({length:14},(_,i)=>{
+    const date=addDays(start,i), ds=iso(date), weekend=[0,6].includes(date.getDay()), k=kira.find(x=>x.date===ds)||{shift:'off',start:'',end:''};
+    let d={date,dateStr:ds,weekend,kiraOff:k.shift==='off',kiraLocation:k.location||kiraShiftInfo(k.shift).location,kiraStart:toMin(k.start),kiraEnd:toMin(k.end),kiraPickupAvailable:k.pickupAvailable??(k.shift==='off'?0:(toMin(k.end)+(+$('kiraCommute').value||30))),activities:acts.filter(a=>a.date===ds),adhoc:adh.filter(a=>a.date===ds),busPlan:$('defaultBus').value,preferRemote:false,mustOnsite:false,holiday:false,chrisUnavailable:false,kiraUnavailable:false,opportunity:false};
+    d.adhoc.forEach(a=>{if(a.impact==='preferRemote')d.preferRemote=true;if(a.impact==='holiday')d.holiday=true;if(a.impact==='mustOnsite')d.mustOnsite=true;if(a.impact==='chrisUnavailable')d.chrisUnavailable=true;if(a.impact==='kiraUnavailable')d.kiraUnavailable=true;if(a.impact==='kidsBus')d.busPlan='kids';if(a.impact==='kiraBus')d.busPlan='kira';if(a.impact==='chrisBus')d.busPlan='chris'});
+    d.activities=[...d.activities,...adhocActivitiesForDay(d)];
+    return d;
+  });
+  const rem=Math.max(0,+$('cushionTarget').value-(+$('cushionUsed').value||0));
+  base.filter(d=>!d.weekend&&d.kiraOff).sort((a,b)=>a.activities.length-b.activities.length).slice(0,Math.min(rem,2)).forEach(d=>d.opportunity=true);
+  const onsiteSet=new Set();
+  [base.slice(0,7),base.slice(7,14)].forEach(week=>{
+    const work=week.filter(d=>!d.weekend).sort((a,b)=>scoreDay(b)-scoreDay(a));
+    work.filter(d=>d.mustOnsite).forEach(d=>onsiteSet.add(d.dateStr));
+    for(const d of work){if(week.filter(x=>onsiteSet.has(x.dateStr)).length>=target)break;if(!d.preferRemote)onsiteSet.add(d.dateStr)}
+  });
+  plans=[];
+  for(const d of base){
+    if(d.weekend){plans.push({...d,onsite:false,site:'',status:'remote',assignments:[]});continue;}
+    let onsite=onsiteSet.has(d.dateStr);
+    if(d.holiday)onsite=false;
+    if(d.preferRemote&&$('remoteAllowed').value==='yes'&&!d.mustOnsite)onsite=false;
+    let site='',departHome=null,arrive=null,leaveWork=null,status='remote';
+    if(onsite){
+      const evals=(await Promise.all(getSites().map(s=>evaluateSite(d,s)))).sort((a,b)=>b.score-a.score);
+      const best=evals[0];site=best.site.name;departHome=best.departHome;arrive=best.arrive;leaveWork=best.leave;status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';
+    }
+    const p={...d,onsite,site,departHome,arrive,leaveWork,status};
+    p.assignments=await assignTransport(p);
+    plans.push(p);
+  }
+  if(window.__savedWorkOverrides?.length){
+    const saved=[...window.__savedWorkOverrides];
+    window.__savedWorkOverrides=[];
+    for(const o of saved){
+      const idx=plans.findIndex(p=>p.dateStr===o.date);
+      if(idx>=0)await recalcDayForOverride(idx,o.value);
+    }
+  }
+  render();
+}
+
+async function recalcDayForOverride(index,newValue){
+  const p=plans[index];
+  if(!p || p.weekend)return;
+
+  if(newValue==='__REMOTE__'){
+    p.onsite=false;
+    p.holiday=false;
+    p.site='';
+    p.departHome=null;
+    p.arrive=null;
+    p.leaveWork=null;
+    p.status='remote';
+  }else if(newValue==='__HOLIDAY__'){
+    p.onsite=false;
+    p.holiday=true;
+    p.site='';
+    p.departHome=null;
+    p.arrive=null;
+    p.leaveWork=null;
+    p.status='remote';
+  }else{
+    const site=getSites().find(s=>s.name===newValue);
+    if(!site)return;
+    p.holiday=false;
+    p.onsite=true;
+    const best=await evaluateSite(p,site);
+    p.site=site.name;
+    p.departHome=best.departHome;
+    p.arrive=best.arrive;
+    p.leaveWork=best.leave;
+    p.status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';
+  }
+
+  p.assignments=await assignTransport(p);
+  p.manualOverride=true;
+  render();
+  saveAllNow();
+}
+function workLocationOptions(p){
+  const values=[
+    {v:'__REMOTE__',l:'Remote'},
+    {v:'__HOLIDAY__',l:'Holiday / no work'},
+    ...getSites().filter(s=>s.role!=='disabled').map(s=>({v:s.name,l:s.name}))
+  ];
+  const current=p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__';
+  return values.map(x=>`<option value="${esc(x.v)}"${x.v===current?' selected':''}>${esc(x.l)}</option>`).join('');
+}
+
+
+function dayChallengeLevel(p){
+  const backupNeeded=(p.assignments||[]).some(a=>a.primary==='Backup');
+  const manyLegs=(p.assignments||[]).length>=4;
+  if(backupNeeded || p.status==='bad')return 'challenge-high';
+  if(p.status==='warn' || manyLegs)return 'challenge-med';
+  return '';
+}
+function dayChallengeLabel(p){
+  const level=dayChallengeLevel(p);
+  if(level==='challenge-high')return 'Challenging';
+  if(level==='challenge-med')return 'Busy Day';
+  return 'On Track';
+}
+
+
+let mobilePlanView='day';
+let mobilePlanDate=null;
+
+function planDateOnly(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function mobileEnsureDate(){
+  if(!plans.length)return;
+  if(!mobilePlanDate){
+    const today=planDateOnly(new Date());
+    const first=planDateOnly(plans[0].date),last=planDateOnly(plans[plans.length-1].date);
+    mobilePlanDate=(today>=first&&today<=last)?today:first;
+  }
+}
+function planForMobileDate(d){
+  const ds=iso(d);return plans.find(p=>p.dateStr===ds);
+}
+function groupedAssignments(p){
+  const grouped={};
+  for(const a of (p?.assignments||[])){
+    const k=[a.activity.child,a.activity.title,a.activity.start,a.activity.end].join('|');
+    if(!grouped[k])grouped[k]={activity:a.activity,legs:[]};
+    grouped[k].legs.push(a);
+  }
+  return Object.values(grouped);
+}
+function mobileEventRowsForPlan(p){
+  if(!p)return [];
+  const rows=[];
+  if(!p.weekend){
+    rows.push({time:p.holiday?'All day':p.onsite?(p.departHome!=null?fmt(p.departHome):'Work'):'All day',kind:'work',title:p.holiday?'Holiday / no work':p.onsite?`Chris · ${p.site}`:'Chris · Remote',meta:p.onsite?`Arrive ${fmt(p.arrive)} · Leave work ${fmt(p.leaveWork)}`:'',driver:''});
+    rows.push({time:p.kiraOff?'All day':(p.kiraStart!=null?fmt(p.kiraStart):''),kind:'kira',title:p.kiraOff?'Kira · Off':`Kira · ${p.kiraLocation||'Work'}`,meta:p.kiraOff?'Available locally':`Home availability approx. ${p.kiraPickupAvailable!=null?fmt(p.kiraPickupAvailable):'—'}`,driver:''});
+  }
+  groupedAssignments(p).forEach(x=>{
+    const a=x.activity;
+    const backup=x.legs.some(l=>l.primary==='Backup');
+    const role=a.calendarRole||roleForSourceName(a.source||'');
+    const kind=backup?'alert':role==='team'?'team':'family';
+    rows.push({
+      time:a.start?fmt(toMin(a.start)):'All day',
+      kind,
+      title:`${childLabel(a.child)} · ${a.title}`,
+      meta:[a.end?`Until ${fmt(toMin(a.end))}`:'',a.location||''].filter(Boolean).join(' · '),
+      driver:x.legs.map(l=>`${l.kind}: ${l.primary}${l.secondary&&l.secondary!=='—'?` / ${l.secondary}`:''}`).join(' · ')
+    });
+  });
+  return rows;
+}
+function renderMobileDay(){
+  mobileEnsureDate();const p=planForMobileDate(mobilePlanDate),d=mobilePlanDate;
+  const rows=mobileEventRowsForPlan(p);
+  return `<div class="ios-day-header"><div class="ios-date-number">${d.getDate()}</div><div class="ios-date-words"><div class="ios-weekday">${d.toLocaleDateString(undefined,{weekday:'long'})}</div><div class="ios-monthyear">${d.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</div></div></div>
+    ${rows.length?rows.map(r=>`<div class="ios-agenda-row"><div class="ios-agenda-time">${r.time}</div><div class="ios-event-bar ${r.kind}"></div><div><div class="ios-event-title">${esc(r.title)}</div>${r.meta?`<div class="ios-event-meta">${esc(r.meta)}</div>`:''}${r.driver?`<div class="ios-driver">${esc(r.driver)}</div>`:''}</div></div>`).join(''):'<div class="ios-empty">No logistics scheduled for this day.</div>'}`;
+}
+function startOfWeekMonday(d){const x=planDateOnly(d),day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return x}
+function renderMobileWeek(){
+  mobileEnsureDate();const start=startOfWeekMonday(mobilePlanDate);
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=addDays(start,i),p=planForMobileDate(d),rows=mobileEventRowsForPlan(p);
+    const summaries=rows.slice(0,5).map(r=>`<div><strong>${esc(r.time)}</strong> ${esc(r.title)}</div>`).join('');
+    html+=`<div class="ios-week-day"><div class="ios-week-summary"><div class="ios-week-date"><div class="ios-week-dow">${d.toLocaleDateString(undefined,{weekday:'short'})}</div><div class="ios-week-num">${d.getDate()}</div></div><div class="ios-week-items">${summaries||'<span style="color:#8e8e93">No scheduled logistics</span>'}${rows.length>5?`<div>+${rows.length-5} more</div>`:''}</div></div></div>`;
+  }
+  return html;
+}
+function renderMobileMonth(){
+  mobileEnsureDate();const focus=new Date(mobilePlanDate.getFullYear(),mobilePlanDate.getMonth(),1);
+  const gridStart=startOfWeekMonday(focus);let html=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div class="ios-month-label">${x}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const d=addDays(gridStart,i),p=planForMobileDate(d),rows=mobileEventRowsForPlan(p);
+    const selected=iso(d)===iso(mobilePlanDate),out=d.getMonth()!==focus.getMonth();
+    const dots=rows.slice(0,4).map(r=>`<span class="ios-dot ${r.kind}"></span>`).join('');
+    html+=`<div class="ios-month-cell${out?' out':''}${selected?' selected':''}" data-mobile-month-date="${iso(d)}"><div class="ios-month-num">${d.getDate()}</div><div class="ios-dots">${dots}</div></div>`;
+  }
+  return `<div class="ios-month-grid">${html}</div>`;
+}
+function renderMobilePlan(){
+  if(!plans.length)return;
+  mobileEnsureDate();
+  document.querySelectorAll('[data-mobile-view]').forEach(b=>b.classList.toggle('active',b.dataset.mobileView===mobilePlanView));
+  const title=$('mobilePlanTitle'),sub=$('mobilePlanSub');
+  if(mobilePlanView==='day'){title.textContent=mobilePlanDate.toLocaleDateString(undefined,{month:'long',day:'numeric'});sub.textContent='Daily family agenda';$('mobilePlanBody').innerHTML=renderMobileDay()}
+  else if(mobilePlanView==='week'){const s=startOfWeekMonday(mobilePlanDate),e=addDays(s,6);title.textContent=`${s.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${e.toLocaleDateString(undefined,{month:'short',day:'numeric'})}`;sub.textContent='Weekly family agenda';$('mobilePlanBody').innerHTML=renderMobileWeek()}
+  else{title.textContent=mobilePlanDate.toLocaleDateString(undefined,{month:'long',year:'numeric'});sub.textContent='Month overview';$('mobilePlanBody').innerHTML=renderMobileMonth();document.querySelectorAll('[data-mobile-month-date]').forEach(c=>c.onclick=()=>{mobilePlanDate=parseDate(c.dataset.mobileMonthDate);mobilePlanView='day';renderMobilePlan()})}
+}
+function moveMobilePlan(delta){
+  mobileEnsureDate();
+  if(mobilePlanView==='day')mobilePlanDate=addDays(mobilePlanDate,delta);
+  else if(mobilePlanView==='week')mobilePlanDate=addDays(mobilePlanDate,delta*7);
+  else mobilePlanDate=new Date(mobilePlanDate.getFullYear(),mobilePlanDate.getMonth()+delta,1);
+  renderMobilePlan();
+}
+
+function render(){
+  const work=plans.filter(p=>!p.weekend), onsite=work.filter(p=>p.onsite), remote=work.filter(p=>!p.onsite);
+  $('summary').textContent=`Recommended: ${onsite.length} onsite days and ${remote.length} remote days. Arrival time is determined by morning logistics first; site arrival preference is used only as a minor tie-breaker when multiple options are otherwise similarly workable.`;
+  $('commutePlan').innerHTML=work.map(p=>{
+    const idx=plans.indexOf(p);
+    const state=p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__';
+    return `<div class="dayrec">
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <strong>${dayName(p.date)} ${shortDate(p.date)}</strong>
+        <span class="badge ${p.status}">${p.holiday?'HOLIDAY':p.onsite?esc(p.site):'REMOTE'}${p.manualOverride?' · OVERRIDE':''}</span>
+      </div>
+      <div class="small" style="margin-top:6px">${p.holiday?'Holiday / no work':p.onsite?`Leave home ${fmt(p.departHome)} · Arrive ${fmt(p.arrive)} · Leave work ${fmt(p.leaveWork)}`:'Recommended remote day'}</div>
+      <div class="kira-line">Kira: ${esc(p.kiraLocation||'—')} · transport feasibility includes work → home → activity travel</div>
+      <div class="override-row" style="margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)">
+        <label><strong>Final Work Plan</strong>
+          <select class="work-override-select" data-plan-index="${idx}">
+            ${workLocationOptions(p)}
+          </select>
+        </label>
+        <div>
+          <button class="apply-override" data-plan-index="${idx}" style="margin-top:18px">Apply & Recalculate</button>
+          <div class="override-note">${p.manualOverride?'Manual override is active for this day.':'Optimizer recommendation shown above. Use this only when business needs require a different site or remote day.'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  $('commutePlan').querySelectorAll('.apply-override').forEach(btn=>{
+    btn.onclick=async()=>{
+      const idx=+btn.dataset.planIndex;
+      const sel=$('commutePlan').querySelector(`.work-override-select[data-plan-index="${idx}"]`);
+      btn.textContent='Recalculating…';
+      btn.disabled=true;
+      await recalcDayForOverride(idx,sel.value);
+    };
+  });
+  $('bossMessage').value='Proposed schedule for the next two weeks:\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmt(p.arrive)}; planned departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n')+'\n\nPlease let me know if you’d like me to adjust any onsite day or timing.';
+  const watch=[];
+  for(const p of work){
+    const backups=p.assignments.filter(a=>a.primary==='Backup');
+    if(backups.length)watch.push(`<p><strong>${dayName(p.date)} ${shortDate(p.date)}:</strong> line up backup coverage for ${backups.map(a=>`${esc(childLabel(a.activity.child))} ${esc(a.kind.toLowerCase())} at ${fmt(a.time)} (${esc(a.activity.title)})`).join('; ')}.</p>`);
+    if(p.status==='bad')watch.push(`<p><strong>${dayName(p.date)} ${shortDate(p.date)}:</strong> onsite day is too compressed under the current constraints.</p>`);
+  }
+  $('watchouts').innerHTML=watch.length?watch.join(''):'<p>No backup-driver needs identified from the current schedule.</p>';
+  const auditRows=[];
+  for(const p of work){
+    for(const a of p.assignments){
+      auditRows.push(`<div style="padding:5px 0;border-bottom:1px dotted var(--line)">
+        <strong>${dayName(p.date)} ${shortDate(p.date)} · ${esc(childLabel(a.activity.child))} · ${esc(a.activity.title)}</strong>
+        <span class="muted"> (${esc(a.activity.source||'Activity')})</span><br>
+        ${a.kind} ${fmt(a.time)} — <strong>${esc(a.primary)}</strong>${a.secondary&&a.secondary!=='—'?` / backup: ${esc(a.secondary)}`:''}<br><span class="muted">Kira check includes 30-min work→home commute + home→venue drive + transport buffer.</span>
+      </div>`);
+    }
+  }
+  $('coverageAudit').innerHTML=auditRows.length?auditRows.join(''):'<p>No activity transportation legs in this cycle.</p>';
+
+  renderCalendar('calendarPreview');renderCalendar('printCalendar');
+  $('printRange').textContent=plans.length?`${shortDate(plans[0].date)} – ${shortDate(plans[plans.length-1].date)}`:'';
+  $('results').style.display='block';
+  mobilePlanDate=null;renderMobilePlan();
+}
+function renderCalendar(id){
+  const work=plans.filter(p=>!p.weekend);
+  $(id).innerHTML=work.map(p=>{
+    const level=dayChallengeLevel(p);
+    const dp=calendarDateParts(p.date);
+    const commuteMode=p.holiday?'HOLIDAY':p.onsite?esc(p.site):'REMOTE';
+    const byActivity={};
+    for(const a of p.assignments){
+      const key=a.activity.child+'|'+a.activity.title+'|'+a.activity.start+'|'+a.activity.end;
+      if(!byActivity[key])byActivity[key]={activity:a.activity,legs:[]};
+      byActivity[key].legs.push(a);
+    }
+    const events=Object.values(byActivity).map(x=>{
+      const backup=x.legs.some(l=>l.primary==='Backup');
+      const driverBlocks=x.legs.map(l=>`<div class="driverline">${l.kind}: ${l.primary}${l.secondary&&l.secondary!=='—'?` / ${l.secondary}`:''}</div>`).join('');
+      return `<div class="event"><strong>${esc(childLabel(x.activity.child))} — ${esc(x.activity.title)}</strong><br>${x.activity.start?fmt(toMin(x.activity.start)):''}${x.activity.end?`–${fmt(toMin(x.activity.end))}`:''}${driverBlocks}${backup?`<div class="backup">BACKUP DRIVER NEEDED</div>`:''}</div>`;
+    }).join('');
+    const chips=p.holiday?`<div class="timechip">No work</div>`:p.onsite?`<div class="timechip">Leave ${fmt(p.departHome)}</div><div class="timechip">Arrive ${fmt(p.arrive)}</div><div class="timechip">Leave work ${fmt(p.leaveWork)}</div>`:`<div class="timechip">Remote day</div>`;
+    return `<div class="daybox ${level}${p.holiday?' holiday':''}">
+      <div class="marker">${p.opportunity?'◇':''}</div>
+      <div class="tilehead">
+        <div class="dateblock"><div class="datenum">${dp.num}</div><div class="datewords"><div class="dow">${dp.dow}</div><div class="month">${dp.month}</div></div></div>
+        <div class="tilepill ${level}">${dayChallengeLabel(p)}</div>
+      </div>
+      <div class="mode">${commuteMode}</div>
+      <div class="tilesection">
+        <div class="tilelabel">Commute</div>
+        <div class="timechips">${chips}</div>
+        <div class="kira-line">Kira: ${esc(p.kiraLocation||'—')}</div>
+      </div>
+      <div class="tilesection">
+        <div class="tilelabel">Activities & drivers</div>
+        ${events || '<div class="event"><strong>No scheduled activities</strong></div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const STORAGE_SETTINGS='familyOptimizerV23.settings';
+const STORAGE_CYCLE='familyOptimizerV23.cycle';
+const STORAGE_VERSION=28;
+
+const STORAGE_CAL_HYGIENE='familyOptimizerCalendarHygieneV26';
+function defaultCalendarHygiene(){
+  return {
+    dedupeEnabled:true,
+    dedupeTolerance:10,
+    dedupePreference:'primary',
+    privacyFilterEnabled:true,
+    privacyMatchWholeWord:false,
+    privacyKeywords:[]
+  };
+}
+function loadCalendarHygiene(){
+  try{
+    return Object.assign(defaultCalendarHygiene(),JSON.parse(localStorage.getItem(STORAGE_CAL_HYGIENE)||'{}'));
+  }catch(e){return defaultCalendarHygiene()}
+}
+function saveCalendarHygiene(){
+  const cfg={
+    dedupeEnabled:!!document.getElementById('dedupeEnabled')?.checked,
+    dedupeTolerance:+document.getElementById('dedupeTolerance')?.value||0,
+    dedupePreference:document.getElementById('dedupePreference')?.value||'primary',
+    privacyFilterEnabled:!!document.getElementById('privacyFilterEnabled')?.checked,
+    privacyMatchWholeWord:!!document.getElementById('privacyMatchWholeWord')?.checked,
+    privacyKeywords:(document.getElementById('privacyKeywords')?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean)
+  };
+  localStorage.setItem(STORAGE_CAL_HYGIENE,JSON.stringify(cfg));
+  updateCalendarHygieneStatus(cfg);
+  return cfg;
+}
+function applyCalendarHygieneUi(){
+  const cfg=loadCalendarHygiene();
+  const byId=id=>document.getElementById(id);
+  if(byId('dedupeEnabled'))byId('dedupeEnabled').checked=cfg.dedupeEnabled;
+  if(byId('dedupeTolerance'))byId('dedupeTolerance').value=String(cfg.dedupeTolerance);
+  if(byId('dedupePreference'))byId('dedupePreference').value=cfg.dedupePreference;
+  if(byId('privacyFilterEnabled'))byId('privacyFilterEnabled').checked=cfg.privacyFilterEnabled;
+  if(byId('privacyMatchWholeWord'))byId('privacyMatchWholeWord').checked=cfg.privacyMatchWholeWord;
+  if(byId('privacyKeywords'))byId('privacyKeywords').value=(cfg.privacyKeywords||[]).join('\n');
+  updateCalendarHygieneStatus(cfg);
+}
+function updateCalendarHygieneStatus(cfg=loadCalendarHygiene()){
+  const ds=document.getElementById('dedupeStatus');
+  const ps=document.getElementById('privacyStatus');
+  if(ds)ds.textContent=cfg.dedupeEnabled?`De-duplication enabled · ${cfg.dedupeTolerance?`±${cfg.dedupeTolerance} min`:'exact time'} · ${cfg.dedupePreference==='primary'?'prefer main iPhone calendar':cfg.dedupePreference==='detail'?'prefer most detailed event':'keep first imported'}`:'De-duplication disabled.';
+  if(ps)ps.textContent=cfg.privacyFilterEnabled?(cfg.privacyKeywords?.length?`${cfg.privacyKeywords.length} privacy keyword${cfg.privacyKeywords.length===1?'':'s'} active.`:'No privacy keywords configured.'):'Privacy filtering disabled.';
+}
+function normalizeEventText(s=''){
+  return String(s).toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+}
+function eventMinutesValue(e){
+  const t=e.start||e.startTime||e.time||'';
+  if(typeof t==='number')return t;
+  const m=String(t).match(/(\d{1,2}):(\d{2})/);
+  return m?(+m[1]*60 + +m[2]):0;
+}
+function eventDateValue(e){
+  return e.date||e.startDate||e.day||'';
+}
+function isSensitiveCalendarEvent(e,cfg=loadCalendarHygiene()){
+  if(!cfg.privacyFilterEnabled||!cfg.privacyKeywords?.length)return false;
+  const hay=normalizeEventText([e.title,e.summary,e.name,e.description,e.notes,e.location].filter(Boolean).join(' '));
+  return cfg.privacyKeywords.some(k=>{
+    const needle=normalizeEventText(k);
+    if(!needle)return false;
+    if(!cfg.privacyMatchWholeWord)return hay.includes(needle);
+    return new RegExp(`(^|\\s)${needle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}(?=\\s|$)`,'i').test(hay);
+  });
+}
+function eventDetailScore(e){
+  return [e.description,e.notes,e.location,e.end,e.endTime].filter(v=>String(v||'').trim()).length + String(e.title||e.summary||e.name||'').length/100;
+}
+function eventIsPrimarySource(e){
+  const s=String(e.sourceName||e.source||e.calendarName||'').toLowerCase();
+  return s.includes('main')||s.includes('iphone')||s.includes('family');
+}
+function dedupeCalendarEvents(events,cfg=loadCalendarHygiene()){
+  if(!cfg.dedupeEnabled)return events.slice();
+  const out=[];
+  for(const e of events){
+    const title=normalizeEventText(e.title||e.summary||e.name||'');
+    const date=eventDateValue(e);
+    const mins=eventMinutesValue(e);
+    const tol=cfg.dedupeTolerance||0;
+    const ix=out.findIndex(o=>{
+      const ot=normalizeEventText(o.title||o.summary||o.name||'');
+      return ot===title && eventDateValue(o)===date && Math.abs(eventMinutesValue(o)-mins)<=tol;
+    });
+    if(ix<0){out.push(e);continue}
+    const existing=out[ix];
+    let replace=false;
+    if(cfg.dedupePreference==='primary') replace=sourcePriorityForEvent(e)>sourcePriorityForEvent(existing);
+    else if(cfg.dedupePreference==='detail') replace=eventDetailScore(e)>eventDetailScore(existing);
+    if(replace)out[ix]=e;
+  }
+  return out;
+}
+function cleanImportedCalendarEvents(events){
+  const cfg=loadCalendarHygiene();
+  const filtered=events.filter(e=>!isSensitiveCalendarEvent(e,cfg));
+  return dedupeCalendarEvents(filtered,cfg);
+}
+
+const STORAGE_LAST_BACKUP='familyOptimizerV23.lastBackup';
+const STORAGE_LAST_CHANGE='familyOptimizerV23.lastChange';
+let autosaveTimer=null;
+let isApplying=false;
+
+function permanentSettings(){
+  return {
+    version:STORAGE_VERSION,
+    rules:{
+      onsiteTarget:$('onsiteTarget').value,
+      busTime:$('busTime').value,
+      defaultBus:$('defaultBus').value,
+      cushionTarget:$('cushionTarget').value,
+      cushionUsed:$('cushionUsed').value,
+      cushionMinutes:$('cushionMinutes').value,
+      transportBuffer:$('transportBuffer').value,
+      childOldest:$('childOldest').value,
+      childMiddle:$('childMiddle').value,
+      childYoungest:$('childYoungest').value,
+      homeAddress:$('homeAddress').value,
+      liveRouting:$('liveRouting').value,
+      oldestCanDrive:$('oldestCanDrive').value,
+      remoteAllowed:$('remoteAllowed').value,
+      kiraCommute:$('kiraCommute').value
+    },
+    sites:getSites(),
+    practices:getPractices()
+  };
+}
+function rollingCycle(){
+  return {
+    version:STORAGE_VERSION,
+    startDate:$('startDate').value,
+    kira:getKira().map(k=>({date:k.date,shift:k.shift})),
+    activities:getActivities(),
+    adhoc:getAdhoc(),
+    workOverrides:plans.filter(p=>!p.weekend&&p.manualOverride).map(p=>({
+      date:p.dateStr,
+      value:p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__'
+    }))
+  };
+}
+function setSaveStatus(text){
+  const el=$('saveStatus'); if(!el)return;
+  el.textContent=text;
+}
+function nowIso(){return new Date().toISOString()}
+function markChanged(){
+  localStorage.setItem(STORAGE_LAST_CHANGE,nowIso());
+  updateBackupStatus();
+}
+function formatStamp(v){
+  if(!v)return 'never';
+  const d=new Date(v);
+  if(isNaN(d))return 'unknown';
+  return d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+function updateBackupStatus(){
+  const el=$('backupStatus');if(!el)return;
+  const lastBackup=localStorage.getItem(STORAGE_LAST_BACKUP);
+  const lastChange=localStorage.getItem(STORAGE_LAST_CHANGE);
+  const stale=!lastBackup || (lastChange && new Date(lastChange)>new Date(lastBackup));
+  if(stale){
+    el.className='small backup-stale';
+    el.textContent=`Cloud backup: ${lastBackup?'out of date':'not downloaded yet'}`;
+  }else{
+    el.className='small backup-current';
+    el.textContent=`Cloud backup current · ${formatStamp(lastBackup)}`;
+  }
+}
+
+function savePermanent(){
+  localStorage.setItem(STORAGE_SETTINGS,JSON.stringify(permanentSettings()));
+}
+function saveCycle(){
+  localStorage.setItem(STORAGE_CYCLE,JSON.stringify(rollingCycle()));
+}
+function saveAllNow(){
+  if(isApplying)return;
+  try{
+    savePermanent();saveCycle();
+    setSaveStatus('Saved locally');
+  }catch(err){
+    setSaveStatus('Autosave failed');
+  }
+}
+function scheduleAutosave(){
+  if(isApplying)return;
+  markChanged();
+  setSaveStatus('Saving…');
+  clearTimeout(autosaveTimer);
+  autosaveTimer=setTimeout(saveAllNow,500);
+}
+function applyPermanent(data){
+  if(!data)return;
+  isApplying=true;
+  try{
+    if(Array.isArray(data.sites)&&data.sites.length){
+      $('siteBody').innerHTML='';
+      data.sites.forEach(siteRow);
+    }
+    Object.entries(data.rules||{}).forEach(([k,v])=>{if($(k))$(k).value=v});
+    refreshPreferredSite();
+    $('practiceBody').innerHTML='';
+    (data.practices||[]).forEach(practiceRow);
+    refreshChildLabels();
+    [...$('kiraBody').children].forEach(r=>r.querySelector('.k-shift').onchange());
+  }finally{isApplying=false}
+}
+function applyCycle(data){
+  if(!data)return;
+  isApplying=true;
+  try{
+    if(data.startDate)$('startDate').value=data.startDate;
+    buildKiraRows();
+    const kr=data.kira||[];
+    [...$('kiraBody').children].forEach(r=>{
+      const d=kr.find(x=>x.date===r.dataset.date);
+      if(d){r.querySelector('.k-shift').value=d.shift;r.querySelector('.k-shift').onchange()}
+    });
+    $('activityBody').innerHTML='';
+    (data.activities||[]).forEach(activityRow);
+    $('adhocBody').innerHTML='';
+    (data.adhoc||[]).forEach(adhocRow);
+    window.__savedWorkOverrides=data.workOverrides||[];
+  }finally{isApplying=false}
+}
+function loadFromStorage(){
+  let loaded=false;
+  try{
+    const s=localStorage.getItem(STORAGE_SETTINGS);
+    const c=localStorage.getItem(STORAGE_CYCLE);
+    if(s){applyPermanent(JSON.parse(s));loaded=true}
+    if(c){applyCycle(JSON.parse(c));loaded=true}
+    setSaveStatus(loaded?'Loaded saved data':'Autosave ready');
+  }catch(err){
+    setSaveStatus('Could not load saved data');
+  }
+}
+function nextCycleStart(){
+  const current=$('startDate').value?parseDate($('startDate').value):nextMonday();
+  return addDays(current,14);
+}
+function startNewCycle(){
+  const next=nextCycleStart();
+  if(!confirm(`Start a new 2-week cycle beginning ${shortDate(next)}? Permanent setup will be kept; Kira overrides, imported activities, and ad-hoc items will be cleared.`))return;
+  isApplying=true;
+  try{
+    $('startDate').value=iso(next);
+    buildKiraRows();
+    $('activityBody').innerHTML='';
+    $('adhocBody').innerHTML='';
+    renderSavedCalendarLinks();
+    plans=[];
+    $('results').style.display='none';
+  }finally{isApplying=false}
+  saveCycle();
+  markChanged();
+  setSaveStatus('New cycle started and saved');
+}
+function exportBackup(){
+  const payload={
+    app:'Family Commute + Transport Optimizer',
+    version:STORAGE_VERSION,
+    exportedAt:new Date().toISOString(),
+    settings:permanentSettings(),
+    cycle:rollingCycle()
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Family-Commute-Optimizer-Backup-${$('startDate').value||'current'}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  localStorage.setItem(STORAGE_LAST_BACKUP,nowIso());
+  updateBackupStatus();
+}
+function importBackupFile(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data.settings&&!data.cycle)throw new Error('Invalid backup structure');
+      applyPermanent(data.settings);
+      applyCycle(data.cycle);
+      saveAllNow();
+      const stamp=data.exportedAt||nowIso();
+      localStorage.setItem(STORAGE_LAST_BACKUP,stamp);
+      localStorage.setItem(STORAGE_LAST_CHANGE,stamp);
+      updateBackupStatus();
+      alert('Backup restored successfully.');
+    }catch(err){
+      alert('That file is not a valid optimizer backup.');
+    }
+  };
+  reader.readAsText(file);
+}
+function installAutosaveListeners(){
+  document.addEventListener('input',e=>{
+    if(e.target.matches('input,select,textarea'))scheduleAutosave();
+  });
+  document.addEventListener('change',e=>{
+    if(e.target.matches('input,select,textarea'))scheduleAutosave();
+  });
+  const observer=new MutationObserver(()=>scheduleAutosave());
+  observer.observe($('siteBody'),{childList:true,subtree:true});
+  observer.observe($('activityBody'),{childList:true,subtree:true});
+  observer.observe($('practiceBody'),{childList:true,subtree:true});
+  observer.observe($('adhocBody'),{childList:true,subtree:true});
+}
+
+
+document.querySelectorAll('[data-mobile-view]').forEach(b=>b.onclick=()=>{mobilePlanView=b.dataset.mobileView;renderMobilePlan()});
+$('mobilePrevBtn').onclick=()=>moveMobilePlan(-1);
+$('mobileNextBtn').onclick=()=>moveMobilePlan(1);
+$('mobileTodayBtn').onclick=()=>{const t=planDateOnly(new Date()),first=plans.length?planDateOnly(plans[0].date):t,last=plans.length?planDateOnly(plans[plans.length-1].date):t;mobilePlanDate=(t>=first&&t<=last)?t:first;renderMobilePlan()};
+
+$('generateBtn').onclick=async()=>{await generate();saveAllNow();};
+$('newCycleBtn').onclick=startNewCycle;
+$('exportBackupBtn').onclick=exportBackup;
+$('importBackupBtn').onclick=()=>$('backupFile').click();
+$('backupFile').onchange=e=>{const f=e.target.files[0];if(f)importBackupFile(f);e.target.value='';};
+
+
+function mobileReadOnlySnapshotHtml(){
+  if(!plans.length)return null;
+  const payload=plans.map(p=>({
+    date:p.dateStr,weekend:p.weekend,holiday:p.holiday,onsite:p.onsite,site:p.site||'',departHome:p.departHome,arrive:p.arrive,leaveWork:p.leaveWork,
+    kiraOff:p.kiraOff,kiraLocation:p.kiraLocation||'',kiraStart:p.kiraStart,kiraPickupAvailable:p.kiraPickupAvailable,
+    assignments:(p.assignments||[]).map(a=>({kind:a.kind,primary:a.primary,secondary:a.secondary,activity:{child:childLabel(a.activity.child),title:a.activity.title,start:a.activity.start,end:a.activity.end,location:a.activity.location||'',source:a.activity.source||''}}))
+  }));
+  const published=new Date().toLocaleString();
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Family Agenda</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}.app{max-width:760px;margin:auto;background:#fff;min-height:100vh}.top{padding:calc(12px + env(safe-area-inset-top)) 14px 10px;background:#fff;border-bottom:1px solid #e5e5ea;position:sticky;top:0;z-index:5}.title{font-size:31px;font-weight:800;letter-spacing:-.045em}.sub{font-size:12px;color:#8e8e93;margin-top:2px}.seg{display:grid;grid-template-columns:repeat(3,1fr);background:#e9e9ee;padding:2px;border-radius:9px;margin-top:10px}.seg button{border:0;background:transparent;padding:8px;border-radius:7px;font-size:13px;font-weight:700}.seg button.active{background:#fff;box-shadow:0 1px 3px #0002}.nav{display:flex;justify-content:space-between;align-items:center;margin-top:9px}.nav button{border:0;background:#f2f2f7;border-radius:9px;min-width:44px;min-height:38px;font-size:18px}.nav .today{font-size:13px;padding:0 14px}.dayhead{padding:13px 14px 7px;display:flex;align-items:baseline;gap:9px}.num{font-size:42px;font-weight:500;letter-spacing:-.07em}.words .dow{font-size:16px;font-weight:700}.words .my{font-size:12px;color:#8e8e93}.row{display:grid;grid-template-columns:58px 4px 1fr;gap:9px;padding:10px 13px;border-top:1px solid #ededf2}.time{text-align:right;font-size:12px;color:#8e8e93}.bar{border-radius:3px;background:#3478f6}.bar.team{background:#34c759}.bar.work{background:#8e8e93}.bar.kira{background:#af52de}.bar.alert{background:#ff3b30}.et{font-size:15px;font-weight:700}.em{font-size:12px;color:#6b7280;margin-top:3px;line-height:1.3}.driver{font-size:12px;font-weight:700;margin-top:4px}.weekrow{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:11px 14px;border-top:1px solid #ededf2}.wd{text-align:center}.wd small{display:block;color:#8e8e93;text-transform:uppercase;font-size:9px}.wd b{font-size:25px;font-weight:500}.wi{font-size:12px;line-height:1.45}.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e5e5ea;border-left:1px solid #e5e5ea}.ml,.mc{border-right:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea}.ml{text-align:center;font-size:9px;color:#8e8e93;padding:6px 2px;background:#fafafa}.mc{min-height:58px;padding:4px;text-align:center}.mc.out{color:#c7c7cc;background:#fafafa}.mn{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:auto;font-size:12px}.mc.sel .mn{background:#ff3b30;color:#fff}.dots{display:flex;justify-content:center;gap:2px;margin-top:5px}.dot{width:4px;height:4px;background:#3478f6;border-radius:50%}.dot.team{background:#34c759}.dot.work{background:#8e8e93}.dot.alert{background:#ff3b30}.empty{padding:25px;text-align:center;color:#8e8e93}.footer{padding:14px;color:#8e8e93;font-size:10px;text-align:center;border-top:1px solid #ededf2}
+</style></head><body><div class="app"><div class="top"><div id="title" class="title">Family</div><div class="sub">Published ${published}</div><div class="seg"><button data-v="day" class="active">Day</button><button data-v="week">Week</button><button data-v="month">Month</button></div><div class="nav"><button id="prev">‹</button><button id="today" class="today">Today</button><button id="next">›</button></div></div><div id="body"></div><div class="footer">Family Logistics Planner · read-only mobile agenda</div></div>
+<script>
+const P=${JSON.stringify(payload)};let view='day';function pd(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function add(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}function mon(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),q=(x.getDay()+6)%7;x.setDate(x.getDate()-q);return x}function fmt(m){if(m==null)return'';let h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM';return (h%12||12)+':'+String(mm).padStart(2,'0')+' '+ap}const first=pd(P[0].date),last=pd(P[P.length-1].date),now=new Date(),today0=new Date(now.getFullYear(),now.getMonth(),now.getDate());let focus=(today0>=first&&today0<=last)?today0:first;function plan(d){return P.find(x=>x.date===iso(d))}function groups(p){const g={};(p?.assignments||[]).forEach(a=>{const z=a.activity,k=[z.child,z.title,z.start,z.end].join('|');(g[k]??={activity:z,legs:[]}).legs.push(a)});return Object.values(g)}function rows(p){if(!p)return[];const a=[];if(!p.weekend){a.push({t:p.holiday?'All day':p.onsite?fmt(p.departHome):'All day',k:'work',n:p.holiday?'Holiday / no work':p.onsite?'Chris · '+p.site:'Chris · Remote',m:p.onsite?'Arrive '+fmt(p.arrive)+' · Leave '+fmt(p.leaveWork):''});a.push({t:p.kiraOff?'All day':fmt(p.kiraStart),k:'kira',n:p.kiraOff?'Kira · Off':'Kira · '+p.kiraLocation,m:p.kiraOff?'Available locally':'Home availability approx. '+fmt(p.kiraPickupAvailable)})}groups(p).forEach(x=>{const z=x.activity,b=x.legs.some(l=>l.primary==='Backup'),team=/Team Calendar|TeamSnap|GameChanger/i.test(z.source);a.push({t:z.start?fmt(Number(z.start.split(':')[0])*60+Number(z.start.split(':')[1])):'All day',k:b?'alert':team?'team':'family',n:z.child+' · '+z.title,m:[z.end?'Until '+fmt(Number(z.end.split(':')[0])*60+Number(z.end.split(':')[1])):'',z.location].filter(Boolean).join(' · '),d:x.legs.map(l=>l.kind+': '+l.primary+(l.secondary&&l.secondary!=='—'?' / '+l.secondary:'')).join(' · ')})});return a}
+function rday(){const p=plan(focus),a=rows(p);return '<div class="dayhead"><div class="num">'+focus.getDate()+'</div><div class="words"><div class="dow">'+focus.toLocaleDateString(undefined,{weekday:'long'})+'</div><div class="my">'+focus.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</div></div></div>'+(a.length?a.map(x=>'<div class="row"><div class="time">'+x.t+'</div><div class="bar '+x.k+'"></div><div><div class="et">'+x.n+'</div>'+(x.m?'<div class="em">'+x.m+'</div>':'')+(x.d?'<div class="driver">'+x.d+'</div>':'')+'</div></div>').join(''):'<div class="empty">No logistics scheduled.</div>')}
+function rweek(){let s=mon(focus),h='';for(let i=0;i<7;i++){const d=add(s,i),a=rows(plan(d));h+='<div class="weekrow"><div class="wd"><small>'+d.toLocaleDateString(undefined,{weekday:'short'})+'</small><b>'+d.getDate()+'</b></div><div class="wi">'+(a.length?a.slice(0,5).map(x=>'<div><b>'+x.t+'</b> '+x.n+'</div>').join(''):'<span style="color:#8e8e93">No scheduled logistics</span>')+(a.length>5?'<div>+'+(a.length-5)+' more</div>':'')+'</div></div>'}return h}
+function rmonth(){const f=new Date(focus.getFullYear(),focus.getMonth(),1),s=mon(f);let h=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<div class="ml">'+x+'</div>').join('');for(let i=0;i<42;i++){const d=add(s,i),a=rows(plan(d)),out=d.getMonth()!==f.getMonth(),sel=iso(d)===iso(focus);h+='<div class="mc'+(out?' out':'')+(sel?' sel':'')+'" data-date="'+iso(d)+'"><div class="mn">'+d.getDate()+'</div><div class="dots">'+a.slice(0,4).map(x=>'<span class="dot '+x.k+'"></span>').join('')+'</div></div>'}return '<div class="monthgrid">'+h+'</div>'}
+function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===view));document.getElementById('title').textContent=view==='month'?focus.toLocaleDateString(undefined,{month:'long',year:'numeric'}):view==='week'?'Week of '+mon(focus).toLocaleDateString(undefined,{month:'short',day:'numeric'}):focus.toLocaleDateString(undefined,{month:'long',day:'numeric'});document.getElementById('body').innerHTML=view==='day'?rday():view==='week'?rweek():rmonth();document.querySelectorAll('[data-date]').forEach(c=>c.onclick=()=>{focus=pd(c.dataset.date);view='day';render()})}document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;render()});document.getElementById('prev').onclick=()=>{focus=view==='month'?new Date(focus.getFullYear(),focus.getMonth()-1,1):add(focus,view==='week'?-7:-1);render()};document.getElementById('next').onclick=()=>{focus=view==='month'?new Date(focus.getFullYear(),focus.getMonth()+1,1):add(focus,view==='week'?7:1);render()};document.getElementById('today').onclick=()=>{focus=(today0>=first&&today0<=last)?today0:first;render()};render();
+<\/script></body></html>`;
+}
+function downloadMobileSnapshot(){
+  if(!plans.length){alert('Generate the recommended 2-week plan first.');return}
+  const blob=new Blob([mobileReadOnlySnapshotHtml()],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Family-Mobile-Agenda-${$('startDate').value||'current'}.html`;a.click();URL.revokeObjectURL(a.href);
+}
+
+function readOnlySnapshotHtml(){
+  if(!plans.length)return null;
+  const range=plans.length?`${shortDate(plans[0].date)} – ${shortDate(plans[plans.length-1].date)}`:'';
+  const work=plans.filter(p=>!p.weekend);
+  const days=work.map(p=>{
+    const level=dayChallengeLevel(p);
+    const dp=calendarDateParts(p.date);
+    const grouped={};
+    for(const a of p.assignments){
+      const key=a.activity.child+'|'+a.activity.title+'|'+a.activity.start+'|'+a.activity.end;
+      if(!grouped[key])grouped[key]={activity:a.activity,legs:[]};
+      grouped[key].legs.push(a);
+    }
+    const events=Object.values(grouped).map(x=>{
+      const backup=x.legs.some(l=>l.primary==='Backup');
+      const drivers=x.legs.map(l=>`<div class="driverline">${l.kind}: ${l.primary}${l.secondary&&l.secondary!=='—'?` / ${l.secondary}`:''}</div>`).join('');
+      return `<div class="event"><strong>${esc(childLabel(x.activity.child))} — ${esc(x.activity.title)}</strong><br>${x.activity.start?fmt(toMin(x.activity.start)):''}${x.activity.end?`–${fmt(toMin(x.activity.end))}`:''}${drivers}${backup?`<div class="backup">BACKUP DRIVER NEEDED</div>`:''}</div>`;
+    }).join('');
+    const chips=p.holiday?`<div class="timechip">No work</div>`:p.onsite?`<div class="timechip">Leave ${fmt(p.departHome)}</div><div class="timechip">Arrive ${fmt(p.arrive)}</div><div class="timechip">Leave work ${fmt(p.leaveWork)}</div>`:`<div class="timechip">Remote day</div>`;
+    return `<div class="day ${level}${p.holiday?' holiday':''}">
+      <div class="marker">${p.opportunity?'◇':''}</div>
+      <div class="tilehead">
+        <div class="dateblock"><div class="datenum">${dp.num}</div><div class="datewords"><div class="dow">${dp.dow}</div><div class="month">${dp.month}</div></div></div>
+        <div class="tilepill ${level}">${dayChallengeLabel(p)}</div>
+      </div>
+      <div class="mode">${p.holiday?'HOLIDAY':p.onsite?esc(p.site):'REMOTE'}</div>
+      <div class="tilesection">
+        <div class="tilelabel">Commute</div>
+        <div class="timechips">${chips}</div>
+        <div class="kira">Kira: ${esc(p.kiraLocation||'—')}</div>
+      </div>
+      <div class="tilesection">
+        <div class="tilelabel">Activities & drivers</div>
+        ${events || '<div class="event"><strong>No scheduled activities</strong></div>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  const updated=new Date().toLocaleString();
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Family Logistics Plan — ${range}</title>
+<style>
+:root{--text:#18212b;--muted:#697386;--line:#d8dee8;--bg:#f5f7fa;--card:#fff;--bad:#fdebed}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1200px;margin:auto;padding:20px}
+.header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:12px}
+h1{font-size:24px;margin:0;font-weight:900}.sub{font-size:13px;color:var(--muted);font-weight:650}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.day{min-height:220px;background:var(--card);border:1px solid #d5d9df;border-radius:12px;padding:10px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.035)}
+.day.challenge-med{background:linear-gradient(180deg,#fffaf0 0%,#ffffff 26%)}
+.day.challenge-high{background:linear-gradient(180deg,#fff1ec 0%,#ffffff 28%);border-color:#e4b5aa}
+.holiday{background:#f7f1ff}
+.tilehead{display:flex;justify-content:space-between;align-items:flex-start;gap:7px;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid #e6e8ec}
+.dateblock{display:flex;align-items:center;gap:7px}.datenum{font-size:34px;line-height:.88;font-weight:650;letter-spacing:-.055em;color:#111827}.datewords{display:flex;flex-direction:column;gap:1px}.dow{font-size:9px;line-height:1;font-weight:800;letter-spacing:.14em;color:#6b7280}.month{font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;color:#111827}
+.tilepill{display:inline-block;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:850;line-height:1;background:#f2f4f7;color:#4b5563;white-space:nowrap}
+.tilepill.challenge-med{background:#ffe9b8}
+.tilepill.challenge-high{background:#ffd1c7}
+.tilesection{margin-top:0;padding:6px 0 0;border-radius:0;background:transparent}
+.tilesection + .tilesection{margin-top:6px;padding-top:7px;border-top:1px solid #eceef1}
+.tilelabel{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#8a929f;font-weight:800;margin-bottom:4px}
+.timechips{display:flex;flex-wrap:wrap;gap:4px}
+.timechip{display:inline-block;padding:3px 5px;border-radius:5px;background:#f5f7fa;border:0;font-size:9.6px;font-weight:800;line-height:1.15;color:#334155}
+.mode{font-size:12.8px;font-weight:850;margin:0 0 5px;line-height:1.05;padding-left:7px;border-left:3px solid #3478f6}
+.kira{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;line-height:1.22}
+.event{font-size:9.8px;line-height:1.2;margin-top:5px;padding-top:5px;padding-left:7px;border-top:1px solid #eceef1;border-left:3px solid #8e8e93}
+.event:first-child{margin-top:0;padding-top:0;border-top:0}
+.event strong{font-size:10.5px;font-weight:850}
+.driverline{display:block;margin-top:3px;padding:0;border-radius:0;background:transparent;border:0;font-size:9.1px;font-weight:750;line-height:1.12;color:#475569}
+.backup{font-size:9px;background:var(--bad);padding:4px;border-radius:6px;margin-top:4px;font-weight:900}
+.marker{position:absolute;right:7px;top:5px;opacity:.38}
+.footer{font-size:10px;color:var(--muted);margin-top:10px}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.day{min-height:auto}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+@media print{
+@page{size:Letter landscape;margin:.20in}
+body{background:#fff;color:#111}
+.wrap{max-width:none;padding:0}
+.grid{grid-template-columns:repeat(5,1fr);gap:3px}
+.day{height:3.42in;min-height:3.42in;border:1.15px solid #aeb4bd;border-radius:5px;padding:7px 8px 6px;overflow:hidden}
+.day.challenge-med{background:linear-gradient(180deg,#fff6df 0%,#ffffff 27%)!important}
+.day.challenge-high{background:linear-gradient(180deg,#ffe6df 0%,#ffffff 29%)!important;border-color:#db9d90!important}
+.tilehead{margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid #d9dde3}
+.tilepill{font-size:8.4px;padding:3px 5px}
+.tilesection{padding:5px 0 0;border-radius:0;background:transparent}
+.tilelabel{font-size:7.4px;letter-spacing:.11em;margin-bottom:3px}
+.timechips{gap:3px}
+.timechip{font-size:8.8px;padding:2px 4px;border-radius:4px;font-weight:850;background:#f3f5f7}
+.datenum{font-size:28px;line-height:.88;font-weight:650}.dateblock{gap:6px}.dow{font-size:7.5px}.month{font-size:8.5px}
+.mode{font-size:11.5px;font-weight:850;line-height:1.05;margin:0 0 4px;padding-left:6px;border-left-width:3px}
+.kira{font-size:9.2px;font-weight:800;line-height:1.12;color:#333}
+.event{font-size:8.9px;line-height:1.1;margin-top:3px;padding-top:3px;padding-left:6px;border-top:1px solid #e1e4e8;border-left:3px solid #8e8e93}
+.event strong{font-size:9.6px;font-weight:850;line-height:1.08}
+.driverline{font-size:8.2px;padding:0;margin-top:2px;font-weight:800}
+.backup{font-size:8.2px;font-weight:950;padding:3px 4px;margin-top:3px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <h1>2-Week Family Logistics Plan</h1>
+      <div class="sub">${range}</div>
+    </div>
+    <div class="sub">Published ${updated}</div>
+  </div>
+  <div class="grid">${days}</div>
+  <div class="footer">Read-only family view. Update the master planner during the weekly sync and republish this file when the plan changes.</div>
+</div>
+</body>
+</html>`;
+}
+function downloadReadOnlySnapshot(){
+  if(!plans.length){
+    alert('Generate the recommended 2-week plan first.');
+    return;
+  }
+  const content=readOnlySnapshotHtml();
+  const blob=new Blob([content],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Family-Logistics-Plan-${$('startDate').value||'current'}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+$('publishBtn').onclick=downloadReadOnlySnapshot;
+$('downloadMobilePlanBtn').onclick=downloadMobileSnapshot;
+
+$('printBtn').onclick=()=>{if(!plans.length)generate();setTimeout(()=>window.print(),50)};
+$('copyBossBtn').onclick=async()=>{try{await navigator.clipboard.writeText($('bossMessage').value);$('copyBossBtn').textContent='Copied';setTimeout(()=>$('copyBossBtn').textContent='Copy schedule',1000)}catch{alert('Copy blocked; select manually.')}};
+loadFromStorage();
+installAutosaveListeners();
+updateBackupStatus();
+
+(function initCalendarHygieneV26(){
+  applyCalendarHygieneUi();
+  ['dedupeEnabled','dedupeTolerance','dedupePreference','privacyFilterEnabled','privacyMatchWholeWord','privacyKeywords'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.addEventListener(id==='privacyKeywords'?'input':'change',()=>{
+        saveCalendarHygiene();
+      });
+    }
+  });
+  const preview=document.getElementById('previewPrivacyFilter');
+  if(preview){
+    preview.addEventListener('click',()=>{
+      const cfg=saveCalendarHygiene();
+      const pool=(window.importedCalendarEvents||window.calendarEvents||[]);
+      if(!Array.isArray(pool)||!pool.length){
+        alert('No imported calendar events are currently loaded to preview.');
+        return;
+      }
+      const matched=pool.filter(e=>isSensitiveCalendarEvent(e,cfg));
+      const names=matched.slice(0,20).map(e=>e.title||e.summary||e.name||'(untitled)');
+      alert(matched.length?`${matched.length} event${matched.length===1?'':'s'} would be filtered:\n\n${names.join('\n')}${matched.length>20?'\n…':''}`:'No currently loaded events match your privacy keywords.');
+    });
+  }
+})();
+
+</script>
+</body>
+</html>
