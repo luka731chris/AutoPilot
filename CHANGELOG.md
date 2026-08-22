@@ -3,7 +3,33 @@
 All notable changes to the AutoPilot are summarized here.
 
 
-## v29 — Primary Family Calendar schedule detection
+
+## v31 — Stabilization & calendar correctness
+
+- Added timezone-aware ICS parsing for UTC, numeric offsets, and `TZID` calendar events.
+- Added recurring-event reconciliation for `EXDATE`, `RECURRENCE-ID`, and `STATUS:CANCELLED`.
+- Added DAILY, WEEKLY, MONTHLY, and YEARLY recurrence support with common BYDAY/BYMONTHDAY/BYMONTH rules.
+- Restored Smart De-duplication and Privacy Keyword Filter controls to the visible Calendar Hub.
+- Added tolerant cross-source de-duplication with source-role priority.
+- Manual Kira Schedule corrections now have protected precedence over calendar inference.
+- Conflicting Primary Family Calendar shift signals now show a Verify state instead of silently using last-write behavior.
+- Unknown child ownership now becomes `Unassigned / Verify` rather than silently defaulting to Middle.
+- Enforced a single Primary Family Calendar.
+- Added safe in-memory storage fallback when browser local storage is blocked.
+- Planning output is invalidated when source inputs change; changing the start date regenerates an existing plan after schedule refresh.
+- Calendar sources now show Fresh / Cached / Needs attention status.
+- Simplified implementation-oriented labels and Calendar Hub wording.
+
+## v31 — Kira Schedule planning-window fix
+
+- Fixed Kira Schedule inference resetting when the two-week start date changes.
+- Added a local, source-aware cache of Primary Family Calendar schedule detections.
+- Replays cached detections immediately when the planning window changes.
+- Refreshes only the Primary Family Calendar after a start-date change and re-runs inference for the new window.
+- Primary Family Calendar recurrence expansion now follows the newly selected planning window after refresh.
+- Team, school, and reference calendars remain excluded from Kira Schedule inference.
+
+## v31 — Primary Family Calendar schedule detection
 
 - Renamed the in-app section to **Kira Schedule**.
 - Kira Schedule is now auto-detected exclusively from the **Primary Family Calendar**.

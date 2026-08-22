@@ -142,48 +142,7 @@ td input,td select{margin:0;padding:7px}
  .marker{font-size:10px!important;right:4px;top:2px}
 }
 
-/* v29 Calendar Hub
-<div class="calendar-hygiene-grid">
-  <div class="hygiene-card">
-    <h3>Smart de-duplication</h3>
-    <p class="small muted">Automatically collapse duplicate events imported from multiple calendars. Events are treated as duplicates when their normalized title, date, and start time match, with an optional time tolerance.</p>
-    <label class="small"><input id="dedupeEnabled" type="checkbox" checked> Enable automatic de-duplication</label>
-    <div class="row" style="margin-top:8px">
-      <div>
-        <label class="small">Time tolerance</label>
-        <select id="dedupeTolerance">
-          <option value="0">Exact time only</option>
-          <option value="5">±5 minutes</option>
-          <option value="10" selected>±10 minutes</option>
-          <option value="15">±15 minutes</option>
-          <option value="30">±30 minutes</option>
-        </select>
-      </div>
-      <div>
-        <label class="small">Prefer source</label>
-        <select id="dedupePreference">
-          <option value="primary" selected>Kira Family calendar</option>
-          <option value="detail">Most detailed event</option>
-          <option value="first">First imported</option>
-        </select>
-      </div>
-    </div>
-    <div id="dedupeStatus" class="hygiene-status">De-duplication is enabled.</div>
-  </div>
-
-  <div class="hygiene-card">
-    <h3>Privacy keyword filter</h3>
-    <p class="small muted">Events containing any keyword below in the title, notes, or location are excluded locally before they enter the planner. One keyword or phrase per line.</p>
-    <textarea id="privacyKeywords" placeholder="therapy&#10;doctor&#10;confidential&#10;private"></textarea>
-    <label class="small"><input id="privacyFilterEnabled" type="checkbox" checked> Filter matching events automatically</label>
-    <div class="row" style="margin-top:8px">
-      <label class="small"><input id="privacyMatchWholeWord" type="checkbox"> Whole-word matching only</label>
-      <button id="previewPrivacyFilter" type="button">Preview filtered events</button>
-    </div>
-    <div id="privacyStatus" class="hygiene-status">No privacy keywords configured.</div>
-  </div>
-</div>
- */
+/* Calendar Hub */
 .calendar-hub{margin-top:12px;border:1px solid #d9dee7;border-radius:16px;padding:14px;background:linear-gradient(180deg,#fff,#fbfcff)}
 .calendar-hub-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:12px;margin-top:10px}
 .calendar-source-card{border:1px solid #e1e5ec;border-radius:14px;padding:12px;background:#fff}
@@ -201,7 +160,7 @@ td input,td select{margin:0;padding:7px}
 .calendar-status-dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:#9aa4b2;margin-right:5px}.calendar-status-dot.ok{background:#34c759}.calendar-status-dot.warn{background:#ff9f0a}.calendar-status-dot.bad{background:#ff3b30}
 @media(max-width:800px){.calendar-hub-grid{grid-template-columns:1fr}.calendar-url-row{grid-template-columns:1fr}.calendar-source-item{grid-template-columns:1fr}}
 
-/* v29 Calendar Hygiene */
+/* v31 Calendar Hygiene */
 .calendar-hygiene-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .calendar-hygiene-grid textarea{min-height:110px}
 .hygiene-card{border:1px solid #d7dbe2;border-radius:14px;padding:12px;background:#fff}
@@ -212,7 +171,7 @@ td input,td select{margin:0;padding:7px}
 @media print{.calendar-hygiene-grid,.hygiene-card{display:none!important}}
 
 
-/* v29 Apple public-calendar safe import */
+/* v31 Apple public-calendar safe import */
 .apple-safe-box{margin-top:10px;padding:11px 12px;border:1px solid #cfd7e6;border-radius:13px;background:#f8fbff}
 .apple-safe-box strong{display:block;margin-bottom:3px}
 .apple-safe-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -222,7 +181,7 @@ td input,td select{margin:0;padding:7px}
 @media print{#appleCalendarFallback,.calendar-proxy-settings{display:none!important}}
 
 
-/* v29 source architecture + iOS mobile agenda */
+/* v31 source architecture + iOS mobile agenda */
 .source-role-select{font-size:12px;padding:5px 7px;min-width:145px}
 .source-role-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:850;background:#eef2f7;color:#475569;margin-left:5px}
 .source-role-badge.primary-family{background:#e9f2ff;color:#1859a9}
@@ -266,13 +225,26 @@ td input,td select{margin:0;padding:7px}
 }
 @media print{#mobilePlanCard{display:none!important}}
 
+
+/* v31 stabilization states */
+.k-source-status{font-size:10px;color:#6b7280;margin-top:3px;font-weight:700}
+.k-source-status.manual{color:#7a3db8}
+.k-source-status.inferred{color:#1f6f3d}
+.k-source-status.conflict{color:#b42318;font-weight:900}
+.verify-child{color:#b45309;font-size:10px;font-weight:800;margin-top:2px}
+.source-health{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:850;margin-left:5px;background:#f2f2f7;color:#666}
+.source-health.fresh{background:#e9f8ee;color:#176b3a}
+.source-health.cached{background:#fff6df;color:#8a5b00}
+.source-health.attention{background:#ffeceb;color:#a12626}
+.storage-warning{color:#a12626;font-weight:800}
+
 </style>
 </head>
 <body>
 <div class="app">
 <section class="no-print">
-  <h1>Family Commute + Transport Optimizer</h1>
-  <p class="muted">Fixed family inputs in. Recommended Chris commute schedule and transport plan out.</p>
+  <h1>AutoPilot</h1>
+  <p class="muted">Family schedules in. Clear work, transport, and timing decisions out.</p>
 
   <div class="toolbar">
     <button class="primary" id="generateBtn">Generate recommended 2-week plan</button>
@@ -329,7 +301,7 @@ td input,td select{margin:0;padding:7px}
     <div class="section-head">
       <div>
         <h2>1. Kira Schedule</h2>
-        <p class="muted small">AutoPilot detects Kira’s schedule from the <strong>Primary Family Calendar</strong> using entries labeled North, Star, Late, or Off. Weekdays without a detected schedule entry default to <strong>Early - Main Hospital (6:00 AM–2:30 PM)</strong>. Manual corrections remain available below. Kira’s configured commute is added to shift end before she is considered available for afternoon transport.</p>
+        <p class="muted small">AutoPilot detects Kira’s schedule from the <strong>Primary Family Calendar</strong> using entries labeled North, Star, Late, or Off. Weekdays without a detected schedule entry default to <strong>Early - Main Hospital (6:00 AM–2:30 PM)</strong>. Manual corrections remain available below. Changing the planning start date automatically replays saved detections and refreshes the Primary Family Calendar for the new window. Kira’s configured commute is added to shift end before she is considered available for afternoon transport.</p>
       </div>
       <button id="copyWeekBtn">Copy manual corrections Week 1 → Week 2</button>
     </div>
@@ -394,18 +366,58 @@ td input,td select{margin:0;padding:7px}
       </div>
 
       <div style="margin-top:12px">
-        <div class="calendar-source-title"><span>Connected calendar sources</span><span id="calendarSourceCount" class="small muted"></span></div>
+        <div class="calendar-source-title"><span>Calendar sources</span><span id="calendarSourceCount" class="small muted"></span></div>
         <div id="savedCalendarLinks" class="calendar-source-list"></div>
         <div id="importStatus" class="small muted" style="margin-top:9px">No calendar source imported yet.</div>
+<div class="calendar-hygiene-grid">
+  <div class="hygiene-card">
+    <h3>Smart de-duplication</h3>
+    <p class="small muted">Automatically collapse duplicate events imported from multiple calendars. Events are treated as duplicates when their normalized title, date, and start time match, with an optional time tolerance.</p>
+    <label class="small"><input id="dedupeEnabled" type="checkbox" checked> Enable automatic de-duplication</label>
+    <div class="row" style="margin-top:8px">
+      <div>
+        <label class="small">Time tolerance</label>
+        <select id="dedupeTolerance">
+          <option value="0">Exact time only</option>
+          <option value="5">±5 minutes</option>
+          <option value="10" selected>±10 minutes</option>
+          <option value="15">±15 minutes</option>
+          <option value="30">±30 minutes</option>
+        </select>
+      </div>
+      <div>
+        <label class="small">Prefer source</label>
+        <select id="dedupePreference">
+          <option value="primary" selected>Kira Family calendar</option>
+          <option value="detail">Most detailed event</option>
+          <option value="first">First imported</option>
+        </select>
+      </div>
+    </div>
+    <div id="dedupeStatus" class="hygiene-status">De-duplication is enabled.</div>
+  </div>
+
+  <div class="hygiene-card">
+    <h3>Privacy keyword filter</h3>
+    <p class="small muted">Events containing any keyword below in the title, notes, or location are excluded locally before they enter the planner. One keyword or phrase per line.</p>
+    <textarea id="privacyKeywords" placeholder="therapy&#10;doctor&#10;confidential&#10;private"></textarea>
+    <label class="small"><input id="privacyFilterEnabled" type="checkbox" checked> Filter matching events automatically</label>
+    <div class="row" style="margin-top:8px">
+      <label class="small"><input id="privacyMatchWholeWord" type="checkbox"> Whole-word matching only</label>
+      <button id="previewPrivacyFilter" type="button">Preview filtered events</button>
+    </div>
+    <div id="privacyStatus" class="hygiene-status">No privacy keywords configured.</div>
+  </div>
+</div>
       </div>
 
       <details style="margin-top:12px">
-        <summary><strong>Connection notes & troubleshooting</strong></summary>
+        <summary><strong>Calendar help</strong></summary>
         <div class="small muted" style="margin-top:7px;line-height:1.5">
           <strong>iPhone/iCloud:</strong> paste the exact link produced by Calendar → Calendars → ⓘ → Public Calendar → Share Link. The planner accepts <code>webcal://</code>, <code>webcals://</code>, <code>http://</code>, and <code>https://</code>, extracts links even when surrounded by copied text, and retries Apple-specific host variants automatically. If Apple blocks browser access, the planner shows an Apple-specific download/import fallback instead of treating the link as invalid.
           <br><br><strong>GameChanger / TeamSnap:</strong> copy each team's calendar subscription link and add it directly above. Keeping each team separate allows refreshes to replace that team's events cleanly when practices move or games are cancelled.
-          <br><br><strong>Recurring events:</strong> the importer expands common daily and weekly ICS recurrence rules into the active two-week planning window.
-          <br><br><strong>Optional automatic calendar proxy:</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v29, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
+          <br><br><strong>Recurring events:</strong> AutoPilot supports daily, weekly, monthly, and yearly recurrence patterns plus cancellations, excluded dates, and moved single instances.
+          <br><br><strong>Optional automatic calendar proxy:</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v31, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
           <div class="calendar-proxy-settings">
             <div class="calendar-proxy-row">
               <input id="calendarProxyUrl" placeholder="Optional proxy URL, e.g. https://family-calendar-proxy.example.workers.dev">
@@ -525,7 +537,47 @@ td input,td select{margin:0;padding:7px}
 
 <script>
 const $=id=>document.getElementById(id);
+
+const __memoryStorage=new Map();
+let __persistentStorageAvailable=true;
+try{
+  const __storageTest='__autopilot_storage_test__';
+  localStorage.setItem(__storageTest,'1');
+  localStorage.removeItem(__storageTest);
+}catch(e){__persistentStorageAvailable=false}
+function storageGet(key){
+  if(__persistentStorageAvailable){
+    try{return localStorage.getItem(key)}catch(e){__persistentStorageAvailable=false}
+  }
+  return __memoryStorage.has(key)?__memoryStorage.get(key):null;
+}
+function storageSet(key,value){
+  const v=String(value);
+  __memoryStorage.set(key,v);
+  if(__persistentStorageAvailable){
+    try{localStorage.setItem(key,v);return true}catch(e){__persistentStorageAvailable=false}
+  }
+  return false;
+}
+function storageRemove(key){
+  __memoryStorage.delete(key);
+  if(__persistentStorageAvailable){try{localStorage.removeItem(key)}catch(e){__persistentStorageAvailable=false}}
+}
+
 let plans=[];
+
+let __planStaleReason='';
+function markPlanStale(reason='Inputs changed'){
+  __planStaleReason=reason;
+  if(plans.length){
+    plans=[];
+    const results=$('results');
+    if(results)results.style.display='none';
+    const status=$('importStatus');
+    if(status)status.textContent=`${reason}. Generate the plan again to refresh the output.`;
+  }
+}
+
 
 function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
@@ -580,22 +632,149 @@ function kiraPickupAvailableAt(code){
   if(!x.start)return 0;
   return toMin(x.end) + (+$('kiraCommute').value || 30);
 }
+
+const STORAGE_KIRA_SCHEDULE_CACHE='autopilotKiraScheduleCacheV31';
+
+function getKiraScheduleCache(){
+  try{
+    const x=JSON.parse(storageGet(STORAGE_KIRA_SCHEDULE_CACHE)||'[]');
+    return Array.isArray(x)?x:[];
+  }catch{return[]}
+}
+function saveKiraScheduleCache(rows){
+  const clean=(rows||[]).filter(x=>x&&x.date&&x.source&&Array.isArray(x.shifts));
+  storageSet(STORAGE_KIRA_SCHEDULE_CACHE,JSON.stringify(clean));
+}
+function replaceKiraScheduleSignalsForSource(source,signals=[]){
+  const others=getKiraScheduleCache().filter(x=>x.source!==source);
+  const byDate=new Map();
+  for(const x of signals){
+    if(!x.date||!x.shift)continue;
+    if(!byDate.has(x.date))byDate.set(x.date,new Set());
+    byDate.get(x.date).add(x.shift);
+  }
+  const now=new Date().toISOString();
+  const next=[...others,...[...byDate.entries()].map(([date,set])=>({date,source,shifts:[...set],updatedAt:now}))];
+  saveKiraScheduleCache(next);
+}
+function clearKiraScheduleCacheForSource(source=''){
+  if(!source)return;
+  saveKiraScheduleCache(getKiraScheduleCache().filter(x=>x.source!==source));
+}
+function setKiraRowStatus(row,text,kind=''){
+  const el=row?.querySelector('.k-source-status');
+  if(!el)return;
+  el.textContent=text;
+  el.className=`k-source-status ${kind}`.trim();
+}
+function clearKiraConflict(row){
+  if(!row)return;
+  delete row.dataset.scheduleConflict;
+  delete row.dataset.conflictShifts;
+}
+function markKiraConflict(row,shifts=[]){
+  if(!row)return false;
+  row.dataset.scheduleConflict='true';
+  row.dataset.conflictShifts=shifts.join(',');
+  if(row.dataset.manualShift==='true'){
+    setKiraRowStatus(row,'Manual override · calendar conflict ignored','manual');
+    return false;
+  }
+  setKiraRowStatus(row,`Verify: conflicting calendar signals (${shifts.map(x=>kiraShiftInfo(x).label).join(' / ')})`,'conflict');
+  return true;
+}
+function setKiraShiftProgrammatically(row,shift,mode='inferred',source=''){
+  if(!row)return false;
+  if(mode==='inferred' && row.dataset.manualShift==='true')return false;
+  const sel=row.querySelector('.k-shift');
+  sel.value=shift;
+  window.__settingKiraProgrammatically=true;
+  sel.onchange();
+  window.__settingKiraProgrammatically=false;
+  if(mode==='manual'){
+    row.dataset.manualShift='true';
+    row.dataset.manualShiftValue=shift;
+    clearKiraConflict(row);
+    setKiraRowStatus(row,'Manual override','manual');
+  }else{
+    row.dataset.importedShift='true';
+    if(source)row.dataset.importedShiftSource=source;
+    clearKiraConflict(row);
+    setKiraRowStatus(row,source?'Auto-detected · Primary Family':'Default schedule',source?'inferred':'');
+  }
+  return true;
+}
+function applyCachedKiraSchedule(){
+  const cache=getKiraScheduleCache();
+  const byDate=new Map();
+  for(const item of cache){
+    if(!byDate.has(item.date))byDate.set(item.date,{shifts:new Set(),sources:new Set()});
+    const g=byDate.get(item.date);
+    (item.shifts||[]).forEach(x=>g.shifts.add(x));
+    if(item.source)g.sources.add(item.source);
+  }
+  let applied=0;
+  for(const [date,g] of byDate){
+    const row=[...$('kiraBody').children].find(r=>r.dataset.date===date);
+    if(!row)continue;
+    const shifts=[...g.shifts];
+    if(shifts.length>1){markKiraConflict(row,shifts);continue}
+    if(shifts.length===1 && setKiraShiftProgrammatically(row,shifts[0],'inferred',[...g.sources][0]||'Primary Family Calendar'))applied++;
+  }
+  return applied;
+}
+async function refreshPrimaryFamilyCalendarForSchedule(){
+  const primary=getSavedCalendarLinks().find(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily');
+  if(!primary)return {ok:false,reason:'none'};
+  try{
+    const ok=await importSharedCalendarLink(primary,false);
+    return {ok:!!ok,reason:ok?'refreshed':'blocked'};
+  }catch{return {ok:false,reason:'error'}}
+}
+async function handlePlanningStartDateChange(){
+  const regenerate=plans.length>0;
+  if(regenerate)markPlanStale('Planning window changed');
+  buildKiraRows();
+  const cached=applyCachedKiraSchedule();
+  saveCycle();
+  if(getSavedCalendarLinks().some(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily')){
+    $('importStatus').textContent=cached?'Kira Schedule updated from saved detections; refreshing the Primary Family Calendar for this window…':'Refreshing the Primary Family Calendar to detect Kira Schedule for this window…';
+    const result=await refreshPrimaryFamilyCalendarForSchedule();
+    if(!result.ok&&cached)$('importStatus').textContent='Using cached Kira Schedule detections because live refresh is unavailable.';
+    else if(!result.ok)$('importStatus').textContent='Live Primary Family Calendar refresh is unavailable; undetected weekdays use the default schedule.';
+  }
+  if(regenerate)await generateCore();
+  scheduleAutosave();
+}
+
 function buildKiraRows(){
   const start=parseDate($('startDate').value);$('kiraBody').innerHTML='';
   Array.from({length:14},(_,i)=>addDays(start,i)).filter(d=>![0,6].includes(d.getDay())).forEach(d=>{
     const tr=document.createElement('tr');tr.dataset.date=iso(d);
     tr.innerHTML=`<td><strong>${dayName(d)} ${shortDate(d)}</strong></td>
-    <td><select class="k-shift"><option value="early-main">Early - Main Hospital</option><option value="early-north">Early - North</option><option value="star">Star</option><option value="late-main">Late - Main Hospital</option><option value="off">Off</option></select></td>
+    <td><select class="k-shift"><option value="early-main">Early - Main Hospital</option><option value="early-north">Early - North</option><option value="star">Star</option><option value="late-main">Late - Main Hospital</option><option value="off">Off</option></select><div class="k-source-status">Default schedule</div></td>
     <td class="k-hours muted small">Off</td><td class="k-location muted small">Main Hospital</td><td class="k-pm muted small">Available</td>`;
     const sel=tr.querySelector('.k-shift');
     sel.value='early-main';
-    sel.onchange=()=>{const x=kiraShiftInfo(sel.value);tr.querySelector('.k-hours').textContent=x.start?`${fmt(toMin(x.start))}–${fmt(toMin(x.end))}`:'Off';tr.querySelector('.k-location').textContent=x.location;tr.querySelector('.k-pm').textContent=x.start?`~${fmt(kiraPickupAvailableAt(sel.value))}`:'Available'};
+    sel.onchange=(ev)=>{
+      const x=kiraShiftInfo(sel.value);
+      tr.querySelector('.k-hours').textContent=x.start?`${fmt(toMin(x.start))}–${fmt(toMin(x.end))}`:'Off';
+      tr.querySelector('.k-location').textContent=x.location;
+      tr.querySelector('.k-pm').textContent=x.start?`~${fmt(kiraPickupAvailableAt(sel.value))}`:'Available';
+      if(ev?.isTrusted && !window.__settingKiraProgrammatically){
+        tr.dataset.manualShift='true';
+        tr.dataset.manualShiftValue=sel.value;
+        clearKiraConflict(tr);
+        setKiraRowStatus(tr,'Manual override','manual');
+        markPlanStale('Kira Schedule changed');
+      }
+    };
     sel.onchange();
     $('kiraBody').appendChild(tr);
   });
 }
-buildKiraRows();$('startDate').onchange=buildKiraRows;
-$('copyWeekBtn').onclick=()=>{const rows=[...$('kiraBody').children];for(let i=0;i<5;i++){rows[i+5].querySelector('.k-shift').value=rows[i].querySelector('.k-shift').value;rows[i+5].querySelector('.k-shift').onchange()}};
+buildKiraRows();applyCachedKiraSchedule();$('startDate').onchange=handlePlanningStartDateChange;
+$('copyWeekBtn').onclick=()=>{const rows=[...$('kiraBody').children];for(let i=0;i<5;i++){setKiraShiftProgrammatically(rows[i+5],rows[i].querySelector('.k-shift').value,'manual','Copied from Week 1')}markPlanStale('Kira Schedule corrections copied')};
 $('kiraCommute').oninput=()=>{[...$('kiraBody').children].forEach(r=>r.querySelector('.k-shift').onchange())};
 
 function guessChild(title='', source=''){
@@ -603,7 +782,7 @@ function guessChild(title='', source=''){
   if(/\b(oldest|ryan)\b/.test(t))return 'Oldest';
   if(/\b(middle)\b/.test(t))return 'Middle';
   if(/\b(youngest)\b/.test(t))return 'Youngest';
-  return 'Middle';
+  return 'Unassigned';
 }
 
 function detectKiraShift(title='', source=''){
@@ -623,21 +802,18 @@ function detectKiraShift(title='', source=''){
 function applyKiraShiftOverride(dateStr, shiftCode, sourceName=''){
   const row=[...$('kiraBody').children].find(r=>r.dataset.date===dateStr);
   if(!row)return false;
-  row.querySelector('.k-shift').value=shiftCode;
-  row.querySelector('.k-shift').onchange();
-  row.dataset.importedShift='true';
-  if(sourceName)row.dataset.importedShiftSource=sourceName;
-  return true;
+  return setKiraShiftProgrammatically(row,shiftCode,'inferred',sourceName||'Primary Family Calendar');
 }
 
 function childLabel(key){
   if(key==='Oldest')return $('childOldest').value.trim()||'Oldest';
   if(key==='Middle')return $('childMiddle').value.trim()||'Middle';
   if(key==='Youngest')return $('childYoungest').value.trim()||'Youngest';
+  if(key==='Unassigned')return 'Unassigned / Verify';
   return key;
 }
 function childOptions(selected=''){
-  return ['Oldest','Middle','Youngest'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
+  return ['Oldest','Middle','Youngest','Unassigned'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
 }
 function refreshChildLabels(){
   [...$('activityBody').children].forEach(r=>{
@@ -652,8 +828,11 @@ function activityRow(d={}){
   const tr=document.createElement('tr');
   if(d.source)tr.classList.add('imported-row');
   tr.dataset.source=d.source||'Manual';
+  tr.dataset.calendarRole=d.calendarRole||roleForSourceName(d.source||'');
+  tr.dataset.description=d.description||'';
+  const inferredChild=d.child||guessChild(d.title,d.source);
   tr.innerHTML=`<td><input class="a-date" type="date" value="${d.date||''}"></td>
-  <td><select class="a-child">${childOptions(d.child||'Middle')}</select></td>
+  <td><select class="a-child">${childOptions(inferredChild)}</select><div class="verify-child" style="${inferredChild==='Unassigned'?'':'display:none'}">Verify child</div></td>
   <td><input class="a-title" value="${esc(d.title||'')}">${d.source?`<div class="source-note">Imported: ${esc(d.source)}</div>`:''}</td>
   <td><input class="a-start" type="time" value="${d.start||''}"></td><td><input class="a-end" type="time" value="${d.end||''}"></td>
   <td><input class="a-loc" value="${esc(d.location||'')}" placeholder="Full street address preferred">
@@ -664,70 +843,152 @@ function activityRow(d={}){
   <td><select class="a-drop"><option value="yes">Yes</option><option value="no">No</option></select></td>
   <td><select class="a-pick"><option value="yes">Yes</option><option value="no">No</option></select></td>
   <td><button class="remove">Remove</button></td>`;
-  tr.querySelector('.a-child').value=d.child||guessChild(d.title,d.source);
+  const childSel=tr.querySelector('.a-child');
+  childSel.value=inferredChild;
+  childSel.onchange=()=>{tr.querySelector('.verify-child').style.display=childSel.value==='Unassigned'?'':'none';markPlanStale('Child assignment changed')};
   if(d.drop)tr.querySelector('.a-drop').value=d.drop;if(d.pick)tr.querySelector('.a-pick').value=d.pick;
-  tr.querySelector('.remove').onclick=()=>tr.remove();$('activityBody').appendChild(tr);
+  tr.querySelector('.remove').onclick=()=>{tr.remove();markPlanStale('Activity removed')};
+  $('activityBody').appendChild(tr);
 }
-$('addActivityBtn').onclick=()=>activityRow();
+$('addActivityBtn').onclick=()=>activityRow({child:'Unassigned'});
 
 
 function unfoldICS(text){return text.replace(/\r?\n[ \t]/g,'')}
-function parseICSTime(raw){
+function normalizeTzid(tzid=''){
+  let z=String(tzid||'').replace(/^"|"$/g,'').trim();
+  const m=z.match(/((?:Africa|America|Antarctica|Asia|Atlantic|Australia|Europe|Indian|Pacific)\/[A-Za-z0-9_+\-\/]+)/);
+  if(m)z=m[1];
+  try{new Intl.DateTimeFormat('en-US',{timeZone:z}).format(new Date());return z}catch{return''}
+}
+function localPartsFromInstant(d){
+  return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,instant:d.getTime()};
+}
+function zonedWallTimeToInstant(y,mo,da,h,mi,se,tz){
+  let guess=Date.UTC(y,mo-1,da,h,mi,se||0);
+  const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+  for(let i=0;i<3;i++){
+    const parts=Object.fromEntries(fmt.formatToParts(new Date(guess)).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+    const observed=Date.UTC(+parts.year,+parts.month-1,+parts.day,+parts.hour,+parts.minute,+parts.second);
+    const target=Date.UTC(y,mo-1,da,h,mi,se||0),delta=target-observed;
+    guess+=delta;if(Math.abs(delta)<1000)break;
+  }
+  return new Date(guess);
+}
+function parseICSTime(raw,params={}){
   if(!raw)return null;
-  const m=raw.match(/(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?)?/);
+  const v=String(raw).trim();
+  const m=v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?)?(Z|[+-]\d{4})?$/);
   if(!m)return null;
-  return {date:`${m[1]}-${m[2]}-${m[3]}`,time:m[4]?`${m[4]}:${m[5]}`:''};
+  const y=+m[1],mo=+m[2],da=+m[3];
+  if(!m[4])return {date:`${m[1]}-${m[2]}-${m[3]}`,time:'',allDay:true,instant:null};
+  const h=+m[4],mi=+m[5],se=+(m[6]||0),zone=m[7]||'';
+  let instant;
+  if(zone==='Z')instant=new Date(Date.UTC(y,mo-1,da,h,mi,se));
+  else if(/^[+-]\d{4}$/.test(zone)){
+    const sign=zone[0]==='+'?1:-1,offH=+zone.slice(1,3),offM=+zone.slice(3,5);
+    instant=new Date(Date.UTC(y,mo-1,da,h,mi,se)-sign*(offH*60+offM)*60000);
+  }else{
+    const tz=normalizeTzid(params.TZID||'');
+    if(tz){try{instant=zonedWallTimeToInstant(y,mo,da,h,mi,se,tz)}catch{}}
+    if(!instant)instant=new Date(y,mo-1,da,h,mi,se);
+  }
+  return {...localPartsFromInstant(instant),allDay:false};
 }
 function icsDateToLocal(dateStr){const [y,m,d]=dateStr.split('-').map(Number);return new Date(y,m-1,d,12,0,0,0)}
 function addDaysIso(dateStr,n){const d=icsDateToLocal(dateStr);d.setDate(d.getDate()+n);return iso(d)}
-function parseRRule(raw=''){
-  const out={};String(raw).split(';').forEach(part=>{const [k,...v]=part.split('=');if(k)out[k.toUpperCase()]=v.join('=')});return out;
+function daysBetweenIso(a,b){return Math.round((icsDateToLocal(b)-icsDateToLocal(a))/86400000)}
+function parseRRule(raw=''){const out={};String(raw).split(';').forEach(part=>{const [k,...v]=part.split('=');if(k)out[k.toUpperCase()]=v.join('=')});return out}
+function parseIcsProperty(line){
+  const colon=line.indexOf(':');if(colon<0)return null;
+  const left=line.slice(0,colon),value=line.slice(colon+1).trim(),bits=left.split(';'),name=bits.shift().toUpperCase(),params={};
+  bits.forEach(p=>{const i=p.indexOf('=');if(i>0)params[p.slice(0,i).toUpperCase()]=p.slice(i+1)});
+  return {name,params,value};
+}
+function getIcsProps(block,key){const wanted=key.toUpperCase();return block.split('\n').map(x=>x.replace(/\r$/,'')).map(parseIcsProperty).filter(Boolean).filter(x=>x.name===wanted)}
+function getIcsProp(block,key){return getIcsProps(block,key)[0]||null}
+function byDayMatches(d,tokens=[]){
+  if(!tokens.length)return true;
+  const codes=['SU','MO','TU','WE','TH','FR','SA'],code=codes[d.getDay()];
+  return tokens.some(tok=>{
+    const m=tok.match(/^([+-]?\d+)?([A-Z]{2})$/);if(!m||m[2]!==code)return false;
+    if(!m[1])return true;
+    const ordinal=+m[1];
+    if(ordinal>0)return Math.ceil(d.getDate()/7)===ordinal;
+    const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    return -Math.ceil((last-d.getDate()+1)/7)===ordinal;
+  });
 }
 function recurrenceDates(start,ruleRaw){
   if(!ruleRaw||!start?.date)return[start.date];
   const rule=parseRRule(ruleRaw),freq=(rule.FREQ||'').toUpperCase();
-  if(!['DAILY','WEEKLY'].includes(freq))return[start.date];
+  if(!['DAILY','WEEKLY','MONTHLY','YEARLY'].includes(freq))return[start.date];
   const windowStart=$('startDate').value||start.date,windowEnd=iso(addDays(parseDate(windowStart),14));
-  const untilRaw=rule.UNTIL||'',until=parseICSTime(untilRaw)?.date||'';
-  const count=Math.max(0,Math.min(500,Number(rule.COUNT)||500));
-  const dayMap={SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
-  const byDays=(rule.BYDAY||'').split(',').map(x=>dayMap[x.replace(/^[-+]?\d+/,'')]).filter(x=>x!==undefined);
-  const interval=Math.max(1,Number(rule.INTERVAL)||1),results=[];
-  let d=icsDateToLocal(start.date),generated=0,guard=0;
+  const until=parseICSTime(rule.UNTIL||'')?.date||'';
+  const maxCount=rule.COUNT?Math.max(0,Math.min(5000,Number(rule.COUNT)||0)):Infinity;
+  const interval=Math.max(1,Number(rule.INTERVAL)||1);
+  const byDay=(rule.BYDAY||'').split(',').filter(Boolean);
+  const byMonthDay=(rule.BYMONTHDAY||'').split(',').map(Number).filter(x=>Number.isFinite(x)&&x!==0);
+  const byMonth=(rule.BYMONTH||'').split(',').map(Number).filter(x=>Number.isFinite(x)&&x>=1&&x<=12);
   const startD=icsDateToLocal(start.date),winS=icsDateToLocal(windowStart),winE=icsDateToLocal(windowEnd);
-  while(d<winE && guard++<1000 && generated<count){
-    const ds=iso(d); if(until&&ds>until)break;
+  const results=[];let generated=0,guard=0,d=new Date(startD);
+  while(d<winE&&generated<maxCount&&guard++<40000){
+    const ds=iso(d);if(until&&ds>until)break;
+    const days=daysBetweenIso(start.date,ds),months=(d.getFullYear()-startD.getFullYear())*12+d.getMonth()-startD.getMonth(),years=d.getFullYear()-startD.getFullYear();
     let include=false;
-    if(freq==='DAILY'){
-      const days=Math.round((d-startD)/86400000);include=days>=0&&days%interval===0;
-    }else{
-      const days=Math.round((d-startD)/86400000),week=Math.floor(days/7);
-      const allowed=byDays.length?byDays:[startD.getDay()];include=days>=0&&week%interval===0&&allowed.includes(d.getDay());
+    if(days>=0){
+      if(freq==='DAILY')include=days%interval===0;
+      else if(freq==='WEEKLY'){
+        const week=Math.floor(days/7),allowed=byDay.length?byDay:[['SU','MO','TU','WE','TH','FR','SA'][startD.getDay()]];
+        include=week%interval===0&&byDayMatches(d,allowed);
+      }else if(freq==='MONTHLY'){
+        const md=d.getDate(),last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+        const mdOk=byMonthDay.length?byMonthDay.some(x=>x>0?md===x:md===last+x+1):(!byDay.length?md===startD.getDate():true);
+        include=months>=0&&months%interval===0&&mdOk&&byDayMatches(d,byDay);
+      }else if(freq==='YEARLY'){
+        const monthOk=byMonth.length?byMonth.includes(d.getMonth()+1):d.getMonth()===startD.getMonth();
+        const md=d.getDate(),last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+        const mdOk=byMonthDay.length?byMonthDay.some(x=>x>0?md===x:md===last+x+1):(!byDay.length?md===startD.getDate():true);
+        include=years>=0&&years%interval===0&&monthOk&&mdOk&&byDayMatches(d,byDay);
+      }
     }
     if(include){generated++;if(d>=winS&&d<winE)results.push(ds)}
     d.setDate(d.getDate()+1);
   }
-  return results.length?results:[];
+  return results;
 }
 function parseICS(text,sourceName='Calendar'){
   const unfolded=unfoldICS(text);
-  const blocks=unfolded.split('BEGIN:VEVENT').slice(1).map(x=>x.split('END:VEVENT')[0]);
-  const rows=[];
-  for(const b of blocks){
-    const get=(key)=>{const m=b.match(new RegExp('(?:^|\\n)'+key+'[^:]*:(.*)','i'));return m?m[1].trim():''};
-    const s=parseICSTime(get('DTSTART')), e=parseICSTime(get('DTEND')); if(!s)continue;
-    let title=get('SUMMARY').replace(/\\,/g,',').replace(/\\n/g,' ');
-    let location=get('LOCATION').replace(/\\,/g,',').replace(/\\n/g,' ');
-    let description=get('DESCRIPTION').replace(/\\,/g,',').replace(/\\n/g,' ');
-    if(!location){const apple=get('X-APPLE-STRUCTURED-LOCATION');const tm=apple.match(/X-TITLE=([^;:]+)/i);if(tm)location=tm[1].replace(/\\,/g,',').replace(/\\n/g,' ')}
-    const rule=get('RRULE');
-    const durationDays=e?.date?Math.max(0,Math.round((icsDateToLocal(e.date)-icsDateToLocal(s.date))/86400000)):0;
-    const occurrences=rule?recurrenceDates(s,rule):[s.date];
-    for(const date of occurrences){
-      const endDate=durationDays?addDaysIso(date,durationDays):date;
-      rows.push({date,start:s.time,end:e?.time||'',endDate,title:title||'Calendar event',location,description,homeDrive:20,child:guessChild(title,sourceName),drop:'yes',pick:'yes',source:sourceName});
+  const blocks=unfolded.split('BEGIN:VEVENT').slice(1).map(x=>x.split('END:VEVENT')[0]),components=[];
+  for(let idx=0;idx<blocks.length;idx++){
+    const b=blocks[idx],sp=getIcsProp(b,'DTSTART');if(!sp)continue;
+    const ep=getIcsProp(b,'DTEND'),st=parseICSTime(sp.value,sp.params),en=ep?parseICSTime(ep.value,ep.params):null;if(!st)continue;
+    const pv=k=>getIcsProp(b,k)?.value||'',uid=pv('UID')||`${sourceName}-${idx}-${st.date}-${st.time}`;
+    const rp=getIcsProp(b,'RECURRENCE-ID'),recId=rp?parseICSTime(rp.value,rp.params):null,status=pv('STATUS').toUpperCase();
+    let title=pv('SUMMARY').replace(/\\,/g,',').replace(/\\n/g,' '),location=pv('LOCATION').replace(/\\,/g,',').replace(/\\n/g,' '),description=pv('DESCRIPTION').replace(/\\,/g,',').replace(/\\n/g,' ');
+    if(!location){const apple=pv('X-APPLE-STRUCTURED-LOCATION'),tm=apple.match(/X-TITLE=([^;:]+)/i);if(tm)location=tm[1].replace(/\\,/g,',').replace(/\\n/g,' ')}
+    const exdates=[];getIcsProps(b,'EXDATE').forEach(p=>p.value.split(',').forEach(v=>{const x=parseICSTime(v,p.params);if(x)exdates.push(x.date)}));
+    components.push({uid,s:st,e:en,recId,status,title:title||'Calendar event',location,description,rule:pv('RRULE'),exdates,source:sourceName});
+  }
+  const masters=new Map(),overrides=new Map(),standalone=[];
+  components.forEach(c=>{if(c.recId)overrides.set(`${c.uid}|${c.recId.date}`,c);else if(c.rule)masters.set(c.uid,c);else standalone.push(c)});
+  const rows=[],usedOverrides=new Set();
+  function pushComp(c,dateOverride=null){
+    if(!c||c.status==='CANCELLED')return;
+    const date=dateOverride||c.s.date;if(!inPlanningWindow(date))return;
+    const durationDays=c.e?.date?Math.max(0,daysBetweenIso(c.s.date,c.e.date)):0;
+    rows.push({date,start:c.s.time,end:c.e?.time||'',endDate:durationDays?addDaysIso(date,durationDays):date,title:c.title,location:c.location,description:c.description,homeDrive:20,child:guessChild(c.title,c.source),drop:'yes',pick:'yes',source:c.source,uid:c.uid});
+  }
+  for(const [uid,master] of masters){
+    if(master.status==='CANCELLED')continue;
+    const excluded=new Set(master.exdates||[]),dates=recurrenceDates(master.s,master.rule).filter(d=>!excluded.has(d));
+    for(const occurrenceDate of dates){
+      const key=`${uid}|${occurrenceDate}`,ov=overrides.get(key);
+      if(ov){usedOverrides.add(key);if(ov.status!=='CANCELLED')pushComp(ov,ov.s.date)}
+      else pushComp(master,occurrenceDate);
     }
   }
+  standalone.forEach(c=>pushComp(c));
+  for(const [key,ov] of overrides){if(!usedOverrides.has(key)&&ov.status!=='CANCELLED')pushComp(ov,ov.s.date)}
   return rows;
 }
 function parseCSVLine(line){
@@ -850,12 +1111,12 @@ function appleCalendarCandidates(raw){
   return out;
 }
 function getCalendarProxyUrl(){
-  return (localStorage.getItem(STORAGE_CAL_PROXY)||'').trim().replace(/\/+$/,'');
+  return (storageGet(STORAGE_CAL_PROXY)||'').trim().replace(/\/+$/,'');
 }
 function setCalendarProxyUrl(raw=''){
   const val=extractCalendarUrl(raw)||String(raw||'').trim();
   if(val && !/^https:\/\//i.test(val))throw new Error('Proxy URL must begin with https://');
-  localStorage.setItem(STORAGE_CAL_PROXY,val.replace(/\/+$/,''));
+  storageSet(STORAGE_CAL_PROXY,val.replace(/\/+$/,''));
   renderCalendarProxyStatus();
 }
 function renderCalendarProxyStatus(){
@@ -924,16 +1185,32 @@ function sourcePriorityForEvent(e){
 }
 
 function getSavedCalendarLinks(){
-  try{return (JSON.parse(localStorage.getItem(STORAGE_CAL_LINKS)||'[]')||[]).map((x,i)=>({...x,id:x.id||('cal-'+i+'-'+Math.random().toString(36).slice(2,7)),kind:x.kind||'team',role:normalizeCalendarRole(x.role,x.kind||'team')}))}catch{return[]}
+  try{return (JSON.parse(storageGet(STORAGE_CAL_LINKS)||'[]')||[]).map((x,i)=>({...x,id:x.id||('cal-'+i+'-'+Math.random().toString(36).slice(2,7)),kind:x.kind||'team',role:normalizeCalendarRole(x.role,x.kind||'team')}))}catch{return[]}
 }
-function saveCalendarLinks(links){localStorage.setItem(STORAGE_CAL_LINKS,JSON.stringify(links));renderSavedCalendarLinks()}
+function enforceSinglePrimary(links,preferredId=''){
+  const primaries=links.filter(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily');
+  if(primaries.length<=1)return links;
+  const keep=primaries.find(x=>x.id===preferredId)||primaries[primaries.length-1];
+  return links.map(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily'&&x.id!==keep.id?{...x,role:'reference',kind:x.kind==='main'?'team':x.kind}:x);
+}
+function saveCalendarLinks(links,preferredPrimaryId=''){
+  links=enforceSinglePrimary(links,preferredPrimaryId);
+  storageSet(STORAGE_CAL_LINKS,JSON.stringify(links));renderSavedCalendarLinks();
+}
 function sourceLabelFor(link){return `${link.source||'Calendar'}: ${link.label||'Shared calendar'}`}
+function sourceHealth(link){
+  const age=link.lastRefresh?Date.now()-new Date(link.lastRefresh).getTime():Infinity;
+  if(link.lastStatus==='ok'&&age<=30*60*1000)return {label:'Fresh',cls:'fresh'};
+  if((link.lastStatus==='ok'||link.lastStatus==='needs-file'||link.lastStatus==='bad')&&link.lastCount!=null)return {label:'Cached',cls:'cached'};
+  return {label:'Needs attention',cls:'attention'};
+}
+
 function renderSavedCalendarLinks(){
   const links=getSavedCalendarLinks(),el=$('savedCalendarLinks');$('calendarSourceCount').textContent=`${links.length} saved`;
   if(!links.length){el.innerHTML='<div class="small muted">No saved web calendar subscriptions yet. Uploads work immediately but browsers cannot reopen local files automatically on a future visit.</div>';return}
   el.innerHTML=links.map((x,i)=>`<div class="calendar-source-item">
     <div class="source-main">
-      <div class="source-name"><span class="calendar-status-dot ${x.lastStatus==='ok'?'ok':x.lastStatus==='bad'?'bad':'warn'}"></span>${esc(x.label||('Calendar '+(i+1)))}<span class="source-role-badge ${calendarRoleClass(x.role)}">${calendarRoleLabel(x.role)}</span></div>
+      <div class="source-name"><span class="calendar-status-dot ${x.lastStatus==='ok'?'ok':x.lastStatus==='bad'?'bad':'warn'}"></span>${esc(x.label||('Calendar '+(i+1)))}<span class="source-role-badge ${calendarRoleClass(x.role)}">${calendarRoleLabel(x.role)}</span><span class="source-health ${sourceHealth(x).cls}">${sourceHealth(x).label}</span></div>
       <div class="source-meta">${esc(x.source||'ICS')} · ${x.lastRefresh?`refreshed ${formatStamp(x.lastRefresh)}`:'not refreshed yet'}${x.lastCount!=null?` · ${x.lastCount} events`:''}${x.lastMethod==='proxy'?' · proxy':''}</div>
     </div>
     <div class="calendar-actions" style="margin:0">
@@ -947,37 +1224,55 @@ function renderSavedCalendarLinks(){
     </div>
   </div>`).join('');
   el.querySelectorAll('[data-role-id]').forEach(s=>s.onchange=()=>{
-    const a=getSavedCalendarLinks(),x=a.find(y=>y.id===s.dataset.roleId);if(x){x.role=s.value;saveCalendarLinks(a);scheduleAutosave()}
+    const a=getSavedCalendarLinks(),x=a.find(y=>y.id===s.dataset.roleId);if(!x)return;
+    if(s.value==='primaryFamily'){
+      const current=a.find(y=>y.id!==x.id&&normalizeCalendarRole(y.role,y.kind)==='primaryFamily');
+      if(current&&!confirm(`Replace ${current.label} as the Primary Family Calendar? Only one calendar can drive Kira Schedule inference.`)){renderSavedCalendarLinks();return}
+      a.forEach(y=>{if(y.id!==x.id&&normalizeCalendarRole(y.role,y.kind)==='primaryFamily')y.role='reference'});
+    }
+    x.role=s.value;saveCalendarLinks(a,x.id);markPlanStale('Calendar source role changed');scheduleAutosave()
   });
   el.querySelectorAll('[data-refresh-id]').forEach(b=>b.onclick=()=>{const l=getSavedCalendarLinks().find(x=>x.id===b.dataset.refreshId);if(l)importSharedCalendarLink(l,false)});
   el.querySelectorAll('[data-remove-id]').forEach(b=>b.onclick=()=>{const a=getSavedCalendarLinks();const x=a.find(y=>y.id===b.dataset.removeId);if(x&&confirm(`Remove ${x.label}? Imported rows already in this cycle will also be removed.`)){removeImportedRowsForSource(sourceLabelFor(x));saveCalendarLinks(a.filter(y=>y.id!==b.dataset.removeId));scheduleAutosave()}})
 }
 function removeImportedRowsForSource(sourceName){
   [...$('activityBody').children].filter(r=>r.dataset.source===sourceName).forEach(r=>r.remove());
-  [...$('kiraBody').children].filter(r=>r.dataset.importedShiftSource===sourceName).forEach(r=>{r.querySelector('.k-shift').value='early-main';r.querySelector('.k-shift').onchange();delete r.dataset.importedShift;delete r.dataset.importedShiftSource});
+  [...$('kiraBody').children].filter(r=>r.dataset.importedShiftSource===sourceName).forEach(r=>{
+    if(r.dataset.manualShift==='true')return;
+    delete r.dataset.importedShift;delete r.dataset.importedShiftSource;clearKiraConflict(r);
+    setKiraShiftProgrammatically(r,'early-main','inferred','');
+  });
+  clearKiraScheduleCacheForSource(sourceName);
 }
 function dedupeImportedRows(rows){const existing=new Set(getActivities().map(a=>[a.date,a.start,a.end,a.title,a.location].join('|').toLowerCase()));return rows.filter(x=>{const k=[x.date,x.start,x.end,x.title,x.location].join('|').toLowerCase();if(existing.has(k))return false;existing.add(k);return true})}
 function locationNeedsReview(location=''){const s=location.trim();if(!s)return true;return !(/\d/.test(s)||/,\s*[A-Z]{2}\b/.test(s))}
 function processImportedRows(imported,sourceDescription,opts={}){
-  const replaceSource=opts.replaceSource||'';if(replaceSource)removeImportedRowsForSource(replaceSource);
-  const within=imported.filter(x=>inPlanningWindow(x.date));
-  const cfg=loadCalendarHygiene();
-  const sensitive=within.filter(x=>isSensitiveCalendarEvent(x,cfg));
-  const privacyClean=within.filter(x=>!isSensitiveCalendarEvent(x,cfg));
-  const cleaned=dedupeCalendarEvents(privacyClean,cfg);
-  const dedupedCount=privacyClean.length-cleaned.length;
-  let shiftOverrides=0,activityCount=0;
+  const replaceSource=opts.replaceSource||'';
+  if(replaceSource)removeImportedRowsForSource(replaceSource);
+
+  const primarySignals=imported.filter(item=>item.calendarRole==='primaryFamily').map(item=>({date:item.date,shift:detectKiraShift(item.title,item.source)})).filter(x=>x.shift);
+  if(replaceSource&&imported.some(x=>x.calendarRole==='primaryFamily')){
+    replaceKiraScheduleSignalsForSource(replaceSource,primarySignals);
+    applyCachedKiraSchedule();
+  }
+
+  const within=imported.filter(x=>inPlanningWindow(x.date)),cfg=loadCalendarHygiene();
+  const sensitive=within.filter(x=>isSensitiveCalendarEvent(x,cfg)),privacyClean=within.filter(x=>!isSensitiveCalendarEvent(x,cfg)),cleaned=dedupeCalendarEvents(privacyClean,cfg);
+  let dedupedCount=privacyClean.length-cleaned.length,crossDeduped=0,activityCount=0;
+  const shiftOverrides=primarySignals.filter(x=>inPlanningWindow(x.date)).length;
+
   for(const item of dedupeImportedRows(cleaned)){
-    const shift=item.calendarRole==='primaryFamily'?detectKiraShift(item.title,item.source):null;
-    if(shift&&applyKiraShiftOverride(item.date,shift,item.source)){shiftOverrides++;continue}
+    if(item.calendarRole==='primaryFamily'&&detectKiraShift(item.title,item.source))continue;
+    const resolution=resolveCrossSourceDuplicate(item,cfg);
+    if(resolution.action==='skip'){crossDeduped++;continue}
+    if(resolution.action==='replace'){resolution.row.remove();crossDeduped++}
     activityRow(item);activityCount++;
   }
+  dedupedCount+=crossDeduped;
   const locationReview=cleaned.filter(x=>!(x.calendarRole==='primaryFamily'&&detectKiraShift(x.title,x.source))&&locationNeedsReview(x.location)).length;
-  const hygiene=[];
-  if(sensitive.length)hygiene.push(`${sensitive.length} private event${sensitive.length===1?'':'s'} filtered`);
-  if(dedupedCount)hygiene.push(`${dedupedCount} duplicate${dedupedCount===1?'':'s'} collapsed`);
-  $('importStatus').textContent=`${sourceDescription}: ${activityCount} activities imported · ${shiftOverrides} Kira schedule entr${shiftOverrides===1?'y':'ies'} auto-detected${hygiene.length?' · '+hygiene.join(' · '):''}${locationReview?` · ${locationReview} location${locationReview===1?' needs':'s need'} review`:''}.`;
-  scheduleAutosave();return{activityCount,shiftOverrides,total:cleaned.length,filtered:sensitive.length,deduped:dedupedCount};
+  $('importStatus').textContent=`Imported ${activityCount} activit${activityCount===1?'y':'ies'}${shiftOverrides?` · ${shiftOverrides} Kira Schedule signal${shiftOverrides===1?'':'s'}`:''}${sensitive.length?` · ${sensitive.length} private event${sensitive.length===1?'':'s'} filtered`:''}${dedupedCount?` · ${dedupedCount} duplicate${dedupedCount===1?'':'s'} collapsed`:''}${locationReview?` · ${locationReview} location${locationReview===1?'':'s'} need review`:''}.`;
+  markPlanStale('Calendar data changed');scheduleAutosave();
+  return{activityCount,shiftOverrides,total:cleaned.length,filtered:sensitive.length,deduped:dedupedCount};
 }
 async function importSharedCalendarLink(linkObj,saveIfNew=true){
   const rawUrl=linkObj.url||'',url=normalizeCalendarUrl(rawUrl),label=(linkObj.label||'Shared calendar').trim(),source=linkObj.source||'ICS',kind=linkObj.kind||'team';
@@ -994,7 +1289,7 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
     let links=getSavedCalendarLinks(),idx=links.findIndex(x=>normalizeCalendarUrl(x.url)===url);
     const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:normalizeCalendarRole(linkObj.role,kind),lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via};
     if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
-    saveCalendarLinks(links);
+    saveCalendarLinks(links,updated.role==='primaryFamily'?updated.id:'');
     if(kind==='main')hideAppleCalendarFallback();
     $('importStatus').textContent=`${label} connected · ${stats.total} planning-window events processed${fetched.via==='proxy'?' · automatic proxy used':''}.`;
     return true;
@@ -1002,7 +1297,7 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
     let links=getSavedCalendarLinks(),idx=links.findIndex(x=>normalizeCalendarUrl(x.url)===url);
     const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:normalizeCalendarRole(linkObj.role,kind),lastRefresh:new Date().toISOString(),lastStatus:apple?'needs-file':'bad',lastError:err.message};
     if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
-    saveCalendarLinks(links);
+    saveCalendarLinks(links,updated.role==='primaryFamily'?updated.id:'');
     if(apple){
       showAppleCalendarFallback(rawUrl,label);
       $('importStatus').textContent=`${label}: Apple link accepted. Browser access was blocked, so use the Apple download/import fallback below.`;
@@ -1125,7 +1420,7 @@ function adhocRow(d={}){
 }
 $('addAdhocBtn').onclick=()=>adhocRow();
 
-function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
+function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,manual:r.dataset.manualShift==='true',conflict:r.dataset.scheduleConflict==='true',...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
 function getActivities(){
   const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual'})).filter(x=>x.date&&x.title);
   const recurring=recurringActivitiesForWindow();
@@ -1660,7 +1955,7 @@ function renderCalendar(id){
 
 const STORAGE_SETTINGS='familyOptimizerV23.settings';
 const STORAGE_CYCLE='familyOptimizerV23.cycle';
-const STORAGE_VERSION=28;
+const STORAGE_VERSION=31;
 
 const STORAGE_CAL_HYGIENE='familyOptimizerCalendarHygieneV26';
 function defaultCalendarHygiene(){
@@ -1675,7 +1970,7 @@ function defaultCalendarHygiene(){
 }
 function loadCalendarHygiene(){
   try{
-    return Object.assign(defaultCalendarHygiene(),JSON.parse(localStorage.getItem(STORAGE_CAL_HYGIENE)||'{}'));
+    return Object.assign(defaultCalendarHygiene(),JSON.parse(storageGet(STORAGE_CAL_HYGIENE)||'{}'));
   }catch(e){return defaultCalendarHygiene()}
 }
 function saveCalendarHygiene(){
@@ -1687,7 +1982,7 @@ function saveCalendarHygiene(){
     privacyMatchWholeWord:!!document.getElementById('privacyMatchWholeWord')?.checked,
     privacyKeywords:(document.getElementById('privacyKeywords')?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean)
   };
-  localStorage.setItem(STORAGE_CAL_HYGIENE,JSON.stringify(cfg));
+  storageSet(STORAGE_CAL_HYGIENE,JSON.stringify(cfg));
   updateCalendarHygieneStatus(cfg);
   return cfg;
 }
@@ -1705,7 +2000,7 @@ function applyCalendarHygieneUi(){
 function updateCalendarHygieneStatus(cfg=loadCalendarHygiene()){
   const ds=document.getElementById('dedupeStatus');
   const ps=document.getElementById('privacyStatus');
-  if(ds)ds.textContent=cfg.dedupeEnabled?`De-duplication enabled · ${cfg.dedupeTolerance?`±${cfg.dedupeTolerance} min`:'exact time'} · ${cfg.dedupePreference==='primary'?'prefer main iPhone calendar':cfg.dedupePreference==='detail'?'prefer most detailed event':'keep first imported'}`:'De-duplication disabled.';
+  if(ds)ds.textContent=cfg.dedupeEnabled?`De-duplication enabled · ${cfg.dedupeTolerance?`±${cfg.dedupeTolerance} min`:'exact time'} · ${cfg.dedupePreference==='primary'?'prefer Primary Family Calendar':cfg.dedupePreference==='detail'?'prefer most detailed event':'keep first imported'}`:'De-duplication disabled.';
   if(ps)ps.textContent=cfg.privacyFilterEnabled?(cfg.privacyKeywords?.length?`${cfg.privacyKeywords.length} privacy keyword${cfg.privacyKeywords.length===1?'':'s'} active.`:'No privacy keywords configured.'):'Privacy filtering disabled.';
 }
 function normalizeEventText(s=''){
@@ -1758,6 +2053,41 @@ function dedupeCalendarEvents(events,cfg=loadCalendarHygiene()){
   }
   return out;
 }
+
+function rowToCalendarEvent(row){
+  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),description:row.dataset.description||''};
+}
+function calendarEventsLikelyDuplicate(a,b,cfg=loadCalendarHygiene()){
+  if(eventDateValue(a)!==eventDateValue(b))return false;
+  if(normalizeEventText(a.title)!==normalizeEventText(b.title))return false;
+  if(Math.abs(eventMinutesValue(a)-eventMinutesValue(b))>(cfg.dedupeTolerance||0))return false;
+  const ca=a.child||'Unassigned',cb=b.child||'Unassigned';
+  if(ca!=='Unassigned'&&cb!=='Unassigned'&&ca!==cb)return false;
+  const la=normalizeEventText(a.location||''),lb=normalizeEventText(b.location||'');
+  if(la&&lb&&la!==lb&&sourcePriorityForEvent(a)===sourcePriorityForEvent(b))return false;
+  return true;
+}
+function candidateWinsDuplicate(candidate,existing,cfg=loadCalendarHygiene()){
+  if(cfg.dedupePreference==='primary'){
+    const a=sourcePriorityForEvent(candidate),b=sourcePriorityForEvent(existing);if(a!==b)return a>b;
+  }else if(cfg.dedupePreference==='detail'){
+    const a=eventDetailScore(candidate),b=eventDetailScore(existing);if(a!==b)return a>b;
+  }
+  if(candidate.child!=='Unassigned'&&existing.child==='Unassigned')return true;
+  if(candidate.child==='Unassigned'&&existing.child!=='Unassigned')return false;
+  return eventDetailScore(candidate)>eventDetailScore(existing);
+}
+function resolveCrossSourceDuplicate(candidate,cfg=loadCalendarHygiene()){
+  if(!cfg.dedupeEnabled)return {action:'add',row:null};
+  for(const row of [...$('activityBody').children]){
+    const existing=rowToCalendarEvent(row);
+    if(existing.source===candidate.source)continue;
+    if(!calendarEventsLikelyDuplicate(candidate,existing,cfg))continue;
+    return candidateWinsDuplicate(candidate,existing,cfg)?{action:'replace',row}:{action:'skip',row};
+  }
+  return {action:'add',row:null};
+}
+
 function cleanImportedCalendarEvents(events){
   const cfg=loadCalendarHygiene();
   const filtered=events.filter(e=>!isSensitiveCalendarEvent(e,cfg));
@@ -1797,7 +2127,7 @@ function rollingCycle(){
   return {
     version:STORAGE_VERSION,
     startDate:$('startDate').value,
-    kira:getKira().map(k=>({date:k.date,shift:k.shift})),
+    kira:getKira().map(k=>({date:k.date,shift:k.shift,manual:k.manual,conflict:k.conflict})),
     activities:getActivities(),
     adhoc:getAdhoc(),
     workOverrides:plans.filter(p=>!p.weekend&&p.manualOverride).map(p=>({
@@ -1812,7 +2142,7 @@ function setSaveStatus(text){
 }
 function nowIso(){return new Date().toISOString()}
 function markChanged(){
-  localStorage.setItem(STORAGE_LAST_CHANGE,nowIso());
+  storageSet(STORAGE_LAST_CHANGE,nowIso());
   updateBackupStatus();
 }
 function formatStamp(v){
@@ -1823,8 +2153,8 @@ function formatStamp(v){
 }
 function updateBackupStatus(){
   const el=$('backupStatus');if(!el)return;
-  const lastBackup=localStorage.getItem(STORAGE_LAST_BACKUP);
-  const lastChange=localStorage.getItem(STORAGE_LAST_CHANGE);
+  const lastBackup=storageGet(STORAGE_LAST_BACKUP);
+  const lastChange=storageGet(STORAGE_LAST_CHANGE);
   const stale=!lastBackup || (lastChange && new Date(lastChange)>new Date(lastBackup));
   if(stale){
     el.className='small backup-stale';
@@ -1836,16 +2166,16 @@ function updateBackupStatus(){
 }
 
 function savePermanent(){
-  localStorage.setItem(STORAGE_SETTINGS,JSON.stringify(permanentSettings()));
+  storageSet(STORAGE_SETTINGS,JSON.stringify(permanentSettings()));
 }
 function saveCycle(){
-  localStorage.setItem(STORAGE_CYCLE,JSON.stringify(rollingCycle()));
+  storageSet(STORAGE_CYCLE,JSON.stringify(rollingCycle()));
 }
 function saveAllNow(){
   if(isApplying)return;
   try{
     savePermanent();saveCycle();
-    setSaveStatus('Saved locally');
+    setSaveStatus(__persistentStorageAvailable?'Saved locally':'Temporary session only — changes will not persist after closing');
   }catch(err){
     setSaveStatus('Autosave failed');
   }
@@ -1882,8 +2212,9 @@ function applyCycle(data){
     const kr=data.kira||[];
     [...$('kiraBody').children].forEach(r=>{
       const d=kr.find(x=>x.date===r.dataset.date);
-      if(d){r.querySelector('.k-shift').value=d.shift;r.querySelector('.k-shift').onchange()}
+      if(d){setKiraShiftProgrammatically(r,d.shift,d.manual?'manual':'inferred',d.manual?'Saved manual override':'Saved cycle');if(d.manual)r.dataset.manualShift='true'}
     });
+    applyCachedKiraSchedule();
     $('activityBody').innerHTML='';
     (data.activities||[]).forEach(activityRow);
     $('adhocBody').innerHTML='';
@@ -1894,11 +2225,11 @@ function applyCycle(data){
 function loadFromStorage(){
   let loaded=false;
   try{
-    const s=localStorage.getItem(STORAGE_SETTINGS);
-    const c=localStorage.getItem(STORAGE_CYCLE);
+    const s=storageGet(STORAGE_SETTINGS);
+    const c=storageGet(STORAGE_CYCLE);
     if(s){applyPermanent(JSON.parse(s));loaded=true}
     if(c){applyCycle(JSON.parse(c));loaded=true}
-    setSaveStatus(loaded?'Loaded saved data':'Autosave ready');
+    setSaveStatus(__persistentStorageAvailable?(loaded?'Loaded saved data':'Autosave ready'):'Temporary session only — browser storage unavailable');
   }catch(err){
     setSaveStatus('Could not load saved data');
   }
@@ -1914,6 +2245,7 @@ function startNewCycle(){
   try{
     $('startDate').value=iso(next);
     buildKiraRows();
+    applyCachedKiraSchedule();
     $('activityBody').innerHTML='';
     $('adhocBody').innerHTML='';
     renderSavedCalendarLinks();
@@ -1923,6 +2255,7 @@ function startNewCycle(){
   saveCycle();
   markChanged();
   setSaveStatus('New cycle started and saved');
+  refreshPrimaryFamilyCalendarForSchedule().then(()=>{applyCachedKiraSchedule();saveCycle();}).catch(()=>{});
 }
 function exportBackup(){
   const payload={
@@ -1938,7 +2271,7 @@ function exportBackup(){
   a.download=`Family-Commute-Optimizer-Backup-${$('startDate').value||'current'}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
-  localStorage.setItem(STORAGE_LAST_BACKUP,nowIso());
+  storageSet(STORAGE_LAST_BACKUP,nowIso());
   updateBackupStatus();
 }
 function importBackupFile(file){
@@ -1951,8 +2284,8 @@ function importBackupFile(file){
       applyCycle(data.cycle);
       saveAllNow();
       const stamp=data.exportedAt||nowIso();
-      localStorage.setItem(STORAGE_LAST_BACKUP,stamp);
-      localStorage.setItem(STORAGE_LAST_CHANGE,stamp);
+      storageSet(STORAGE_LAST_BACKUP,stamp);
+      storageSet(STORAGE_LAST_CHANGE,stamp);
       updateBackupStatus();
       alert('Backup restored successfully.');
     }catch(err){
@@ -1963,10 +2296,10 @@ function importBackupFile(file){
 }
 function installAutosaveListeners(){
   document.addEventListener('input',e=>{
-    if(e.target.matches('input,select,textarea'))scheduleAutosave();
+    if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results'))markPlanStale('Planner input changed')}
   });
   document.addEventListener('change',e=>{
-    if(e.target.matches('input,select,textarea'))scheduleAutosave();
+    if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results')&&e.target.id!=='startDate')markPlanStale('Planner input changed')}
   });
   const observer=new MutationObserver(()=>scheduleAutosave());
   observer.observe($('siteBody'),{childList:true,subtree:true});

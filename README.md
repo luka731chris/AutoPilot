@@ -32,6 +32,19 @@ Team Schedule, School Calendar, and Reference / Other sources are intentionally 
 
 **Skylight is not an AutoPilot data source.** There is no Skylight → AutoPilot or Skylight → Google → AutoPilot ingestion path.
 
+
+### Planning-window schedule behavior
+
+Changing AutoPilot's two-week start date no longer resets Kira Schedule to defaults. AutoPilot now:
+
+1. rebuilds the visible weekday rows for the selected window;
+2. immediately reapplies locally cached Primary Family Calendar schedule detections;
+3. refreshes the Primary Family Calendar when reachable;
+4. re-runs Kira Schedule inference for the newly selected window; and
+5. preserves cached detections when the live calendar cannot be reached.
+
+This cache stores only inferred schedule signals (date, shift code, and source), not the full calendar event payload.
+
 ## What the app does
 
 The planner answers the practical questions that ordinary calendars do not:
@@ -256,3 +269,10 @@ This repository is packaged as **private / all rights reserved** by default. See
 ## Branding
 
 - [AutoPilot branding guide](docs/BRANDING.md)
+
+
+## v31 stabilization
+
+v31 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
+
+See [docs/STABILIZATION-TEST-REPORT-v31.md](docs/STABILIZATION-TEST-REPORT-v31.md) for the defect-to-fix matrix and regression results.
