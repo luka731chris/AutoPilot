@@ -253,7 +253,7 @@ td input,td select{margin:0;padding:7px}
 .child-owner-select{font-size:12px;padding:5px 7px;min-width:145px}
 
 
-/* v37 LukaLab Pittsburgh skyline branding */
+/* v38 LukaLab Pittsburgh skyline branding */
 :root{
   --ap-black:#0d0d0f;
   --ap-charcoal:#17181c;
@@ -350,7 +350,7 @@ button.secondary,.btn.secondary{
 .app-shell{position:relative;z-index:1}
 
 
-/* v37 integrated LukaLab logo */
+/* v38 integrated LukaLab logo */
 .real-lukalab-logo-wrap{
   margin:14px 0 8px;
   display:flex;
@@ -376,7 +376,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v37 LukaLab typography + compact header refinement */
+/* v38 LukaLab typography + compact header refinement */
 :root{
   --bg:#f3f1eb;
   --card:#fffdf8;
@@ -563,7 +563,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v37 guaranteed-visible LukaLab masthead */
+/* v38 guaranteed-visible LukaLab masthead */
 .autopilot-masthead{
   display:grid!important;
   grid-template-columns:minmax(290px,440px) minmax(0,1fr)!important;
@@ -648,7 +648,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v37 single-logo LukaLab masthead */
+/* v38 single-logo LukaLab masthead */
 .autopilot-masthead{
   display:block!important;
   background:#111112!important;
@@ -724,6 +724,30 @@ button.secondary,.btn.secondary{
     flex-basis:104px!important;
   }
   .lukalab-maker-copy{justify-content:center!important}
+}
+
+
+/* v38 provider-aware calendar sync + LukaLab output branding */
+.calendar-sync-summary{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.sync-chip{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;background:#f2f2f7;color:#5f5b52}
+.sync-chip.fresh{background:#e9f7ed;color:#176b3a}
+.sync-chip.cached{background:#fff4d6;color:#7a5500}
+.sync-chip.gateway{background:#fff0d9;color:#8a4f00}
+.sync-chip.error{background:#fde9e6;color:#a12626}
+.gateway-callout{border:1px solid #e5d398;border-left:4px solid #d6a800;border-radius:10px;padding:10px 12px;background:#fffaf0}
+.provider-badge{display:inline-flex;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:800;margin-left:4px;background:#f4f1e7;color:#625a48}
+.output-brand{display:flex;align-items:center;gap:8px;min-width:0}
+.output-brand-mark{display:block;width:72px;height:34px;flex:0 0 72px}
+.output-brand-copy{display:flex;flex-direction:column;line-height:1.05}
+.output-brand-copy strong{font-family:var(--ap-display-font);font-size:15px;color:#171719;letter-spacing:-.025em}
+.output-brand-copy span{font-size:9px;color:#756f62}
+.output-brand-copy b{color:#b68700}
+.mobile-plan-head .output-brand{margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #e7e1d3}
+.week-glance-brand{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.print-brand{display:flex;align-items:center;gap:8px}
+@media print{
+  .print-brand{display:flex!important}
+  .output-brand-mark{print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
 
 </style>
@@ -897,12 +921,17 @@ button.secondary,.btn.secondary{
         <div class="calendar-source-title"><span>Calendar sources</span><span id="calendarSourceCount" class="small muted"></span></div>
         <div id="savedCalendarLinks" class="calendar-source-list"></div>
         <div id="importStatus" class="small muted" style="margin-top:9px">No calendar source imported yet.</div>
-        <div class="hygiene-card" style="margin-top:10px">
-          <h3>Primary Family auto-refresh</h3>
-          <div class="row"><label class="small"><input id="primaryAutoRefreshEnabled" type="checkbox" checked> Refresh while AutoPilot is open</label>
-          <label class="small">Interval <select id="primaryAutoRefreshMinutes"><option>5</option><option selected>10</option><option>15</option><option>30</option><option>60</option></select> min</label></div>
-          <div id="primaryAutoRefreshStatus" class="hygiene-status">Auto-refresh ready.</div>
+        <div class="gateway-callout" style="margin-top:10px">
+          <strong>Calendar Sync</strong>
+          <div id="startupCalendarSyncStatus" class="small muted" style="margin-top:3px">
+            AutoPilot refreshes every saved calendar once when the app opens and again immediately before Generate.
+          </div>
+          <div id="calendarSyncSummary" class="calendar-sync-summary"></div>
+          <div class="calendar-actions" style="margin-top:7px">
+            <button id="testAllCalendarSourcesBtn" type="button">Test all calendar sources</button>
+          </div>
         </div>
+        
 <div class="calendar-hygiene-grid">
   <div class="hygiene-card">
     <h3>Smart de-duplication</h3>
@@ -951,11 +980,11 @@ button.secondary,.btn.secondary{
           <strong>iPhone/iCloud:</strong> paste the exact link produced by Calendar → Calendars → ⓘ → Public Calendar → Share Link. The planner accepts <code>webcal://</code>, <code>webcals://</code>, <code>http://</code>, and <code>https://</code>, extracts links even when surrounded by copied text, and retries Apple-specific host variants automatically. If Apple blocks browser access, the planner shows an Apple-specific download/import fallback instead of treating the link as invalid.
           <br><br><strong>GameChanger / TeamSnap:</strong> copy each team's calendar subscription link and add it directly above. Keeping each team separate allows refreshes to replace that team's events cleanly when practices move or games are cancelled.
           <br><br><strong>Recurring events:</strong> AutoPilot supports daily, weekly, monthly, and yearly recurrence patterns plus cancellations, excluded dates, and moved single instances.
-          <br><br><strong>Optional automatic calendar proxy:</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v32, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
+          <br><br><strong>Calendar Gateway (recommended for reliable team-calendar sync):</strong> GitHub Pages cannot override CORS restrictions imposed by Apple or other calendar hosts. If you deploy the tiny companion proxy included with v32, paste its HTTPS URL here once. The planner will use it only after a direct calendar fetch fails.
           <div class="calendar-proxy-settings">
             <div class="calendar-proxy-row">
-              <input id="calendarProxyUrl" placeholder="Optional proxy URL, e.g. https://family-calendar-proxy.example.workers.dev">
-              <button id="saveCalendarProxyBtn" type="button">Save proxy</button>
+              <input id="calendarProxyUrl" placeholder="Gateway URL, e.g. https://autopilot-calendar-gateway.example.workers.dev">
+              <button id="saveCalendarProxyBtn" type="button">Save Gateway</button>
             </div>
             <div id="calendarProxyStatus" class="small muted" style="margin-top:5px"></div>
           </div>
@@ -1012,6 +1041,15 @@ button.secondary,.btn.secondary{
       </div>
       <div id="mobilePlanShell" class="mobile-plan-shell">
         <div class="mobile-plan-head">
+          <div class="output-brand">
+  <svg class="output-brand-mark" viewBox="90 8 350 170" fill="none" aria-hidden="true">
+    <rect x="90" y="8" width="350" height="170" rx="10" fill="#141414"/>
+    <path d="M158 162V40L161 33H191L194 40V162M240 162V116H268V162M242 100V116H266V100M246 88V100H262V88M250 79V88H258V79M254 61V79" stroke="#A8A29C" stroke-width="2"/>
+    <path d="M320 162V66H366V162M320 66H366M321 66L324 47L327 66M334 66L337.5 48L341 66M340 66L343.5 44L347 66M346 66L349.5 48L353 66M359 66L362 47L365 66" stroke="#F5A800" stroke-width="2"/>
+    <path d="M100 162H430" stroke="#A8A29C" stroke-width="1.4"/>
+  </svg>
+  <div class="output-brand-copy"><strong>AutoPilot</strong><span>by <b>LukaLab</b> AI Creative</span></div>
+</div>
           <div id="mobilePlanTitle" class="mobile-plan-title">Family</div>
           <div id="mobilePlanSub" class="mobile-plan-sub"></div>
           <div class="ios-segment">
@@ -1043,7 +1081,15 @@ button.secondary,.btn.secondary{
     </div>
 
     <div class="card">
-      <h3>1-page refrigerator calendar preview</h3>
+      <div class="week-glance-brand"><div class="output-brand">
+  <svg class="output-brand-mark" viewBox="90 8 350 170" fill="none" aria-hidden="true">
+    <rect x="90" y="8" width="350" height="170" rx="10" fill="#141414"/>
+    <path d="M158 162V40L161 33H191L194 40V162M240 162V116H268V162M242 100V116H266V100M246 88V100H262V88M250 79V88H258V79M254 61V79" stroke="#A8A29C" stroke-width="2"/>
+    <path d="M320 162V66H366V162M320 66H366M321 66L324 47L327 66M334 66L337.5 48L341 66M340 66L343.5 44L347 66M346 66L349.5 48L353 66M359 66L362 47L365 66" stroke="#F5A800" stroke-width="2"/>
+    <path d="M100 162H430" stroke="#A8A29C" stroke-width="1.4"/>
+  </svg>
+  <div class="output-brand-copy"><strong>AutoPilot</strong><span>by <b>LukaLab</b> AI Creative</span></div>
+</div><h3 style="margin:0">Week at a Glance / Fridge Preview</h3></div>
       <p class="muted small">Each workday shows Chris’s commute, Kira’s work location, evening transport assignments, and backup-driver needs. Activity addresses are used for live drive-time estimates when available.</p>
       <div id="calendarPreview" class="week-grid"></div>
     </div>
@@ -1062,8 +1108,16 @@ button.secondary,.btn.secondary{
 
 <section class="print-only">
   <div class="print-header">
-    <div class="print-title">2-Week Family Logistics + Commute Plan</div>
-    <div id="printRange" class="print-range"></div>
+    <div class="print-brand"><div class="output-brand">
+  <svg class="output-brand-mark" viewBox="90 8 350 170" fill="none" aria-hidden="true">
+    <rect x="90" y="8" width="350" height="170" rx="10" fill="#141414"/>
+    <path d="M158 162V40L161 33H191L194 40V162M240 162V116H268V162M242 100V116H266V100M246 88V100H262V88M250 79V88H258V79M254 61V79" stroke="#A8A29C" stroke-width="2"/>
+    <path d="M320 162V66H366V162M320 66H366M321 66L324 47L327 66M334 66L337.5 48L341 66M340 66L343.5 44L347 66M346 66L349.5 48L353 66M359 66L362 47L365 66" stroke="#F5A800" stroke-width="2"/>
+    <path d="M100 162H430" stroke="#A8A29C" stroke-width="1.4"/>
+  </svg>
+  <div class="output-brand-copy"><strong>AutoPilot</strong><span>by <b>LukaLab</b> AI Creative</span></div>
+</div></div>
+    <div><div class="print-title">2-Week Family Logistics + Commute Plan</div><div id="printRange" class="print-range"></div></div>
   </div>
   <div id="printCalendar" class="week-grid"></div>
 </section>
@@ -1257,23 +1311,46 @@ function applyCachedKiraSchedule(){
   }
   return applied;
 }
-let __primaryRefreshTimer=null,__primaryRefreshBusy=false;
-function autoRefreshMinutes(){return Math.max(5,+$('primaryAutoRefreshMinutes')?.value||10)}
-function renderAutoRefreshStatus(msg=''){const el=$('primaryAutoRefreshStatus');if(el)el.textContent=msg||($('primaryAutoRefreshEnabled')?.checked?`Checks every ${autoRefreshMinutes()} min + on focus`:'Auto-refresh off')}
-function schedulePrimaryAutoRefresh(){
-  clearInterval(__primaryRefreshTimer);renderAutoRefreshStatus();
-  if(!$('primaryAutoRefreshEnabled')?.checked)return;
-  __primaryRefreshTimer=setInterval(()=>refreshPrimaryFamilyQuietly('timer'),autoRefreshMinutes()*60000);
+let __calendarStartupSyncDone=false,__calendarStartupSyncBusy=false;
+function setStartupCalendarSyncStatus(msg){
+  const el=$('startupCalendarSyncStatus');if(el)el.textContent=msg;
 }
-async function refreshPrimaryFamilyQuietly(reason='focus'){
-  if(__primaryRefreshBusy||!$('primaryAutoRefreshEnabled')?.checked)return;
-  const primary=getSavedCalendarLinks().find(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily');if(!primary)return;
-  __primaryRefreshBusy=true;renderAutoRefreshStatus('Checking Primary Family Calendar…');
-  try{await importSharedCalendarLink(primary,false);renderAutoRefreshStatus(`Last checked ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`)}
-  finally{__primaryRefreshBusy=false}
+async function refreshAllCalendarsCore({quiet=false,reason='manual'}={}){
+  const links=getSavedCalendarLinks();
+  if(!links.length){
+    setStartupCalendarSyncStatus('No saved web calendars yet.');
+    renderCalendarSyncSummary();
+    if(!quiet)$('importStatus').textContent='No saved web calendars to refresh.';
+    return {ok:0,total:0,failed:[]};
+  }
+  let ok=0,failed=[];
+  for(let i=0;i<links.length;i++){
+    const latest=getSavedCalendarLinks().find(x=>x.id===links[i].id)||links[i];
+    const name=latest.label||`Calendar ${i+1}`;
+    if(!quiet)$('importStatus').textContent=`Refreshing ${i+1}/${links.length}: ${name}…`;
+    try{
+      if(await importSharedCalendarLink(latest,false))ok++;
+      else failed.push(name);
+    }catch{failed.push(name)}
+  }
+  renderSavedCalendarLinks();renderCalendarSyncSummary();
+  const msg=`Last app-open sync: ${new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
+  setStartupCalendarSyncStatus(msg);
+  if(!quiet)$('importStatus').textContent=`Calendar refresh complete · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
+  return {ok,total:links.length,failed};
 }
-window.addEventListener('focus',()=>refreshPrimaryFamilyQuietly('focus'));
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshPrimaryFamilyQuietly('resume')});
+async function refreshAllCalendars(){return refreshAllCalendarsCore({quiet:false,reason:'manual'})}
+async function refreshCalendarsOnAppOpen(){
+  if(__calendarStartupSyncDone||__calendarStartupSyncBusy)return;
+  __calendarStartupSyncBusy=true;
+  setStartupCalendarSyncStatus('Refreshing all saved calendars for this session…');
+  try{
+    await refreshAllCalendarsCore({quiet:true,reason:'open'});
+    __calendarStartupSyncDone=true;
+  }finally{
+    __calendarStartupSyncBusy=false;
+  }
+}
 async function refreshPrimaryFamilyCalendarForSchedule(){
   const primary=getSavedCalendarLinks().find(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily');
   if(!primary)return {ok:false,reason:'none'};
@@ -1695,32 +1772,100 @@ function renderCalendarProxyStatus(){
   const input=document.getElementById('calendarProxyUrl'),status=document.getElementById('calendarProxyStatus');
   if(!input||!status)return;
   const v=getCalendarProxyUrl();input.value=v;
-  status.textContent=v?'Automatic fallback proxy configured.':'No proxy configured; Apple links still have the built-in download/import fallback.';
+  status.textContent=v?'Automatic fallback proxy configured.':'No Gateway configured. Direct calendar feeds may work, but some valid TeamSnap/GameChanger/Apple feeds can be blocked by browser CORS.';
 }
 function proxiedCalendarUrl(target){
   const p=getCalendarProxyUrl();
   return p?`${p}?url=${encodeURIComponent(target)}`:'';
 }
-async function fetchCalendarText(url){
-  const res=await fetch(url,{cache:'no-store',redirect:'follow',headers:{'Accept':'text/calendar,text/plain;q=0.9,*/*;q=0.5'}});
-  if(!res.ok)throw new Error(`HTTP ${res.status}`);
-  const body=(await res.text()).replace(/^\uFEFF/,'');
-  if(!/BEGIN:VCALENDAR/i.test(body)&&!/BEGIN:VEVENT/i.test(body))throw new Error('Response was not an ICS calendar.');
-  return body;
+function calendarProvider(raw=''){
+  const u=normalizeCalendarUrl(raw).toLowerCase();
+  if(/icloud\.com/.test(u))return 'apple';
+  if(/gamechanger|gc\.com/.test(u))return 'gamechanger';
+  if(/teamsnap/.test(u)&&/(one|teams)/.test(u))return 'teamsnapone';
+  if(/teamsnap/.test(u))return 'teamsnap';
+  if(/googleusercontent|calendar\.google|google\.com/.test(u))return 'google';
+  return 'ics';
+}
+function calendarProviderLabel(raw=''){
+  return ({apple:'Apple/iCloud',gamechanger:'GameChanger',teamsnap:'TeamSnap',teamsnapone:'TeamSnap ONE',google:'Google ICS',ics:'ICS/webcal'})[calendarProvider(raw)]||'ICS/webcal';
+}
+function calendarSubscriptionLooksValid(raw=''){
+  const extracted=extractCalendarUrl(raw);
+  if(!/^(webcals?|https?):\/\//i.test(extracted))return {ok:false,message:'Paste the actual calendar subscription URL (webcal:// or http(s)://).'};
+  const p=calendarProvider(extracted),u=normalizeCalendarUrl(extracted);
+  if((p==='teamsnap'||p==='teamsnapone')&&!(/\.ics(?:[?#]|$)/i.test(u)||/ical/i.test(u)))return {ok:false,message:'This looks like a TeamSnap page, not the TeamSnap iCal subscription URL. In TeamSnap use Schedule → Settings → Sync Calendar / Export and copy the calendar link.'};
+  if(p==='gamechanger'&&!(/webcal|calendar|ical|\.ics/i.test(extracted)))return {ok:false,message:'This looks like a GameChanger page, not the calendar subscription link. In GameChanger use Team Settings → Schedule Sync → Sync Schedule to Your Calendar → copy the calendar link.'};
+  return {ok:true,message:''};
+}
+function addQueryParam(url,key,value){
+  try{
+    const u=new URL(url);
+    if(!u.searchParams.has(key))u.searchParams.set(key,value);
+    return u.toString();
+  }catch{
+    const join=url.includes('?')?'&':'?';
+    return url+join+encodeURIComponent(key)+'='+encodeURIComponent(value);
+  }
+}
+function originalCalendarHttpUrl(raw=''){
+  const u=extractCalendarUrl(raw);
+  if(/^webcals:\/\//i.test(u))return 'https://'+u.replace(/^webcals:\/\//i,'');
+  if(/^webcal:\/\//i.test(u))return 'http://'+u.replace(/^webcal:\/\//i,'');
+  return u;
+}
+function calendarFetchCandidates(raw){
+  const provider=calendarProvider(raw),out=[],add=u=>{if(u&&!out.includes(u))out.push(u)};
+  const base=normalizeCalendarUrl(raw);
+  add(base);
+  if(provider==='apple')appleCalendarCandidates(raw).forEach(add);
+  if(provider==='teamsnap'||provider==='teamsnapone')add(addQueryParam(base,'query','1'));
+  if(provider==='gamechanger')add(addQueryParam(base,'1','1'));
+  return out.filter(Boolean);
+}
+async function fetchCalendarText(url,timeoutMs=15000){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const res=await fetch(url,{
+      cache:'no-store',
+      redirect:'follow',
+      signal:controller.signal,
+      headers:{'Accept':'text/calendar,text/plain;q=0.9,*/*;q=0.5','Cache-Control':'no-cache'}
+    });
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const body=(await res.text()).replace(/^\uFEFF/,'');
+    if(/^\s*</.test(body)&&/<html|<!doctype/i.test(body))throw new Error('The URL returned a web page rather than an ICS calendar feed.');
+    if(!/BEGIN:VCALENDAR/i.test(body)&&!/BEGIN:VEVENT/i.test(body))throw new Error('The response was not an ICS calendar.');
+    return body;
+  }finally{clearTimeout(timer)}
 }
 async function fetchCalendarWithFallbacks(raw){
-  const candidates=isApplePublicCalendarUrl(raw)?appleCalendarCandidates(raw):[normalizeCalendarUrl(raw)];
-  const errors=[];
+  const validation=calendarSubscriptionLooksValid(raw);
+  if(!validation.ok){const e=new Error(validation.message);e.invalidSubscription=true;throw e}
+  const candidates=calendarFetchCandidates(raw),errors=[];
   for(const u of candidates){
-    try{return {text:await fetchCalendarText(u),usedUrl:u,via:'direct'}}catch(e){errors.push(`${u}: ${e.message}`)}
+    if(!/^https:\/\//i.test(u))continue;
+    try{
+      return {text:await fetchCalendarText(u),usedUrl:u,via:'direct',provider:calendarProvider(raw),attempts:errors};
+    }catch(e){
+      errors.push(`direct ${u}: ${e.name==='AbortError'?'timeout':e.message}`);
+    }
   }
-  if(getCalendarProxyUrl()){
-    for(const u of candidates){
-      try{return {text:await fetchCalendarText(proxiedCalendarUrl(u)),usedUrl:u,via:'proxy'}}catch(e){errors.push(`proxy ${u}: ${e.message}`)}
+  const gateway=getCalendarProxyUrl();
+  if(gateway){
+    const targets=[...new Set([...candidates,originalCalendarHttpUrl(raw)].filter(Boolean))];
+    for(const u of targets){
+      try{
+        return {text:await fetchCalendarText(proxiedCalendarUrl(u),20000),usedUrl:u,via:'gateway',provider:calendarProvider(raw),attempts:errors};
+      }catch(e){
+        errors.push(`gateway ${u}: ${e.name==='AbortError'?'timeout':e.message}`);
+      }
     }
   }
   const err=new Error(errors[errors.length-1]||'Calendar could not be fetched.');
   err.attempts=errors;
+  err.provider=calendarProvider(raw);
+  err.gatewayNeeded=!gateway;
   throw err;
 }
 function showAppleCalendarFallback(raw,label='Kira Family'){
@@ -1768,23 +1913,36 @@ function enforceSinglePrimary(links,preferredId=''){
 function saveCalendarLinks(links,preferredPrimaryId=''){
   links=enforceSinglePrimary(links,preferredPrimaryId);
   storageSet(STORAGE_CAL_LINKS,JSON.stringify(links));renderSavedCalendarLinks();
-if($('primaryAutoRefreshEnabled')){$('primaryAutoRefreshEnabled').onchange=()=>{schedulePrimaryAutoRefresh();scheduleAutosave()};$('primaryAutoRefreshMinutes').onchange=()=>{schedulePrimaryAutoRefresh();scheduleAutosave()};schedulePrimaryAutoRefresh();}
+
 }
 function sourceLabelFor(link){return `${link.source||'Calendar'}: ${link.label||'Shared calendar'}`}
 function sourceHealth(link){
   const age=link.lastRefresh?Date.now()-new Date(link.lastRefresh).getTime():Infinity;
-  if(link.lastStatus==='ok'&&age<=30*60*1000)return {label:'Fresh',cls:'fresh'};
+  if(link.lastStatus==='ok'&&age<=12*60*60*1000)return {label:'Current',cls:'fresh'};
+  if(link.lastStatus==='blocked')return {label:link.lastCount!=null?'Cached · Gateway needed':'Gateway needed',cls:'cached'};
   if((link.lastStatus==='ok'||link.lastStatus==='needs-file'||link.lastStatus==='bad')&&link.lastCount!=null)return {label:'Cached',cls:'cached'};
   return {label:'Needs attention',cls:'attention'};
 }
+function renderCalendarSyncSummary(){
+  const el=$('calendarSyncSummary');if(!el)return;
+  const links=getSavedCalendarLinks();let current=0,cached=0,gateway=0,error=0;
+  links.forEach(x=>{
+    const h=sourceHealth(x);
+    if(x.lastStatus==='blocked')gateway++;
+    else if(h.label==='Current')current++;
+    else if(h.label.startsWith('Cached'))cached++;
+    else error++;
+  });
+  el.innerHTML=`<span class="sync-chip fresh">${current} current</span><span class="sync-chip cached">${cached} cached</span><span class="sync-chip gateway">${gateway} gateway needed</span><span class="sync-chip error">${error} attention</span>`;
+}
 
 function renderSavedCalendarLinks(){
-  const links=getSavedCalendarLinks(),el=$('savedCalendarLinks');$('calendarSourceCount').textContent=`${links.length} saved`;
+  const links=getSavedCalendarLinks(),el=$('savedCalendarLinks');$('calendarSourceCount').textContent=`${links.length} saved`;renderCalendarSyncSummary();
   if(!links.length){el.innerHTML='<div class="small muted">No saved web calendar subscriptions yet. Uploads work immediately but browsers cannot reopen local files automatically on a future visit.</div>';return}
   el.innerHTML=links.map((x,i)=>`<div class="calendar-source-item">
     <div class="source-main">
-      <div class="source-name"><span class="calendar-status-dot ${x.lastStatus==='ok'?'ok':x.lastStatus==='bad'?'bad':'warn'}"></span>${esc(x.label||('Calendar '+(i+1)))}<span class="source-role-badge ${calendarRoleClass(x.role)}">${calendarRoleLabel(x.role)}</span><span class="source-health ${sourceHealth(x).cls}">${sourceHealth(x).label}</span></div>
-      <div class="source-meta">${esc(x.source||'ICS')} · ${x.lastRefresh?`refreshed ${formatStamp(x.lastRefresh)}`:'not refreshed yet'}${x.lastCount!=null?` · ${x.lastCount} events`:''}${x.lastMethod==='proxy'?' · proxy':''}</div>
+      <div class="source-name"><span class="calendar-status-dot ${x.lastStatus==='ok'?'ok':x.lastStatus==='bad'?'bad':'warn'}"></span>${esc(x.label||('Calendar '+(i+1)))}<span class="source-role-badge ${calendarRoleClass(x.role)}">${calendarRoleLabel(x.role)}</span><span class="source-health ${sourceHealth(x).cls}">${sourceHealth(x).label}</span><span class="provider-badge">${calendarProviderLabel(x.url)}</span></div>
+      <div class="source-meta">${esc(x.source||'ICS')} · ${x.lastRefresh?`refreshed ${formatStamp(x.lastRefresh)}`:'not refreshed yet'}${x.lastCount!=null?` · ${x.lastCount} events`:''}${x.lastMethod==='gateway'||x.lastMethod==='proxy'?' · Gateway':''}</div>
     </div>
     <div class="calendar-actions" style="margin:0">
       <select class="source-role-select" data-role-id="${esc(x.id)}">
@@ -1866,7 +2024,7 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
     const sig=rows.filter(x=>inPlanningWindow(x.date)).map(x=>[x.date,x.start,x.end,x.title,x.location,x.child].join('|')).sort().join('\n');
     const unchanged=existing?.lastDataSignature===sig;
     const stats=unchanged?{total:rows.filter(x=>inPlanningWindow(x.date)).length}:processImportedRows(rows,label,{replaceSource:sourceName});
-    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:identityLink.role,childRole:identityLink.childRole,lastDataSignature:sig,lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via};
+    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:identityLink.role,childRole:identityLink.childRole,lastDataSignature:sig,lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via,lastProvider:fetched.provider||calendarProvider(rawUrl),lastError:'',lastAttempts:fetched.attempts||[]};
     if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
     saveCalendarLinks(links,updated.role==='primaryFamily'?updated.id:'');
     if(kind==='main')hideAppleCalendarFallback();
@@ -1874,7 +2032,7 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
     return true;
   }catch(err){
     let links=getSavedCalendarLinks(),idx=links.findIndex(x=>normalizeCalendarUrl(x.url)===url);
-    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:normalizeCalendarRole(linkObj.role,kind),lastRefresh:new Date().toISOString(),lastStatus:apple?'needs-file':'bad',lastError:err.message};
+    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:normalizeCalendarRole(linkObj.role,kind),lastRefresh:new Date().toISOString(),lastStatus:apple?'needs-file':err.gatewayNeeded?'blocked':'bad',lastProvider:err.provider||calendarProvider(rawUrl),lastError:err.message,lastAttempts:err.attempts||[]};
     if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
     saveCalendarLinks(links,updated.role==='primaryFamily'?updated.id:'');
     if(apple){
@@ -1882,11 +2040,11 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
       $('importStatus').textContent=`${label}: Apple link accepted. Browser access was blocked, so use the Apple download/import fallback below.`;
       return false;
     }
-    $('importStatus').textContent=`${label}: link saved, but this browser could not read it. Use .ics upload or configure the optional proxy.`;
+    $('importStatus').textContent=err.invalidSubscription?`${label}: ${err.message}`:err.gatewayNeeded?`${label}: subscription saved, but this browser blocked direct access. Configure the Calendar Gateway once for reliable TeamSnap/GameChanger sync.`:`${label}: calendar fetch failed. Retry or review the Calendar Gateway.`;
     return false;
   }
 }
-async function refreshAllCalendars(){const links=getSavedCalendarLinks();if(!links.length){$('importStatus').textContent='No saved web calendars to refresh.';return}let ok=0;for(const l of links){if(await importSharedCalendarLink(l,false))ok++}$('importStatus').textContent=`Refresh complete: ${ok}/${links.length} web calendars updated.`}
+
 function calendarSourceFromFilename(name){const n=name.replace(/\.(ics|csv|zip)$/i,'').replace(/[_-]+/g,' ').trim();return n||'Uploaded calendar'}
 async function importCalendarFiles(files,kind='team'){
   files=[...files];if(!files.length)return;let errors=[],total=0;
@@ -1903,6 +2061,7 @@ $('connectMainCalendarBtn').onclick=async()=>{const url=$('mainCalendarUrl').val
 $('uploadMainCalendarBtn').onclick=()=>$('mainCalendarFile').click();$('mainCalendarFile').onchange=async e=>{await importCalendarFiles(e.target.files,'main');e.target.value=''};
 $('chooseCalendarFilesBtn').onclick=()=>$('activityFile').click();$('activityFile').onchange=async e=>{await importCalendarFiles(e.target.files,'team');e.target.value=''};
 $('refreshAllCalendarsBtn').onclick=refreshAllCalendars;
+$('testAllCalendarSourcesBtn').onclick=async()=>{const r=await refreshAllCalendarsCore({quiet:false,reason:'diagnostic'});alert(`Calendar source test: ${r.ok}/${r.total} refreshed.${r.failed.length?'\nNeeds attention: '+r.failed.join(', '):'\nAll sources reachable.'}`)};
 $('addBulkCalendarLinksBtn').onclick=async()=>{const lines=$('bulkCalendarLinks').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return;let added=0;for(const line of lines){let label='Team calendar',url=line;if(line.includes('|')){const parts=line.split('|');label=parts.shift().trim()||label;url=parts.join('|').trim()}else{try{const u=new URL(normalizeCalendarUrl(url));label=u.hostname.replace(/^www\./,'')}catch{}}if(await importSharedCalendarLink({url,label,source:'Team Calendar',kind:'team',role:'team'},true))added++}$('bulkCalendarLinks').value='';$('importStatus').textContent=`Added/refreshed ${added}/${lines.length} calendar subscriptions.`};
 const drop=$('calendarDropZone');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover')}));drop.addEventListener('drop',e=>importCalendarFiles(e.dataTransfer.files,'team'));
 
@@ -2212,18 +2371,7 @@ function adhocActivitiesForDay(day){
 
 let __calendarRefreshInProgress=false;
 async function refreshReachableCalendarsBeforeGenerate(){
-  const links=getSavedCalendarLinks();
-  if(!links.length)return {ok:0,total:0};
-  if(__calendarRefreshInProgress)return {ok:0,total:links.length};
-  __calendarRefreshInProgress=true;
-  let ok=0;
-  $('importStatus').textContent=`Refreshing ${links.length} connected calendar${links.length===1?'':'s'} before planning…`;
-  try{
-    for(const l of links){
-      try{if(await importSharedCalendarLink(l,false))ok++}catch{}
-    }
-    return {ok,total:links.length};
-  }finally{__calendarRefreshInProgress=false}
+  return await refreshAllCalendarsCore({quiet:true,reason:'generate'});
 }
 async function generate(){
   const links=getSavedCalendarLinks();
@@ -2693,7 +2841,6 @@ function permanentSettings(){
       childMiddle:$('childMiddle').value,
       childYoungest:$('childYoungest').value,
       childOldestAliases:$('childOldestAliases').value,childMiddleAliases:$('childMiddleAliases').value,childYoungestAliases:$('childYoungestAliases').value,
-      primaryAutoRefreshEnabled:$('primaryAutoRefreshEnabled').checked?'yes':'no',primaryAutoRefreshMinutes:$('primaryAutoRefreshMinutes').value,
       homeAddress:$('homeAddress').value,
       liveRouting:$('liveRouting').value,
       oldestCanDrive:$('oldestCanDrive').value,
@@ -2776,7 +2923,7 @@ function applyPermanent(data){
       $('siteBody').innerHTML='';
       data.sites.forEach(siteRow);
     }
-    Object.entries(data.rules||{}).forEach(([k,v])=>{if(!$(k))return;if(k==='primaryAutoRefreshEnabled')$(k).checked=v!=='no';else $(k).value=v});
+    Object.entries(data.rules||{}).forEach(([k,v])=>{if(!$(k))return;$(k).value=v});
     refreshPreferredSite();
     $('practiceBody').innerHTML='';
     (data.practices||[]).forEach(practiceRow);
@@ -2912,8 +3059,8 @@ function mobileReadOnlySnapshotHtml(){
   const published=new Date().toLocaleString();
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Family Agenda</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}.app{max-width:760px;margin:auto;background:#fff;min-height:100vh}.top{padding:calc(12px + env(safe-area-inset-top)) 14px 10px;background:#fff;border-bottom:1px solid #e5e5ea;position:sticky;top:0;z-index:5}.title{font-size:31px;font-weight:800;letter-spacing:-.045em}.sub{font-size:12px;color:#8e8e93;margin-top:2px}.seg{display:grid;grid-template-columns:repeat(3,1fr);background:#e9e9ee;padding:2px;border-radius:9px;margin-top:10px}.seg button{border:0;background:transparent;padding:8px;border-radius:7px;font-size:13px;font-weight:700}.seg button.active{background:#fff;box-shadow:0 1px 3px #0002}.nav{display:flex;justify-content:space-between;align-items:center;margin-top:9px}.nav button{border:0;background:#f2f2f7;border-radius:9px;min-width:44px;min-height:38px;font-size:18px}.nav .today{font-size:13px;padding:0 14px}.dayhead{padding:13px 14px 7px;display:flex;align-items:baseline;gap:9px}.num{font-size:42px;font-weight:500;letter-spacing:-.07em}.words .dow{font-size:16px;font-weight:700}.words .my{font-size:12px;color:#8e8e93}.row{display:grid;grid-template-columns:58px 4px 1fr;gap:9px;padding:10px 13px;border-top:1px solid #ededf2}.time{text-align:right;font-size:12px;color:#8e8e93}.bar{border-radius:3px;background:#3478f6}.bar.team{background:#34c759}.bar.work{background:#8e8e93}.bar.kira{background:#af52de}.bar.alert{background:#ff3b30}.et{font-size:15px;font-weight:700}.em{font-size:12px;color:#6b7280;margin-top:3px;line-height:1.3}.driver{font-size:12px;font-weight:700;margin-top:4px}.weekrow{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:11px 14px;border-top:1px solid #ededf2}.wd{text-align:center}.wd small{display:block;color:#8e8e93;text-transform:uppercase;font-size:9px}.wd b{font-size:25px;font-weight:500}.wi{font-size:12px;line-height:1.45}.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e5e5ea;border-left:1px solid #e5e5ea}.ml,.mc{border-right:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea}.ml{text-align:center;font-size:9px;color:#8e8e93;padding:6px 2px;background:#fafafa}.mc{min-height:58px;padding:4px;text-align:center}.mc.out{color:#c7c7cc;background:#fafafa}.mn{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:auto;font-size:12px}.mc.sel .mn{background:#ff3b30;color:#fff}.dots{display:flex;justify-content:center;gap:2px;margin-top:5px}.dot{width:4px;height:4px;background:#3478f6;border-radius:50%}.dot.team{background:#34c759}.dot.work{background:#8e8e93}.dot.alert{background:#ff3b30}.empty{padding:25px;text-align:center;color:#8e8e93}.footer{padding:14px;color:#8e8e93;font-size:10px;text-align:center;border-top:1px solid #ededf2}
-</style></head><body><div class="app"><div class="top"><div id="title" class="title">Family</div><div class="sub">Published ${published}</div><div class="seg"><button data-v="day" class="active">Day</button><button data-v="week">Week</button><button data-v="month">Month</button></div><div class="nav"><button id="prev">‹</button><button id="today" class="today">Today</button><button id="next">›</button></div></div><div id="body"></div><div class="footer">Family Logistics Planner · read-only mobile agenda</div></div>
+*{box-sizing:border-box}.brand{display:flex;align-items:center;gap:8px;padding:4px 0 8px;border-bottom:1px solid #e7e1d3;margin-bottom:8px}.brand svg{width:66px;height:32px}.brandcopy{line-height:1.05}.brandcopy b{font-size:14px}.brandcopy span{display:block;font-size:9px;color:#8a7c55}.brandcopy em{font-style:normal;color:#b68700;font-weight:800}body{margin:0;background:#f2f2f7;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}.app{max-width:760px;margin:auto;background:#fff;min-height:100vh}.top{padding:calc(12px + env(safe-area-inset-top)) 14px 10px;background:#fff;border-bottom:1px solid #e5e5ea;position:sticky;top:0;z-index:5}.title{font-size:31px;font-weight:800;letter-spacing:-.045em}.sub{font-size:12px;color:#8e8e93;margin-top:2px}.seg{display:grid;grid-template-columns:repeat(3,1fr);background:#e9e9ee;padding:2px;border-radius:9px;margin-top:10px}.seg button{border:0;background:transparent;padding:8px;border-radius:7px;font-size:13px;font-weight:700}.seg button.active{background:#fff;box-shadow:0 1px 3px #0002}.nav{display:flex;justify-content:space-between;align-items:center;margin-top:9px}.nav button{border:0;background:#f2f2f7;border-radius:9px;min-width:44px;min-height:38px;font-size:18px}.nav .today{font-size:13px;padding:0 14px}.dayhead{padding:13px 14px 7px;display:flex;align-items:baseline;gap:9px}.num{font-size:42px;font-weight:500;letter-spacing:-.07em}.words .dow{font-size:16px;font-weight:700}.words .my{font-size:12px;color:#8e8e93}.row{display:grid;grid-template-columns:58px 4px 1fr;gap:9px;padding:10px 13px;border-top:1px solid #ededf2}.time{text-align:right;font-size:12px;color:#8e8e93}.bar{border-radius:3px;background:#3478f6}.bar.team{background:#34c759}.bar.work{background:#8e8e93}.bar.kira{background:#af52de}.bar.alert{background:#ff3b30}.et{font-size:15px;font-weight:700}.em{font-size:12px;color:#6b7280;margin-top:3px;line-height:1.3}.driver{font-size:12px;font-weight:700;margin-top:4px}.weekrow{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:11px 14px;border-top:1px solid #ededf2}.wd{text-align:center}.wd small{display:block;color:#8e8e93;text-transform:uppercase;font-size:9px}.wd b{font-size:25px;font-weight:500}.wi{font-size:12px;line-height:1.45}.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e5e5ea;border-left:1px solid #e5e5ea}.ml,.mc{border-right:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea}.ml{text-align:center;font-size:9px;color:#8e8e93;padding:6px 2px;background:#fafafa}.mc{min-height:58px;padding:4px;text-align:center}.mc.out{color:#c7c7cc;background:#fafafa}.mn{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:auto;font-size:12px}.mc.sel .mn{background:#ff3b30;color:#fff}.dots{display:flex;justify-content:center;gap:2px;margin-top:5px}.dot{width:4px;height:4px;background:#3478f6;border-radius:50%}.dot.team{background:#34c759}.dot.work{background:#8e8e93}.dot.alert{background:#ff3b30}.empty{padding:25px;text-align:center;color:#8e8e93}.footer{padding:14px;color:#8e8e93;font-size:10px;text-align:center;border-top:1px solid #ededf2}
+</style></head><body><div class="app"><div class="top"><div class="brand"><svg viewBox="90 8 350 170" fill="none"><rect x="90" y="8" width="350" height="170" rx="10" fill="#141414"/><path d="M158 162V40L161 33H191L194 40V162M240 162V116H268V162M242 100V116H266V100M320 162V66H366V162M320 66H366" stroke="#A8A29C" stroke-width="2"/><path d="M321 66L324 47L327 66M334 66L337.5 48L341 66M340 66L343.5 44L347 66M346 66L349.5 48L353 66M359 66L362 47L365 66" stroke="#F5A800" stroke-width="2"/><path d="M100 162H430" stroke="#A8A29C" stroke-width="1.4"/></svg><div class="brandcopy"><b>AutoPilot</b><span>by <em>LukaLab</em> AI Creative</span></div></div><div id="title" class="title">Family</div><div class="sub">Published ${published}</div><div class="seg"><button data-v="day" class="active">Day</button><button data-v="week">Week</button><button data-v="month">Month</button></div><div class="nav"><button id="prev">‹</button><button id="today" class="today">Today</button><button id="next">›</button></div></div><div id="body"></div><div class="footer">AutoPilot · by LukaLab AI Creative · read-only mobile agenda</div></div>
 <script>
 const P=${JSON.stringify(payload)};let view='day';function pd(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function add(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}function mon(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),q=(x.getDay()+6)%7;x.setDate(x.getDate()-q);return x}function fmt(m){if(m==null)return'';let h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM';return (h%12||12)+':'+String(mm).padStart(2,'0')+' '+ap}const first=pd(P[0].date),last=pd(P[P.length-1].date),now=new Date(),today0=new Date(now.getFullYear(),now.getMonth(),now.getDate());let focus=(today0>=first&&today0<=last)?today0:first;function plan(d){return P.find(x=>x.date===iso(d))}function groups(p){const g={};(p?.assignments||[]).forEach(a=>{const z=a.activity,k=[z.child,z.title,z.start,z.end].join('|');(g[k]??={activity:z,legs:[]}).legs.push(a)});return Object.values(g)}function rows(p){if(!p)return[];const a=[];if(!p.weekend){a.push({t:p.holiday?'All day':p.onsite?fmt(p.departHome):'All day',k:'work',n:p.holiday?'Holiday / no work':p.onsite?'Chris · '+p.site:'Chris · Remote',m:p.onsite?'Arrive '+fmt(p.arrive)+' · Leave '+fmt(p.leaveWork):''});a.push({t:p.kiraOff?'All day':fmt(p.kiraStart),k:'kira',n:p.kiraOff?'Kira · Off':'Kira · '+p.kiraLocation,m:p.kiraOff?'Available locally':'Home availability approx. '+fmt(p.kiraPickupAvailable)})}groups(p).forEach(x=>{const z=x.activity,b=x.legs.some(l=>l.primary==='Backup'),team=/Team Calendar|TeamSnap|GameChanger/i.test(z.source);a.push({t:z.start?fmt(Number(z.start.split(':')[0])*60+Number(z.start.split(':')[1])):'All day',k:b?'alert':team?'team':'family',n:z.child+' · '+z.title,m:[z.end?'Until '+fmt(Number(z.end.split(':')[0])*60+Number(z.end.split(':')[1])):'',z.location].filter(Boolean).join(' · '),d:x.legs.map(l=>l.kind+': '+l.primary+(l.secondary&&l.secondary!=='—'?' / '+l.secondary:'')).join(' · ')})});return a}
 function rday(){const p=plan(focus),a=rows(p);return '<div class="dayhead"><div class="num">'+focus.getDate()+'</div><div class="words"><div class="dow">'+focus.toLocaleDateString(undefined,{weekday:'long'})+'</div><div class="my">'+focus.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</div></div></div>'+(a.length?a.map(x=>'<div class="row"><div class="time">'+x.t+'</div><div class="bar '+x.k+'"></div><div><div class="et">'+x.n+'</div>'+(x.m?'<div class="em">'+x.m+'</div>':'')+(x.d?'<div class="driver">'+x.d+'</div>':'')+'</div></div>').join(''):'<div class="empty">No logistics scheduled.</div>')}
@@ -2975,6 +3122,7 @@ function readOnlySnapshotHtml(){
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Family Logistics Plan — ${range}</title>
 <style>
+.brand{display:flex;align-items:center;gap:8px}.brand svg{width:72px;height:34px}.brandcopy{display:flex;flex-direction:column;line-height:1.05}.brandcopy strong{font-size:15px}.brandcopy span{font-size:9px;color:#756f62}.brandcopy b{color:#b68700}
 :root{--text:#18212b;--muted:#697386;--line:#d8dee8;--bg:#f5f7fa;--card:#fff;--bad:#fdebed}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -3035,6 +3183,7 @@ body{background:#fff;color:#111}
 <div class="wrap">
   <div class="header">
     <div>
+      <div class="brand"><svg viewBox="90 8 350 170" fill="none"><rect x="90" y="8" width="350" height="170" rx="10" fill="#141414"/><path d="M158 162V40L161 33H191L194 40V162M240 162V116H268V162M242 100V116H266V100M320 162V66H366V162M320 66H366" stroke="#A8A29C" stroke-width="2"/><path d="M321 66L324 47L327 66M334 66L337.5 48L341 66M340 66L343.5 44L347 66M346 66L349.5 48L353 66M359 66L362 47L365 66" stroke="#F5A800" stroke-width="2"/><path d="M100 162H430" stroke="#A8A29C" stroke-width="1.4"/></svg><div class="brandcopy"><strong>AutoPilot</strong><span>by <b>LukaLab</b> AI Creative</span></div></div>
       <h1>2-Week Family Logistics Plan</h1>
       <div class="sub">${range}</div>
     </div>
@@ -3093,6 +3242,9 @@ updateBackupStatus();
     });
   }
 })();
+
+
+window.addEventListener('load',()=>setTimeout(()=>refreshCalendarsOnAppOpen(),150));
 
 </script>
 </body>

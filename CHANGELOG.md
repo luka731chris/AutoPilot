@@ -1,31 +1,41 @@
-## v37 — Guaranteed-visible LukaLab masthead
+## v38 — Team calendar sync rebuild
+
+- Removed periodic auto-refresh.
+- Added one authoritative all-calendar refresh when AutoPilot opens.
+- All saved feeds refresh again immediately before plan generation.
+- Added provider-specific TeamSnap / TeamSnap ONE / GameChanger subscription handling and stale-feed query variants.
+- Added calendar-subscription URL validation and clearer diagnostics.
+- Added Calendar Gateway companion Worker for CORS-blocked subscriptions.
+- Added LukaLab branding to mobile, Week at a Glance, fridge print, and read-only outputs.
+
+## v38 — Guaranteed-visible LukaLab masthead
 
 - Embedded the approved LukaLab skyline lockup as inline SVG in the AutoPilot header.
 - Added a secondary skyline-only LukaLab maker mark.
 - Removed the header's dependency on raster/base64 image rendering.
 - Added explicit CSS visibility guarantees and reusable LukaLab assets.
 
-## v37 — Typography and header density refinement
+## v38 — Typography and header density refinement
 
 - Tightened the LukaLab logo crop and removed excess black canvas from the top of AutoPilot.
 - Rebuilt the header as a compact horizontal product masthead.
 - Replaced the prior Inter-first typography with an elegant Avenir Next / SF Pro / Helvetica Neue hierarchy.
 - Improved text sizes, line-height, input readability, table typography, and black/gold contrast across the app.
 
-## v37 — Incorporate approved LukaLab skyline logo
+## v38 — Incorporate approved LukaLab skyline logo
 
 - Integrated the approved LukaLab AI Creative skyline logo directly into the AutoPilot header.
 - Added the logo as a reusable repository asset.
 - Preserved the Pittsburgh black-and-gold visual system while grounding the branding on the actual supplied logo.
 
-## v37 — Pittsburgh skyline LukaLab branding refresh
+## v38 — Pittsburgh skyline LukaLab branding refresh
 
 - Added black-and-gold AutoPilot visual theme.
 - Added a thin-line minimalist Pittsburgh skyline brand motif.
 - Updated the AutoPilot header lockup and LukaLab AI Creative maker signature.
 - Refreshed branding documentation.
 
-## v37 — Auto-refresh, Child Identity Resolver, LukaLab branding
+## v38 — Auto-refresh, Child Identity Resolver, LukaLab branding
 
 - Added Primary Family Calendar periodic refresh and refresh-on-focus/resume.
 - Added Child Identity Resolver and calendar ownership mapping.
