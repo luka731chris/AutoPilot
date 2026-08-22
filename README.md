@@ -271,14 +271,14 @@ This repository is packaged as **private / all rights reserved** by default. See
 - [AutoPilot branding guide](docs/BRANDING.md)
 
 
-## v34 stabilization
+## v37 stabilization
 
-v34 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
+v37 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
 
-See [docs/STABILIZATION-TEST-REPORT-v34.md](docs/STABILIZATION-TEST-REPORT-v34.md) for the defect-to-fix matrix and regression results.
+See [docs/STABILIZATION-TEST-REPORT-v37.md](docs/STABILIZATION-TEST-REPORT-v37.md) for the defect-to-fix matrix and regression results.
 
 
-## v34 — AutoPilot intelligence + LukaLab branding
+## v37 — AutoPilot intelligence + LukaLab branding
 
 - Adds Primary Family Calendar auto-refresh while AutoPilot is open, including refresh-on-focus/resume.
 - Adds a Child Identity Resolver using calendar ownership, actual names, aliases, generic role words, and Unassigned / Verify fallback.
@@ -286,11 +286,28 @@ See [docs/STABILIZATION-TEST-REPORT-v34.md](docs/STABILIZATION-TEST-REPORT-v34.m
 - Adds a distinct AutoPilot product identity and **LukaLab AI Creative** maker signature.
 
 
-## v34 — LukaLab Pittsburgh skyline brand system
+## v37 — LukaLab Pittsburgh skyline brand system
 
-v34 refreshes the AutoPilot shell with a **black-and-gold visual system** and a **Pittsburgh skyline branding theme** inspired by a thin-line tattoo aesthetic.
+v37 refreshes the AutoPilot shell with a **black-and-gold visual system** and a **Pittsburgh skyline branding theme** inspired by a thin-line tattoo aesthetic.
 
 Brand direction:
 - **AutoPilot** remains the product brand.
 - **LukaLab AI Creative** is the maker signature.
 - The UI now incorporates a minimalist Pittsburgh skyline motif and a black / charcoal / gold palette.
+
+
+## v37 — Typography and compact LukaLab masthead
+
+- Replaced the oversized 16:9 branding treatment with a tightly cropped version of the approved LukaLab skyline lockup.
+- Reduced top-of-page dead space with a compact horizontal AutoPilot / LukaLab masthead.
+- Standardized UI typography on an Avenir Next / SF Pro / Helvetica Neue hierarchy for improved legibility.
+- Increased input and body text readability and improved table, helper-text, and mobile type scales.
+- Refined black, charcoal, ivory, and Pittsburgh-gold UI colors for higher contrast and a more cohesive LukaLab appearance.
+
+
+## v37 — guaranteed-visible LukaLab header branding
+
+- Replaced raster/base64 header branding with the supplied LukaLab SVG embedded directly in `index.html`.
+- Added both the full **LukaLab · AI Creative** skyline lockup and a secondary skyline-only maker mark to the AutoPilot masthead.
+- Added explicit visibility/display rules so inherited CSS cannot suppress the logos.
+- Added the original LukaLab SVG/PNG assets to the GitHub repository for reuse.
