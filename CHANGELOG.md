@@ -1,3 +1,23 @@
+## v34 — Incorporate approved LukaLab skyline logo
+
+- Integrated the approved LukaLab AI Creative skyline logo directly into the AutoPilot header.
+- Added the logo as a reusable repository asset.
+- Preserved the Pittsburgh black-and-gold visual system while grounding the branding on the actual supplied logo.
+
+## v34 — Pittsburgh skyline LukaLab branding refresh
+
+- Added black-and-gold AutoPilot visual theme.
+- Added a thin-line minimalist Pittsburgh skyline brand motif.
+- Updated the AutoPilot header lockup and LukaLab AI Creative maker signature.
+- Refreshed branding documentation.
+
+## v34 — Auto-refresh, Child Identity Resolver, LukaLab branding
+
+- Added Primary Family Calendar periodic refresh and refresh-on-focus/resume.
+- Added Child Identity Resolver and calendar ownership mapping.
+- Added aliases and confidence labels.
+- Added AutoPilot visual identity and LukaLab AI Creative maker signature.
+
 # Changelog
 
 All notable changes to the AutoPilot are summarized here.
