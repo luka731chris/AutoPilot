@@ -271,14 +271,14 @@ This repository is packaged as **private / all rights reserved** by default. See
 - [AutoPilot branding guide](docs/BRANDING.md)
 
 
-## v41 stabilization
+## v42 stabilization
 
-v41 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
+v42 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
 
-See [docs/STABILIZATION-TEST-REPORT-v41.md](docs/STABILIZATION-TEST-REPORT-v41.md) for the defect-to-fix matrix and regression results.
+See [docs/STABILIZATION-TEST-REPORT-v42.md](docs/STABILIZATION-TEST-REPORT-v42.md) for the defect-to-fix matrix and regression results.
 
 
-## v41 — AutoPilot intelligence + LukaLab branding
+## v42 — AutoPilot intelligence + LukaLab branding
 
 - Adds Primary Family Calendar auto-refresh while AutoPilot is open, including refresh-on-focus/resume.
 - Adds a Child Identity Resolver using calendar ownership, actual names, aliases, generic role words, and Unassigned / Verify fallback.
@@ -286,9 +286,9 @@ See [docs/STABILIZATION-TEST-REPORT-v41.md](docs/STABILIZATION-TEST-REPORT-v41.m
 - Adds a distinct AutoPilot product identity and **LukaLab AI Creative** maker signature.
 
 
-## v41 — LukaLab Pittsburgh skyline brand system
+## v42 — LukaLab Pittsburgh skyline brand system
 
-v41 refreshes the AutoPilot shell with a **black-and-gold visual system** and a **Pittsburgh skyline branding theme** inspired by a thin-line tattoo aesthetic.
+v42 refreshes the AutoPilot shell with a **black-and-gold visual system** and a **Pittsburgh skyline branding theme** inspired by a thin-line tattoo aesthetic.
 
 Brand direction:
 - **AutoPilot** remains the product brand.
@@ -296,7 +296,7 @@ Brand direction:
 - The UI now incorporates a minimalist Pittsburgh skyline motif and a black / charcoal / gold palette.
 
 
-## v41 — Typography and compact LukaLab masthead
+## v42 — Typography and compact LukaLab masthead
 
 - Replaced the oversized 16:9 branding treatment with a tightly cropped version of the approved LukaLab skyline lockup.
 - Reduced top-of-page dead space with a compact horizontal AutoPilot / LukaLab masthead.
@@ -305,7 +305,7 @@ Brand direction:
 - Refined black, charcoal, ivory, and Pittsburgh-gold UI colors for higher contrast and a more cohesive LukaLab appearance.
 
 
-## v41 — guaranteed-visible LukaLab header branding
+## v42 — guaranteed-visible LukaLab header branding
 
 - Replaced raster/base64 header branding with the supplied LukaLab SVG embedded directly in `index.html`.
 - Added both the full **LukaLab · AI Creative** skyline lockup and a secondary skyline-only maker mark to the AutoPilot masthead.
@@ -313,7 +313,7 @@ Brand direction:
 - Added the original LukaLab SVG/PNG assets to the GitHub repository for reuse.
 
 
-## v41 — Session-start calendar synchronization
+## v42 — Session-start calendar synchronization
 
 - Removed periodic/background auto-refresh.
 - AutoPilot refreshes **all saved web calendars once when the app opens** and again immediately before Generate.
@@ -325,7 +325,7 @@ Brand direction:
 - Added LukaLab branding to the mobile family view, Week at a Glance / fridge preview, print fridge output, and standalone read-only family/mobile outputs.
 
 
-## v41 — Transport Eligibility Intelligence
+## v42 — Transport Eligibility Intelligence
 
 AutoPilot now separates calendar context from actual child transportation.
 
@@ -342,7 +342,7 @@ AutoPilot now separates calendar context from actual child transportation.
 - Kira availability inference remains separate from child transportation inference.
 
 
-## v41 — 10-Minute Planning Review & Location Memory
+## v42 — 10-Minute Planning Review & Location Memory
 
 AutoPilot now has a day-by-day fast-review screen directly above the detailed Activities table.
 
@@ -366,10 +366,36 @@ Calendar feed locations are automatically saved. If a later occurrence omits the
 Manually corrected venues are saved immediately for future use.
 
 
-## v41 — Boss email editor usability
+## v42 — Boss email editor usability
 
 - Increased the boss-email draft area to approximately 18 visible lines / 520px minimum height.
 - Improved email-editor font size, padding, line-height, and contrast.
 - Added the standard opening:
   `Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.`
 - Removed the redundant closing adjustment request since the intro already covers it.
+
+
+## v42 — Tabbed workflow, decision-first Review, 12-hour time
+
+AutoPilot is now organized into five workflow tabs:
+
+1. **Plan** — planning window, Kira schedule, work assumptions, Generate
+2. **Calendars** — all source connections and Calendar Gateway
+3. **Review** — only commitments that require a human decision or missing-location fix
+4. **Outputs** — boss email, commute schedule, mobile agenda, Week at a Glance, fridge output
+5. **Settings** — recurring practices and ad-hoc exceptions
+
+### Review philosophy
+The primary Review screen no longer asks the user to inspect every event. It surfaces only:
+- ambiguous transport classifications that have not been explicitly confirmed
+- Transport Required events missing a usable location
+
+Everything else is summarized as **no action needed**.
+
+A collapsible **Show all commitments / audit details** section preserves transparency without making it part of the normal 10-minute workflow.
+
+### Boss email
+The boss-email editor is permanently placed in Outputs and remains visible before Generate with the standard Phil intro.
+
+### Time format
+All model-rendered/displayed event times use 12-hour AM/PM formatting. Native `<input type="time">` controls retain browser-native internal values, because HTML time inputs use 24-hour machine values even when browsers render localized controls.

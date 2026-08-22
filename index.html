@@ -253,7 +253,7 @@ td input,td select{margin:0;padding:7px}
 .child-owner-select{font-size:12px;padding:5px 7px;min-width:145px}
 
 
-/* v41 LukaLab Pittsburgh skyline branding */
+/* v42 LukaLab Pittsburgh skyline branding */
 :root{
   --ap-black:#0d0d0f;
   --ap-charcoal:#17181c;
@@ -350,7 +350,7 @@ button.secondary,.btn.secondary{
 .app-shell{position:relative;z-index:1}
 
 
-/* v41 integrated LukaLab logo */
+/* v42 integrated LukaLab logo */
 .real-lukalab-logo-wrap{
   margin:14px 0 8px;
   display:flex;
@@ -376,7 +376,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v41 LukaLab typography + compact header refinement */
+/* v42 LukaLab typography + compact header refinement */
 :root{
   --bg:#f3f1eb;
   --card:#fffdf8;
@@ -563,7 +563,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v41 guaranteed-visible LukaLab masthead */
+/* v42 guaranteed-visible LukaLab masthead */
 .autopilot-masthead{
   display:grid!important;
   grid-template-columns:minmax(290px,440px) minmax(0,1fr)!important;
@@ -648,7 +648,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v41 single-logo LukaLab masthead */
+/* v42 single-logo LukaLab masthead */
 .autopilot-masthead{
   display:block!important;
   background:#111112!important;
@@ -727,7 +727,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v41 provider-aware calendar sync + LukaLab output branding */
+/* v42 provider-aware calendar sync + LukaLab output branding */
 .calendar-sync-summary{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .sync-chip{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;background:#f2f2f7;color:#5f5b52}
 .sync-chip.fresh{background:#e9f7ed;color:#176b3a}
@@ -751,7 +751,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v41 transport intelligence */
+/* v42 transport intelligence */
 .transport-class{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:850;margin-top:3px;white-space:nowrap}
 .transport-class.required{background:#e9f7ed;color:#176b3a}
 .transport-class.aware{background:#fff4d6;color:#7a5500}
@@ -762,7 +762,7 @@ button.secondary,.btn.secondary{
 .transport-intel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:760px){.transport-intel-grid{grid-template-columns:1fr}}
 
-/* v41 10-minute planning review + location memory */
+/* v42 10-minute planning review + location memory */
 .quick-review-card{border:1px solid #d9c47a;background:linear-gradient(180deg,#fffdf8,#fffaf0)}
 .quick-review-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .quick-review-progress{display:flex;gap:6px;flex-wrap:wrap}
@@ -788,7 +788,7 @@ button.secondary,.btn.secondary{
 .quick-review-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
 @media(max-width:850px){.quick-event{grid-template-columns:1fr}.quick-transport{max-width:340px}}
 
-/* v41 boss email editor */
+/* v42 boss email editor */
 #bossMessage{
   min-height:520px!important;
   font-family:var(--ap-body-font)!important;
@@ -797,6 +797,42 @@ button.secondary,.btn.secondary{
 }
 @media(max-width:760px){
   #bossMessage{min-height:440px!important;font-size:16px!important}
+}
+
+
+/* v42 tabbed navigation + simplified review */
+.autopilot-tabs{
+  display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px;padding:5px;
+  background:#ebe7dc;border:1px solid #ddd4c1;border-radius:12px;position:sticky;top:6px;z-index:20
+}
+.autopilot-tabs button{
+  background:transparent!important;color:#5b564b!important;border:0!important;
+  padding:9px 14px!important;border-radius:8px!important;font-size:13px!important;font-weight:800!important
+}
+.autopilot-tabs button.active{background:#171719!important;color:#fff7dd!important}
+.autopilot-tabs button .tab-badge{
+  display:inline-flex;margin-left:5px;min-width:18px;height:18px;align-items:center;justify-content:center;
+  padding:0 5px;border-radius:999px;background:#d6a800;color:#17140a;font-size:9px;font-weight:900
+}
+.autopilot-tab-panel{display:none}
+.autopilot-tab-panel.active{display:block}
+.tab-intro{margin:0 0 10px;padding:9px 11px;border-left:3px solid #d6a800;background:#fffaf0;border-radius:0 9px 9px 0}
+.tab-intro strong{display:block;font-size:14px;color:#2c281d}.tab-intro span{font-size:11px;color:#756f62}
+.audit-details{margin-top:10px;border-top:1px solid #e4ded1;padding-top:8px}
+.audit-details summary{cursor:pointer;font-size:12px;font-weight:800;color:#625b4d}
+.quick-review-card{margin:0!important}
+.quick-review-actions #quickReviewRefreshBtn{display:none}
+.quick-review-mode-note{font-size:11px;color:#6f695d;margin:6px 0 0}
+.quick-attention-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#fff2cb;margin:8px 0}
+.quick-attention-banner.good{background:#eaf7ed}
+.quick-attention-banner strong{font-size:12px}
+.boss-output-card{border:2px solid #d6a800!important;background:linear-gradient(180deg,#fffef9,#fffaf0)!important}
+.boss-output-card h3{font-size:19px!important}
+#bossMessage{min-height:500px!important}
+.time-12h{font-variant-numeric:tabular-nums}
+@media(max-width:760px){
+ .autopilot-tabs{position:static;display:grid;grid-template-columns:repeat(2,1fr)}
+ .autopilot-tabs button{padding:10px 7px!important}
 }
 
 </style>
@@ -843,7 +879,19 @@ button.secondary,.btn.secondary{
     </div>
   </div>
 
-  <div class="toolbar">
+  <nav class="autopilot-tabs" id="autopilotTabs" aria-label="AutoPilot sections">
+  <button type="button" data-tab="plan" class="active">Plan</button>
+  <button type="button" data-tab="calendars">Calendars</button>
+  <button type="button" data-tab="review">Review <span id="reviewTabBadge" class="tab-badge" style="display:none">0</span></button>
+  <button type="button" data-tab="outputs">Outputs</button>
+  <button type="button" data-tab="settings">Settings</button>
+</nav>
+<div id="tab-plan" class="autopilot-tab-panel active"><div class="tab-intro"><strong>Plan the next two weeks</strong><span>Set the planning window, Kira schedule, work assumptions, then Generate.</span></div></div>
+<div id="tab-calendars" class="autopilot-tab-panel"><div class="tab-intro"><strong>Calendar connections</strong><span>Manage Primary Family, TeamSnap, GameChanger, school, and other feeds.</span></div></div>
+<div id="tab-review" class="autopilot-tab-panel"><div class="tab-intro"><strong>Only what needs your attention</strong><span>Transport and location exceptions first. Open the audit section only when you want to inspect everything.</span></div></div>
+<div id="tab-outputs" class="autopilot-tab-panel"><div class="tab-intro"><strong>Publish & communicate</strong><span>Boss email, commute plan, mobile agenda, week-at-a-glance, and fridge output.</span></div></div>
+<div id="tab-settings" class="autopilot-tab-panel"><div class="tab-intro"><strong>Setup & exceptions</strong><span>Recurring practices, ad-hoc commitments, and permanent household/work assumptions.</span></div></div>
+<div class="toolbar">
     <button class="primary" id="generateBtn">Generate recommended 2-week plan</button>
     <button id="newCycleBtn">Start New 2-Week Cycle</button>
     <button id="exportBackupBtn">Download Current Backup</button>
@@ -1082,22 +1130,26 @@ zoom</textarea>
     <div class="card quick-review-card" id="quickPlanningReview">
       <div class="quick-review-head">
         <div>
-          <h3 style="margin:0">10-Minute Planning Review</h3>
-          <p class="small muted" style="margin:4px 0 0">Scan each day, confirm whether each commitment needs transportation, and fix only missing locations. AutoPilot remembers your decisions and known venues for future cycles.</p>
+          <h3 style="margin:0">Planning Decisions</h3>
+          <p class="small muted" style="margin:4px 0 0">AutoPilot hides routine items and surfaces only commitments that need a transport decision or location fix. Reviewed items stay available in the audit view.</p>
         </div>
         <div id="quickReviewProgress" class="quick-review-progress"></div>
       </div>
       <div class="quick-review-actions">
         <button id="quickReviewRefreshBtn" type="button">Refresh review</button>
-        <button id="quickReviewTransportAllTeamBtn" type="button" class="secondary">Confirm team calendars as transport</button>
+        
       </div>
       <div id="quickReviewDays" class="quick-review-days"></div>
     </div>
 
-    <div class="table-wrap"><table>
-      <thead><tr><th>Date</th><th>Child</th><th>Activity</th><th>Start</th><th>End</th><th>Activity site / address</th><th>Fallback drive from home (min)</th><th>Drop-off?</th><th>Pickup?</th><th></th></tr></thead>
-      <tbody id="activityBody"></tbody>
-    </table></div>
+    <details class="audit-details" id="commitmentAudit">
+      <summary>Show all commitments / audit details</summary>
+      <p class="small muted">Transparency view only. You normally do not need to edit this table during the 10-minute planning session.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Child</th><th>Activity</th><th>Start</th><th>End</th><th>Activity site / address</th><th>Fallback drive from home (min)</th><th>Drop-off?</th><th>Pickup?</th><th></th></tr></thead>
+        <tbody id="activityBody"></tbody>
+      </table></div>
+    </details>
   </div>
 
   <div class="card">
@@ -1173,9 +1225,9 @@ zoom</textarea>
         <h3>Chris — recommended day-by-day commute</h3><p class="muted small" style="margin-top:5px"><strong>To override a day:</strong> choose the final site/Remote/Holiday under <em>Final Work Plan</em>, then click <strong>Apply & Recalculate</strong>. The tool will recalculate commute timing and all transport assignments before you publish.</p>
         <div id="commutePlan" style="margin-top:10px"></div>
       </div>
-      <div class="card">
-        <h3>Work-facing schedule for boss signoff</h3>
-        <textarea id="bossMessage" class="copybox" rows="18" style="margin-top:10px;min-height:520px;width:100%;resize:vertical;font-family:var(--ap-body-font);font-size:15px;line-height:1.55;padding:14px 16px;background:#fffefa;color:#24221d;border:1px solid #d7cfbf;border-radius:10px"></textarea>
+      <div class="card boss-output-card" id="bossEmailCard">
+        <h3>Email to Phil — two-week schedule</h3>
+        <textarea id="bossMessage" class="copybox" rows="18" placeholder="Generate a plan to populate your two-week email to Phil." style="margin-top:10px;min-height:520px;width:100%;resize:vertical;font-family:var(--ap-body-font);font-size:15px;line-height:1.55;padding:14px 16px;background:#fffefa;color:#24221d;border:1px solid #d7cfbf;border-radius:10px"></textarea>
         <div class="small muted" style="margin-top:8px">Full email draft shown below. Edit anything you want, then copy it directly into email.</div>
         <div class="toolbar"><button id="copyBossBtn">Copy schedule</button></div>
       </div>
@@ -2439,6 +2491,17 @@ function adhocRow(d={}){
 $('addAdhocBtn').onclick=()=>adhocRow();
 
 
+
+function displayTime12h(value=''){
+  const v=String(value||'').trim();
+  if(!v)return '';
+  if(/\b(am|pm)\b/i.test(v))return v.replace(/\s+/g,' ').toUpperCase();
+  const m=v.match(/^(\d{1,2}):(\d{2})/);
+  if(!m)return v;
+  let h=+m[1],min=m[2],ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  return `${h}:${min} ${ap}`;
+}
 function quickReviewRows(){
   return [...$('activityBody').children].map((row,index)=>({row,index,event:rowToCalendarEvent(row)}))
     .filter(x=>x.event.date&&x.event.title)
@@ -2452,41 +2515,90 @@ function quickLocationStatus(row){
   return {text:'From calendar feed · saved',cls:'feed'};
 }
 function renderQuickPlanningReview(){
-  const host=$('quickReviewDays'),progress=$('quickReviewProgress');if(!host||!progress)return;
+  const host=$('quickReviewDays'),progress=$('quickReviewProgress'),badge=$('reviewTabBadge');
+  if(!host||!progress)return;
   const rows=quickReviewRows();
-  if(!rows.length){host.innerHTML='<div class="quick-review-empty">No commitments in this planning window yet.</div>';progress.innerHTML='<span class="qr-chip">0 commitments</span>';return}
-  const groups={};rows.forEach(x=>(groups[x.event.date]??=[]).push(x));
-  let req=0,no=0,missing=0;
-  rows.forEach(x=>{if(x.row.dataset.transportClass==='required')req++;else no++;if(x.row.dataset.transportClass==='required'&&!locationLooksUseful(x.event.location))missing++});
-  progress.innerHTML=`<span class="qr-chip">${rows.length} commitments</span><span class="qr-chip good">${req} require transport</span><span class="qr-chip">${no} no transport</span>${missing?`<span class="qr-chip warn">${missing} need location</span>`:'<span class="qr-chip good">Locations ready</span>'}`;
-  host.innerHTML=Object.entries(groups).map(([date,items])=>{
+  if(!rows.length){
+    host.innerHTML='<div class="quick-review-empty">No commitments in this planning window yet.</div>';
+    progress.innerHTML='<span class="qr-chip">0 commitments</span>';
+    if(badge)badge.style.display='none';
+    return;
+  }
+
+  // Attention = ambiguous/unconfirmed Primary Family item OR required transport without location.
+  const attention=rows.filter(({row,event})=>{
+    const reason=row.dataset.transportReason||'';
+    const transport=row.dataset.transportClass||'info';
+    const manuallyDecided=row.dataset.transportManual==='true'||reason==='Saved planning decision'||reason==='Manual transport override';
+    const missingRequiredLocation=transport==='required'&&!locationLooksUseful(event.location);
+    const ambiguous=/Ambiguous|transport not explicit/i.test(reason) && !manuallyDecided;
+    return missingRequiredLocation||ambiguous;
+  });
+
+  if(badge){
+    badge.textContent=String(attention.length);
+    badge.style.display=attention.length?'inline-flex':'none';
+  }
+
+  const requiredTotal=rows.filter(x=>x.row.dataset.transportClass==='required').length;
+  const reviewed=rows.length-attention.length;
+  progress.innerHTML=`<span class="qr-chip">${rows.length} total</span><span class="qr-chip good">${reviewed} no action needed</span>${attention.length?`<span class="qr-chip warn">${attention.length} need attention</span>`:'<span class="qr-chip good">All set</span>'}`;
+
+  if(!attention.length){
+    host.innerHTML=`<div class="quick-attention-banner good"><div><strong>Nothing needs your attention.</strong><div class="quick-review-mode-note">${requiredTotal} transport commitment${requiredTotal===1?'':'s'} already classified; locations are ready.</div></div></div>`;
+    return;
+  }
+
+  const groups={};attention.forEach(x=>(groups[x.event.date]??=[]).push(x));
+  host.innerHTML=`<div class="quick-attention-banner"><div><strong>${attention.length} item${attention.length===1?'':'s'} to resolve</strong><div class="quick-review-mode-note">Everything else is already handled and hidden from this view.</div></div></div>`+
+  Object.entries(groups).map(([date,items])=>{
     const d=parseDate(date),label=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
-    return `<div class="quick-day"><div class="quick-day-head"><div class="quick-day-title">${esc(label)}</div><div class="quick-day-count">${items.length} commitment${items.length===1?'':'s'}</div></div>${items.map(({row,index,event})=>{
-      const required=row.dataset.transportClass==='required',ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
-      return `<div class="quick-event" data-quick-row="${index}">
-        <div class="quick-event-main"><div class="quick-event-time">${event.start||''}${event.end?`–${event.end}`:''}</div><div class="quick-event-title">${esc(event.title)}</div><div class="quick-event-meta">${esc(childLabel(event.child))} · ${esc(source)}</div></div>
-        <div class="quick-transport"><button type="button" data-quick-transport="required" class="${required?'active required':''}">Requires transport</button><button type="button" data-quick-transport="no" class="${!required?'active no':''}">No transport</button></div>
-        <div><input class="quick-location" data-quick-location value="${esc(event.location||'')}" placeholder="Venue / address"><div class="quick-location-status ${ls.cls}">${ls.text}</div></div>
-      </div>`;
-    }).join('')}</div>`;
+    return `<div class="quick-day">
+      <div class="quick-day-head"><div class="quick-day-title">${esc(label)}</div><div class="quick-day-count">${items.length} decision${items.length===1?'':'s'}</div></div>
+      ${items.map(({row,index,event})=>{
+        const required=row.dataset.transportClass==='required',ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
+        const reason=row.dataset.transportReason||'Needs review';
+        return `<div class="quick-event" data-quick-row="${index}">
+          <div class="quick-event-main">
+            <div class="quick-event-time time-12h">${displayTime12h(event.start)}${event.end?` – ${displayTime12h(event.end)}`:''}</div>
+            <div class="quick-event-title">${esc(event.title)}</div>
+            <div class="quick-event-meta">${esc(childLabel(event.child))} · ${esc(source)} · ${esc(reason)}</div>
+          </div>
+          <div class="quick-transport">
+            <button type="button" data-quick-transport="required" class="${required?'active required':''}">Needs transport</button>
+            <button type="button" data-quick-transport="no" class="${!required?'active no':''}">No transport</button>
+          </div>
+          <div>
+            <input class="quick-location" data-quick-location value="${esc(event.location||'')}" placeholder="${required?'Venue / address needed':'Venue / address (optional)'}">
+            <div class="quick-location-status ${ls.cls}">${ls.text}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
   }).join('');
+
   host.querySelectorAll('[data-quick-row]').forEach(card=>{
-    const item=rows[+card.dataset.quickRow];if(!item)return;
+    const attentionRows=attention;
+    const actual=rows.find(x=>x.index===+card.dataset.quickRow);
+    if(!actual)return;
     card.querySelectorAll('[data-quick-transport]').forEach(btn=>btn.onclick=()=>{
-      const required=btn.dataset.quickTransport==='required',row=item.row,tsel=row.querySelector('.transport-override');
+      const required=btn.dataset.quickTransport==='required',row=actual.row,tsel=row.querySelector('.transport-override');
       tsel.value=required?'required':'info';row.dataset.transportClass=tsel.value;row.dataset.transportOverride=tsel.value;row.dataset.transportManual='true';
       rememberTransportDecision(rowToCalendarEvent(row),required);
-      const badge=row.querySelector('.transport-class');if(badge){badge.className=`transport-class ${transportClassCss(tsel.value)}`;badge.textContent=transportClassLabel(tsel.value)}
+      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(tsel.value)}`;b.textContent=transportClassLabel(tsel.value)}
+      row.dataset.transportReason='Saved planning decision';
       const note=row.querySelector('.transport-rule-note');if(note)note.textContent='Saved planning decision';
-      if(plans.length)markPlanStale('Transport decision changed');renderQuickPlanningReview();
+      if(plans.length)markPlanStale('Transport decision changed');
+      renderQuickPlanningReview();
     });
     const qloc=card.querySelector('[data-quick-location]');
     qloc.onchange=()=>{
-      const row=item.row,main=row.querySelector('.a-loc');main.value=qloc.value.trim();
+      const row=actual.row,main=row.querySelector('.a-loc');main.value=qloc.value.trim();
       row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';
       if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');
       const rn=row.querySelector('.route-note');if(rn)rn.textContent=locationLooksUseful(main.value)?'Saved in Location Memory':'Add address for accurate routing';
-      if(plans.length)markPlanStale('Activity location changed');renderQuickPlanningReview();
+      if(plans.length)markPlanStale('Activity location changed');
+      renderQuickPlanningReview();
     };
   });
 }
@@ -3596,6 +3708,76 @@ window.addEventListener('load',()=>setTimeout(()=>refreshCalendarsOnAppOpen(),15
 
 if($('quickReviewRefreshBtn'))$('quickReviewRefreshBtn').onclick=renderQuickPlanningReview;
 if($('quickReviewTransportAllTeamBtn'))$('quickReviewTransportAllTeamBtn').onclick=confirmAllTeamCalendarTransport;
+
+const STORAGE_ACTIVE_TAB='autopilotActiveTabV42';
+
+function findTopCardByHeading(text){
+  const cards=[...document.querySelectorAll('.app > section.no-print > .card, .app > section.no-print > .calendar-hub')];
+  return cards.find(card=>card.textContent.includes(text))||null;
+}
+function moveNode(panel,node){
+  if(panel&&node&&node.parentNode!==panel)panel.appendChild(node);
+}
+function initAutoPilotTabs(){
+  const plan=$('tab-plan'),cal=$('tab-calendars'),review=$('tab-review'),outputs=$('tab-outputs'),settings=$('tab-settings');
+  if(!plan||!cal||!review||!outputs||!settings)return;
+
+  // Main planning inputs.
+  const noPrint=document.querySelector('.app > section.no-print');
+  const direct=[...noPrint.children];
+  direct.forEach(node=>{
+    if(node.id&&node.id.startsWith('tab-'))return;
+    if(node.id==='autopilotTabs'||node.classList?.contains('autopilot-masthead'))return;
+    if(node.classList?.contains('toolbar')){moveNode(plan,node);return}
+    if(node.classList?.contains('calendar-hub')){moveNode(cal,node);return}
+    if(node.id==='results')return; // handled below
+    if(node.classList?.contains('card')){
+      const txt=node.textContent||'';
+      if(txt.includes('Planning Decisions')||node.id==='quickPlanningReview'){moveNode(review,node);return}
+      if(txt.includes('Recurring sports practices')||txt.includes('Fixed input — ad-hoc commitments')){moveNode(settings,node);return}
+      if(txt.includes('Calendar Hub')||txt.includes('Calendar sources')){moveNode(cal,node);return}
+      moveNode(plan,node);
+    }
+  });
+
+  // Move audit details out of the original activity/input card into Review.
+  const audit=$('commitmentAudit');if(audit)review.appendChild(audit);
+
+  // Keep boss email permanently visible in Outputs, independent of #results display state.
+  const boss=$('bossEmailCard');
+  if(boss)outputs.appendChild(boss);
+
+  // Remaining generated results live in Outputs.
+  const results=$('results');if(results)outputs.appendChild(results);
+
+  // If boss card lived inside results/output-grid, remove empty grid artifacts naturally.
+  document.querySelectorAll('.output-grid').forEach(g=>{if(!g.children.length)g.remove()});
+
+  const setTab=name=>{
+    document.querySelectorAll('.autopilot-tab-panel').forEach(p=>p.classList.toggle('active',p.id===`tab-${name}`));
+    document.querySelectorAll('#autopilotTabs [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+    storageSet(STORAGE_ACTIVE_TAB,name);
+    if(name==='review')renderQuickPlanningReview();
+    if(name==='outputs'&&$('bossMessage')&&!$('bossMessage').value.trim()){
+      $('bossMessage').value='Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.\\n\\nGenerate the plan to populate the day-by-day schedule.';
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  document.querySelectorAll('#autopilotTabs [data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+  const saved=storageGet(STORAGE_ACTIVE_TAB)||'plan';
+  setTab(['plan','calendars','review','outputs','settings'].includes(saved)?saved:'plan');
+}
+window.addEventListener('load',()=>setTimeout(initAutoPilotTabs,25));
+
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    if($('bossMessage')&&!$('bossMessage').value.trim()){
+      $('bossMessage').value='Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.\n\nGenerate the plan to populate the day-by-day schedule.';
+    }
+  },50);
+});
+
 </script>
 </body>
 </html>

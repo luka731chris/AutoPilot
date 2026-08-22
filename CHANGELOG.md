@@ -1,10 +1,20 @@
-## v41 — Boss email editor usability
+## v42 — Workflow simplification
+
+- Reorganized AutoPilot into Plan / Calendars / Review / Outputs / Settings tabs.
+- Made the boss-email card permanently visible in Outputs instead of burying it inside generated results.
+- Simplified Review to show only items requiring a decision or missing location.
+- Moved the full commitment table into a collapsed audit/transparency section.
+- Added a Review-tab attention badge.
+- Standardized user-visible event times on 12-hour AM/PM formatting.
+- Removed the bulk team-calendar confirmation control from the normal Review workflow.
+
+## v42 — Boss email editor usability
 
 - Enlarged the boss-email text area for near-full-draft visibility without scrolling.
 - Improved email text typography and padding.
 - Added the standard Phil introduction to every generated two-week schedule email.
 
-## v41 — 10-Minute Planning Review & Location Memory
+## v42 — 10-Minute Planning Review & Location Memory
 
 - Added a day-by-day fast planning review.
 - Added one-tap Requires transport / No transport controls.
@@ -15,7 +25,7 @@
 - Added inline venue correction in the planning review.
 - Added one-click confirmation of all TeamSnap / TeamSnap ONE / GameChanger transport events.
 
-## v41 — Transport Eligibility Intelligence
+## v42 — Transport Eligibility Intelligence
 
 - Added Transport Required / Logistics Aware / Informational event classification.
 - TeamSnap, TeamSnap ONE, and GameChanger remain transport-eligible by default.
@@ -24,7 +34,7 @@
 - Added per-event transport classification badge, rationale, and manual override.
 - `generateCore()` now sends only Transport Required events into driver/departure optimization.
 
-## v41 — Team calendar sync rebuild
+## v42 — Team calendar sync rebuild
 
 - Removed periodic auto-refresh.
 - Added one authoritative all-calendar refresh when AutoPilot opens.
@@ -34,34 +44,34 @@
 - Added Calendar Gateway companion Worker for CORS-blocked subscriptions.
 - Added LukaLab branding to mobile, Week at a Glance, fridge print, and read-only outputs.
 
-## v41 — Guaranteed-visible LukaLab masthead
+## v42 — Guaranteed-visible LukaLab masthead
 
 - Embedded the approved LukaLab skyline lockup as inline SVG in the AutoPilot header.
 - Added a secondary skyline-only LukaLab maker mark.
 - Removed the header's dependency on raster/base64 image rendering.
 - Added explicit CSS visibility guarantees and reusable LukaLab assets.
 
-## v41 — Typography and header density refinement
+## v42 — Typography and header density refinement
 
 - Tightened the LukaLab logo crop and removed excess black canvas from the top of AutoPilot.
 - Rebuilt the header as a compact horizontal product masthead.
 - Replaced the prior Inter-first typography with an elegant Avenir Next / SF Pro / Helvetica Neue hierarchy.
 - Improved text sizes, line-height, input readability, table typography, and black/gold contrast across the app.
 
-## v41 — Incorporate approved LukaLab skyline logo
+## v42 — Incorporate approved LukaLab skyline logo
 
 - Integrated the approved LukaLab AI Creative skyline logo directly into the AutoPilot header.
 - Added the logo as a reusable repository asset.
 - Preserved the Pittsburgh black-and-gold visual system while grounding the branding on the actual supplied logo.
 
-## v41 — Pittsburgh skyline LukaLab branding refresh
+## v42 — Pittsburgh skyline LukaLab branding refresh
 
 - Added black-and-gold AutoPilot visual theme.
 - Added a thin-line minimalist Pittsburgh skyline brand motif.
 - Updated the AutoPilot header lockup and LukaLab AI Creative maker signature.
 - Refreshed branding documentation.
 
-## v41 — Auto-refresh, Child Identity Resolver, LukaLab branding
+## v42 — Auto-refresh, Child Identity Resolver, LukaLab branding
 
 - Added Primary Family Calendar periodic refresh and refresh-on-focus/resume.
 - Added Child Identity Resolver and calendar ownership mapping.
