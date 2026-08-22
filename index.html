@@ -253,7 +253,7 @@ td input,td select{margin:0;padding:7px}
 .child-owner-select{font-size:12px;padding:5px 7px;min-width:145px}
 
 
-/* v38 LukaLab Pittsburgh skyline branding */
+/* v41 LukaLab Pittsburgh skyline branding */
 :root{
   --ap-black:#0d0d0f;
   --ap-charcoal:#17181c;
@@ -350,7 +350,7 @@ button.secondary,.btn.secondary{
 .app-shell{position:relative;z-index:1}
 
 
-/* v38 integrated LukaLab logo */
+/* v41 integrated LukaLab logo */
 .real-lukalab-logo-wrap{
   margin:14px 0 8px;
   display:flex;
@@ -376,7 +376,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v38 LukaLab typography + compact header refinement */
+/* v41 LukaLab typography + compact header refinement */
 :root{
   --bg:#f3f1eb;
   --card:#fffdf8;
@@ -563,7 +563,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v38 guaranteed-visible LukaLab masthead */
+/* v41 guaranteed-visible LukaLab masthead */
 .autopilot-masthead{
   display:grid!important;
   grid-template-columns:minmax(290px,440px) minmax(0,1fr)!important;
@@ -648,7 +648,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v38 single-logo LukaLab masthead */
+/* v41 single-logo LukaLab masthead */
 .autopilot-masthead{
   display:block!important;
   background:#111112!important;
@@ -727,7 +727,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v38 provider-aware calendar sync + LukaLab output branding */
+/* v41 provider-aware calendar sync + LukaLab output branding */
 .calendar-sync-summary{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .sync-chip{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;background:#f2f2f7;color:#5f5b52}
 .sync-chip.fresh{background:#e9f7ed;color:#176b3a}
@@ -748,6 +748,55 @@ button.secondary,.btn.secondary{
 @media print{
   .print-brand{display:flex!important}
   .output-brand-mark{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+
+
+/* v41 transport intelligence */
+.transport-class{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:850;margin-top:3px;white-space:nowrap}
+.transport-class.required{background:#e9f7ed;color:#176b3a}
+.transport-class.aware{background:#fff4d6;color:#7a5500}
+.transport-class.info{background:#f2f2f7;color:#666}
+.transport-override{font-size:11px;padding:4px 6px;margin-top:4px;max-width:150px}
+.transport-rule-note{font-size:9px;line-height:1.25;color:#7a7467;margin-top:3px}
+.transport-intel{grid-column:1/-1}
+.transport-intel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:760px){.transport-intel-grid{grid-template-columns:1fr}}
+
+/* v41 10-minute planning review + location memory */
+.quick-review-card{border:1px solid #d9c47a;background:linear-gradient(180deg,#fffdf8,#fffaf0)}
+.quick-review-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.quick-review-progress{display:flex;gap:6px;flex-wrap:wrap}
+.qr-chip{padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;background:#f1eee5;color:#5d584d}
+.qr-chip.good{background:#e9f7ed;color:#176b3a}.qr-chip.warn{background:#fff1cc;color:#795600}
+.quick-review-days{display:grid;gap:8px;margin-top:10px}
+.quick-day{border:1px solid #e4ded1;border-radius:12px;background:#fff;padding:9px 10px}
+.quick-day-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:6px}
+.quick-day-title{font-size:15px;font-weight:800;color:#222}.quick-day-count{font-size:10px;color:#817a6b}
+.quick-event{display:grid;grid-template-columns:minmax(170px,1.35fr) minmax(150px,1fr) minmax(210px,1.2fr);gap:9px;align-items:center;padding:8px 0;border-top:1px solid #eee9df}
+.quick-event:first-of-type{border-top:0}.quick-event-main{min-width:0}
+.quick-event-time{font-size:10px;font-weight:800;color:#8a7340;text-transform:uppercase;letter-spacing:.04em}
+.quick-event-title{font-size:13px;font-weight:750;line-height:1.25}.quick-event-meta{font-size:10px;color:#746f64;margin-top:2px}
+.quick-transport{display:grid;grid-template-columns:1fr 1fr;border:1px solid #d8d0c1;border-radius:9px;overflow:hidden}
+.quick-transport button{border:0!important;border-radius:0!important;background:#fff!important;color:#5d584d!important;padding:8px 7px!important;font-size:11px!important;min-height:36px}
+.quick-transport button+button{border-left:1px solid #e1dbce!important}
+.quick-transport button.active.required{background:#1b1b1d!important;color:#fff8df!important}
+.quick-transport button.active.no{background:#eeeae0!important;color:#29261e!important}
+.quick-location{width:100%;font-size:12px!important;padding:7px 8px!important}
+.quick-location-status{font-size:9px;margin-top:2px;color:#817a6b}
+.quick-location-status.memory{color:#7a5500}.quick-location-status.feed{color:#176b3a}.quick-location-status.missing{color:#a12626;font-weight:700}
+.quick-review-empty{padding:16px;text-align:center;color:#777166;font-size:12px}
+.quick-review-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+@media(max-width:850px){.quick-event{grid-template-columns:1fr}.quick-transport{max-width:340px}}
+
+/* v41 boss email editor */
+#bossMessage{
+  min-height:520px!important;
+  font-family:var(--ap-body-font)!important;
+  font-size:15px!important;
+  line-height:1.55!important;
+}
+@media(max-width:760px){
+  #bossMessage{min-height:440px!important;font-size:16px!important}
 }
 
 </style>
@@ -868,7 +917,7 @@ button.secondary,.btn.secondary{
       <div>
         <h2>2. Calendar Hub — family + team calendars</h2>
         <div class="callout" style="margin-top:8px">
-          <strong>Source architecture:</strong> Kira’s shared iOS calendar = <strong>Primary Family Calendar</strong> and is the only calendar used for Kira Schedule auto-detection; TeamSnap / TeamSnapOne / GameChanger = <strong>Team Schedule</strong>; school feeds = <strong>School Calendar</strong>; manual entries = <strong>Override</strong>. AutoPilot reads these original sources directly; no consolidated calendar intermediary is used.
+          <strong>Source architecture:</strong> Kira’s shared iOS calendar = <strong>Primary Family Calendar</strong> and is the only calendar used for Kira Schedule auto-detection; TeamSnap / TeamSnapOne / GameChanger = <strong>Team Schedule</strong>; school feeds = <strong>School Calendar</strong>; manual entries = <strong>Override</strong>. AutoPilot reads these original sources directly; no consolidated calendar intermediary is used. Availability inference and transport inference are separate: only events classified Transport Required can create driver/commute tasks.
         </div>
 
         <p class="muted small"><strong>Wire the original calendars directly into the planner.</strong> Use the main shared iPhone calendar as your family source of truth, then add GameChanger, TeamSnap, school, gymnastics, Ultimate, or any other ICS/webcal calendar separately.</p>
@@ -933,6 +982,43 @@ button.secondary,.btn.secondary{
         </div>
         
 <div class="calendar-hygiene-grid">
+  <div class="hygiene-card transport-intel">
+    <h3>Transport intelligence</h3>
+    <p class="small muted">AutoPilot separates calendar context from actual child transportation. Only <strong>Transport Required</strong> events create driver assignments or change Chris's commute/departure time.</p>
+    <div class="transport-intel-grid">
+      <label class="small">Child / transport signals
+        <textarea id="transportPositiveKeywords" rows="5">gymnastics
+practice
+game
+pickup
+dropoff
+lesson
+rehearsal
+tournament
+camp
+orthodontist
+dentist
+doctor
+appointment</textarea>
+      </label>
+      <label class="small">Adult / work signals
+        <textarea id="transportNegativeKeywords" rows="5">epic
+training
+meeting
+conference
+work
+shift
+orientation
+education
+in-service
+webinar
+teams
+zoom</textarea>
+      </label>
+    </div>
+    <div class="hygiene-status">Primary Family Calendar rule: ambiguous events never become transportation tasks automatically. TeamSnap / TeamSnap ONE / GameChanger remain transport-eligible by default.</div>
+  </div>
+
   <div class="hygiene-card">
     <h3>Smart de-duplication</h3>
     <p class="small muted">Automatically collapse duplicate events imported from multiple calendars. Events are treated as duplicates when their normalized title, date, and start time match, with an optional time tolerance.</p>
@@ -991,6 +1077,21 @@ button.secondary,.btn.secondary{
 
         </div>
       </details>
+    </div>
+
+    <div class="card quick-review-card" id="quickPlanningReview">
+      <div class="quick-review-head">
+        <div>
+          <h3 style="margin:0">10-Minute Planning Review</h3>
+          <p class="small muted" style="margin:4px 0 0">Scan each day, confirm whether each commitment needs transportation, and fix only missing locations. AutoPilot remembers your decisions and known venues for future cycles.</p>
+        </div>
+        <div id="quickReviewProgress" class="quick-review-progress"></div>
+      </div>
+      <div class="quick-review-actions">
+        <button id="quickReviewRefreshBtn" type="button">Refresh review</button>
+        <button id="quickReviewTransportAllTeamBtn" type="button" class="secondary">Confirm team calendars as transport</button>
+      </div>
+      <div id="quickReviewDays" class="quick-review-days"></div>
     </div>
 
     <div class="table-wrap"><table>
@@ -1074,8 +1175,8 @@ button.secondary,.btn.secondary{
       </div>
       <div class="card">
         <h3>Work-facing schedule for boss signoff</h3>
-        <textarea id="bossMessage" class="copybox" style="margin-top:10px;min-height:250px;resize:vertical;font-family:inherit;line-height:1.45"></textarea>
-        <div class="small muted" style="margin-top:8px">You can edit this text before copying it into email.</div>
+        <textarea id="bossMessage" class="copybox" rows="18" style="margin-top:10px;min-height:520px;width:100%;resize:vertical;font-family:var(--ap-body-font);font-size:15px;line-height:1.55;padding:14px 16px;background:#fffefa;color:#24221d;border:1px solid #d7cfbf;border-radius:10px"></textarea>
+        <div class="small muted" style="margin-top:8px">Full email draft shown below. Edit anything you want, then copy it directly into email.</div>
         <div class="toolbar"><button id="copyBossBtn">Copy schedule</button></div>
       </div>
     </div>
@@ -1372,6 +1473,7 @@ async function handlePlanningStartDateChange(){
     else if(!result.ok)$('importStatus').textContent='Live Primary Family Calendar refresh is unavailable; undetected weekdays use the default schedule.';
   }
   if(regenerate)await generateCore();
+  renderQuickPlanningReview();
   scheduleAutosave();
 }
 
@@ -1473,31 +1575,80 @@ function refreshChildLabels(){
   });
 }
 ['childOldest','childMiddle','childYoungest','childOldestAliases','childMiddleAliases','childYoungestAliases'].forEach(id=>$(id).oninput=()=>{refreshChildLabels();reResolveCurrentActivities();scheduleAutosave()});
+['transportPositiveKeywords','transportNegativeKeywords'].forEach(id=>{if($(id))$(id).oninput=()=>{reclassifyCurrentActivities();scheduleAutosave()}});
 function activityRow(d={}){
   const tr=document.createElement('tr');
   if(d.source)tr.classList.add('imported-row');
   tr.dataset.source=d.source||'Manual';
   tr.dataset.calendarRole=d.calendarRole||roleForSourceName(d.source||'');
   tr.dataset.description=d.description||'';
+  tr.dataset.locationOrigin=d.locationOrigin||(locationLooksUseful(d.location)?'feed':'missing');
   const inferredChild=d.child||guessChild(d.title,d.source);
+  const tx=d.transportClass?{class:d.transportClass,reason:d.transportReason||''}:transportClassification({...d,child:inferredChild,source:tr.dataset.source,calendarRole:tr.dataset.calendarRole},calendarLinkForEvent({...d,source:tr.dataset.source}));
+  tr.dataset.transportClass=tx.class;
+  tr.dataset.transportReason=tx.reason;
+  tr.dataset.transportOverride=d.transportOverride||'';
   tr.innerHTML=`<td><input class="a-date" type="date" value="${d.date||''}"></td>
   <td><select class="a-child">${childOptions(inferredChild)}</select><div class="verify-child" style="${inferredChild==='Unassigned'?'':'display:none'}">Verify child</div><div class="identity-confidence ${d.childResolution||'verify'}">${identityConfidenceLabel(d.childResolution||'verify')}</div></td>
-  <td><input class="a-title" value="${esc(d.title||'')}">${d.source?`<div class="source-note">Imported: ${esc(d.source)}</div>`:''}</td>
+  <td><input class="a-title" value="${esc(d.title||'')}">${d.source?`<div class="source-note">Imported: ${esc(d.source)}</div>`:''}
+    <div class="transport-class ${transportClassCss(tx.class)}">${transportClassLabel(tx.class)}</div>
+    <select class="transport-override" title="Transport classification">
+      <option value="required"${tx.class==='required'?' selected':''}>Transport Required</option>
+      <option value="aware"${tx.class==='aware'?' selected':''}>Logistics Aware</option>
+      <option value="info"${tx.class==='info'?' selected':''}>Informational</option>
+    </select>
+    <div class="transport-rule-note">${esc(tx.reason||'')}</div>
+  </td>
   <td><input class="a-start" type="time" value="${d.start||''}"></td><td><input class="a-end" type="time" value="${d.end||''}"></td>
   <td><input class="a-loc" value="${esc(d.location||'')}" placeholder="Full street address preferred">
-  <div class="route-note">${d.source&&/GameChanger|TeamSnap/i.test(d.source)
-    ? (d.location ? 'Imported venue/location — used for routing' : '⚠ No venue/address supplied by calendar')
-    : (d.location ? 'Used for routing' : 'Add address for accurate routing')}</div></td>
+  <div class="route-note">${tr.dataset.locationOrigin==='memory'
+    ? 'Saved venue reused from Location Memory'
+    : d.source&&/GameChanger|TeamSnap/i.test(d.source)
+      ? (d.location ? 'Imported venue/location — saved for future use' : '⚠ No venue/address supplied by calendar')
+      : (d.location ? 'Calendar/location value — saved for future use' : 'Add address for accurate routing')}</div></td>
   <td><input class="a-home-drive" type="number" min="0" value="${d.homeDrive??20}"><div class="route-note">Used if live routing is unavailable</div></td>
   <td><select class="a-drop"><option value="yes">Yes</option><option value="no">No</option></select></td>
   <td><select class="a-pick"><option value="yes">Yes</option><option value="no">No</option></select></td>
   <td><button class="remove">Remove</button></td>`;
   const childSel=tr.querySelector('.a-child');
   childSel.value=inferredChild;
-  childSel.onchange=(ev)=>{tr.querySelector('.verify-child').style.display=childSel.value==='Unassigned'?'':'none';if(ev?.isTrusted){tr.dataset.childManual='true';const b=tr.querySelector('.identity-confidence');b.className='identity-confidence explicit';b.textContent='Explicit'}markPlanStale('Child assignment changed')};
+  childSel.onchange=(ev)=>{
+    tr.querySelector('.verify-child').style.display=childSel.value==='Unassigned'?'':'none';
+    if(ev?.isTrusted){tr.dataset.childManual='true';const b=tr.querySelector('.identity-confidence');b.className='identity-confidence explicit';b.textContent='Explicit'}
+    if(tr.dataset.transportManual!=='true'){
+      const ev2=rowToCalendarEvent(tr),x=transportClassification(ev2,calendarLinkForEvent(ev2));
+      tr.dataset.transportClass=x.class;tr.dataset.transportReason=x.reason;
+      const b=tr.querySelector('.transport-class');b.className=`transport-class ${transportClassCss(x.class)}`;b.textContent=transportClassLabel(x.class);
+      tr.querySelector('.transport-override').value=x.class;tr.querySelector('.transport-rule-note').textContent=x.reason;
+    }
+    markPlanStale('Child assignment changed')
+  };
   if(d.drop)tr.querySelector('.a-drop').value=d.drop;if(d.pick)tr.querySelector('.a-pick').value=d.pick;
-  tr.querySelector('.remove').onclick=()=>{tr.remove();markPlanStale('Activity removed')};
+  const locInput=tr.querySelector('.a-loc');
+  locInput.onchange=(ev)=>{
+    const e=rowToCalendarEvent(tr);
+    if(locationLooksUseful(locInput.value)){
+      tr.dataset.locationOrigin='manual';
+      rememberEventLocation(e,locInput.value,'manual');
+      const rn=tr.querySelector('.route-note');if(rn)rn.textContent='Saved in Location Memory';
+    }else tr.dataset.locationOrigin='missing';
+    if(ev?.isTrusted)markPlanStale('Activity location changed');
+    renderQuickPlanningReview();
+  };
+  const tsel=tr.querySelector('.transport-override');
+  tsel.onchange=(ev)=>{
+    tr.dataset.transportClass=tsel.value;tr.dataset.transportOverride=tsel.value;
+    if(ev?.isTrusted){
+      tr.dataset.transportManual='true';
+      rememberTransportDecision(rowToCalendarEvent(tr),tsel.value==='required');
+    }
+    const badge=tr.querySelector('.transport-class');badge.className=`transport-class ${transportClassCss(tsel.value)}`;badge.textContent=transportClassLabel(tsel.value);
+    tr.querySelector('.transport-rule-note').textContent='Manual transport override';
+    markPlanStale('Transport classification changed')
+  };
+  tr.querySelector('.remove').onclick=()=>{tr.remove();markPlanStale('Activity removed');renderQuickPlanningReview()};
   $('activityBody').appendChild(tr);
+  renderQuickPlanningReview();
 }
 $('addActivityBtn').onclick=()=>activityRow({child:'Unassigned'});
 
@@ -1979,6 +2130,135 @@ function removeImportedRowsForSource(sourceName){
 }
 function dedupeImportedRows(rows){const existing=new Set(getActivities().map(a=>[a.date,a.start,a.end,a.title,a.location].join('|').toLowerCase()));return rows.filter(x=>{const k=[x.date,x.start,x.end,x.title,x.location].join('|').toLowerCase();if(existing.has(k))return false;existing.add(k);return true})}
 function locationNeedsReview(location=''){const s=location.trim();if(!s)return true;return !(/\d/.test(s)||/,\s*[A-Z]{2}\b/.test(s))}
+
+
+const STORAGE_LOCATION_MEMORY='autopilotLocationMemoryV40';
+const STORAGE_TRANSPORT_MEMORY='autopilotTransportMemoryV40';
+function loadLocationMemory(){try{return JSON.parse(storageGet(STORAGE_LOCATION_MEMORY)||'{}')}catch{return{}}}
+function saveLocationMemory(x){storageSet(STORAGE_LOCATION_MEMORY,JSON.stringify(x))}
+function loadTransportMemory(){try{return JSON.parse(storageGet(STORAGE_TRANSPORT_MEMORY)||'{}')}catch{return{}}}
+function saveTransportMemory(x){storageSet(STORAGE_TRANSPORT_MEMORY,JSON.stringify(x))}
+function providerForEvent(event={}){
+  const link=calendarLinkForEvent(event);
+  if(link?.url)return calendarProvider(link.url);
+  const s=(event.source||'').toLowerCase();
+  if(s.includes('gamechanger'))return 'gamechanger';
+  if(s.includes('teamsnap'))return 'teamsnap';
+  return '';
+}
+function eventMemoryKey(event={}){
+  const child=event.child&&event.child!=='Unassigned'?event.child:'';
+  return [normalizeEventText(event.title||''),child,providerForEvent(event)||event.calendarRole||roleForSourceName(event.source||'')].join('|');
+}
+function locationLooksUseful(location=''){
+  const x=String(location||'').trim();
+  return !!x && !/^(tbd|tba|unknown|none|virtual|online|zoom)$/i.test(x) && x.length>=3;
+}
+function rememberEventLocation(event={},location='',origin='feed'){
+  const clean=String(location||'').trim();if(!locationLooksUseful(clean))return;
+  const key=eventMemoryKey(event);if(!key)return;
+  const mem=loadLocationMemory();
+  mem[key]={location:clean,title:event.title||'',child:event.child||'',source:event.source||'',origin,updatedAt:new Date().toISOString()};
+  saveLocationMemory(mem);
+}
+function recalledEventLocation(event={}){
+  return loadLocationMemory()[eventMemoryKey(event)]?.location||'';
+}
+function applyLocationMemory(event={}){
+  if(locationLooksUseful(event.location)){rememberEventLocation(event,event.location,'feed');return {...event,locationOrigin:'feed'}}
+  const remembered=recalledEventLocation(event);
+  return remembered?{...event,location:remembered,locationOrigin:'memory'}:{...event,locationOrigin:'missing'};
+}
+function rememberTransportDecision(event={},required=false){
+  const key=eventMemoryKey(event);if(!key)return;
+  const mem=loadTransportMemory();
+  mem[key]={required:!!required,title:event.title||'',child:event.child||'',source:event.source||'',updatedAt:new Date().toISOString()};
+  saveTransportMemory(mem);
+}
+function recalledTransportDecision(event={}){
+  const x=loadTransportMemory()[eventMemoryKey(event)];
+  return x?!!x.required:null;
+}
+
+function transportKeywordList(id){
+  return String($(id)?.value||'').split(/[\n,;]+/).map(x=>normalizeIdentityText(x)).filter(Boolean);
+}
+function transportText(event={}){
+  return normalizeIdentityText([event.title,event.description,event.location,event.source].filter(Boolean).join(' '));
+}
+function transportTextHas(hay,keywords=[]){
+  return keywords.some(k=>k && (` ${hay} `).includes(` ${k} `));
+}
+function calendarLinkForEvent(event={}){
+  const source=event.source||'';
+  return getSavedCalendarLinks().find(l=>sourceLabelFor(l)===source || source.includes(l.label||'__none__'))||null;
+}
+function transportClassification(event={},link=null){
+  if(event.transportOverride && ['required','aware','info'].includes(event.transportOverride)){
+    return {class:event.transportOverride,reason:'Manual transport override'};
+  }
+  const remembered=recalledTransportDecision(event);
+  if(remembered!==null)return {class:remembered?'required':'info',reason:'Saved planning decision'};
+  const source=event.source||'Manual';
+  const role=normalizeCalendarRole(event.calendarRole||link?.role,link?.kind||'team');
+  const provider=link?.url?calendarProvider(link.url):'';
+  const hay=transportText(event);
+  const positive=transportTextHas(hay,transportKeywordList('transportPositiveKeywords'));
+  const negative=transportTextHas(hay,transportKeywordList('transportNegativeKeywords'));
+  const resolved=resolveChildIdentity(event,link);
+  const childSignal=['Oldest','Middle','Youngest'].includes(event.child)||['Oldest','Middle','Youngest'].includes(resolved.role)||!!link?.childRole;
+
+  // A manually entered "missing activity" is intentionally a transport/activity entry.
+  if(source==='Manual')return {class:'required',reason:'Manual activity entry'};
+
+  // Team/activity subscriptions are transport candidates by design.
+  if(role==='team'||['teamsnap','teamsnapone','gamechanger'].includes(provider)){
+    return {class:'required',reason:'Team/activity calendar'};
+  }
+
+  // Primary Family Calendar is evidence-based and conservative.
+  if(role==='primaryFamily'){
+    // Adult work/education items never create transport unless they also clearly describe a child activity.
+    if(negative && !positive && !childSignal)return {class:'info',reason:'Adult/work event'};
+    if(childSignal && positive)return {class:'required',reason:'Child + transport/activity signal'};
+    if(positive && !negative)return {class:'required',reason:'Known child activity / transport signal'};
+    if(childSignal)return {class:'aware',reason:'Child-related event; transport not explicit'};
+    if(negative)return {class:'info',reason:'Adult/work event'};
+    return {class:'aware',reason:'Ambiguous Primary Family event'};
+  }
+
+  // School events are context unless transportation is explicit.
+  if(role==='school'){
+    if(childSignal&&positive)return {class:'required',reason:'School event with transport signal'};
+    return {class:'aware',reason:'School logistics context'};
+  }
+
+  if(childSignal&&positive)return {class:'required',reason:'Child + transport signal'};
+  if(negative)return {class:'info',reason:'Adult/work event'};
+  return {class:'info',reason:'No transport evidence'};
+}
+function transportClassLabel(c){
+  return ({required:'Transport Required',aware:'Logistics Aware',info:'Informational'})[c]||'Informational';
+}
+function transportClassCss(c){return ['required','aware','info'].includes(c)?c:'info'}
+function classifyImportedTransport(event){
+  const link=calendarLinkForEvent(event);
+  const x=transportClassification(event,link);
+  return {...event,transportClass:x.class,transportReason:x.reason};
+}
+function reclassifyCurrentActivities(){
+  for(const row of [...$('activityBody').children]){
+    if(row.dataset.transportManual==='true')continue;
+    const ev=rowToCalendarEvent(row),x=transportClassification(ev,calendarLinkForEvent(ev));
+    row.dataset.transportClass=x.class;row.dataset.transportReason=x.reason;
+    const badge=row.querySelector('.transport-class');
+    if(badge){badge.className=`transport-class ${transportClassCss(x.class)}`;badge.textContent=transportClassLabel(x.class)}
+    const sel=row.querySelector('.transport-override');if(sel)sel.value=x.class;
+    const note=row.querySelector('.transport-rule-note');if(note)note.textContent=x.reason;
+  }
+  if(plans.length)markPlanStale('Transport eligibility rules changed');
+}
+
 function processImportedRows(imported,sourceDescription,opts={}){
   const replaceSource=opts.replaceSource||'';
   if(replaceSource)removeImportedRowsForSource(replaceSource);
@@ -1999,7 +2279,7 @@ function processImportedRows(imported,sourceDescription,opts={}){
     const resolution=resolveCrossSourceDuplicate(item,cfg);
     if(resolution.action==='skip'){crossDeduped++;continue}
     if(resolution.action==='replace'){resolution.row.remove();crossDeduped++}
-    activityRow(item);activityCount++;
+    activityRow(classifyImportedTransport(applyLocationMemory(item)));activityCount++;
   }
   dedupedCount+=crossDeduped;
   const locationReview=cleaned.filter(x=>!(x.calendarRole==='primaryFamily'&&detectKiraShift(x.title,x.source))&&locationNeedsReview(x.location)).length;
@@ -2158,14 +2438,79 @@ function adhocRow(d={}){
 }
 $('addAdhocBtn').onclick=()=>adhocRow();
 
+
+function quickReviewRows(){
+  return [...$('activityBody').children].map((row,index)=>({row,index,event:rowToCalendarEvent(row)}))
+    .filter(x=>x.event.date&&x.event.title)
+    .sort((a,b)=>a.event.date.localeCompare(b.event.date)||(a.event.start||'99:99').localeCompare(b.event.start||'99:99')||a.event.title.localeCompare(b.event.title));
+}
+function quickLocationStatus(row){
+  const val=row.querySelector('.a-loc')?.value.trim()||'',origin=row.dataset.locationOrigin||'missing';
+  if(!val)return {text:'Needs location',cls:'missing'};
+  if(origin==='memory')return {text:'Reused from saved venue',cls:'memory'};
+  if(origin==='manual')return {text:'Confirmed · saved for future use',cls:'memory'};
+  return {text:'From calendar feed · saved',cls:'feed'};
+}
+function renderQuickPlanningReview(){
+  const host=$('quickReviewDays'),progress=$('quickReviewProgress');if(!host||!progress)return;
+  const rows=quickReviewRows();
+  if(!rows.length){host.innerHTML='<div class="quick-review-empty">No commitments in this planning window yet.</div>';progress.innerHTML='<span class="qr-chip">0 commitments</span>';return}
+  const groups={};rows.forEach(x=>(groups[x.event.date]??=[]).push(x));
+  let req=0,no=0,missing=0;
+  rows.forEach(x=>{if(x.row.dataset.transportClass==='required')req++;else no++;if(x.row.dataset.transportClass==='required'&&!locationLooksUseful(x.event.location))missing++});
+  progress.innerHTML=`<span class="qr-chip">${rows.length} commitments</span><span class="qr-chip good">${req} require transport</span><span class="qr-chip">${no} no transport</span>${missing?`<span class="qr-chip warn">${missing} need location</span>`:'<span class="qr-chip good">Locations ready</span>'}`;
+  host.innerHTML=Object.entries(groups).map(([date,items])=>{
+    const d=parseDate(date),label=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
+    return `<div class="quick-day"><div class="quick-day-head"><div class="quick-day-title">${esc(label)}</div><div class="quick-day-count">${items.length} commitment${items.length===1?'':'s'}</div></div>${items.map(({row,index,event})=>{
+      const required=row.dataset.transportClass==='required',ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
+      return `<div class="quick-event" data-quick-row="${index}">
+        <div class="quick-event-main"><div class="quick-event-time">${event.start||''}${event.end?`–${event.end}`:''}</div><div class="quick-event-title">${esc(event.title)}</div><div class="quick-event-meta">${esc(childLabel(event.child))} · ${esc(source)}</div></div>
+        <div class="quick-transport"><button type="button" data-quick-transport="required" class="${required?'active required':''}">Requires transport</button><button type="button" data-quick-transport="no" class="${!required?'active no':''}">No transport</button></div>
+        <div><input class="quick-location" data-quick-location value="${esc(event.location||'')}" placeholder="Venue / address"><div class="quick-location-status ${ls.cls}">${ls.text}</div></div>
+      </div>`;
+    }).join('')}</div>`;
+  }).join('');
+  host.querySelectorAll('[data-quick-row]').forEach(card=>{
+    const item=rows[+card.dataset.quickRow];if(!item)return;
+    card.querySelectorAll('[data-quick-transport]').forEach(btn=>btn.onclick=()=>{
+      const required=btn.dataset.quickTransport==='required',row=item.row,tsel=row.querySelector('.transport-override');
+      tsel.value=required?'required':'info';row.dataset.transportClass=tsel.value;row.dataset.transportOverride=tsel.value;row.dataset.transportManual='true';
+      rememberTransportDecision(rowToCalendarEvent(row),required);
+      const badge=row.querySelector('.transport-class');if(badge){badge.className=`transport-class ${transportClassCss(tsel.value)}`;badge.textContent=transportClassLabel(tsel.value)}
+      const note=row.querySelector('.transport-rule-note');if(note)note.textContent='Saved planning decision';
+      if(plans.length)markPlanStale('Transport decision changed');renderQuickPlanningReview();
+    });
+    const qloc=card.querySelector('[data-quick-location]');
+    qloc.onchange=()=>{
+      const row=item.row,main=row.querySelector('.a-loc');main.value=qloc.value.trim();
+      row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';
+      if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');
+      const rn=row.querySelector('.route-note');if(rn)rn.textContent=locationLooksUseful(main.value)?'Saved in Location Memory':'Add address for accurate routing';
+      if(plans.length)markPlanStale('Activity location changed');renderQuickPlanningReview();
+    };
+  });
+}
+function confirmAllTeamCalendarTransport(){
+  for(const {row,event} of quickReviewRows()){
+    const link=calendarLinkForEvent(event),provider=link?.url?calendarProvider(link.url):providerForEvent(event),role=event.calendarRole||roleForSourceName(event.source);
+    if(role==='team'||['teamsnap','teamsnapone','gamechanger'].includes(provider)){
+      row.dataset.transportClass='required';row.dataset.transportOverride='required';row.dataset.transportManual='true';
+      const sel=row.querySelector('.transport-override');if(sel)sel.value='required';
+      rememberTransportDecision(rowToCalendarEvent(row),true);
+      const badge=row.querySelector('.transport-class');if(badge){badge.className='transport-class required';badge.textContent='Transport Required'}
+    }
+  }
+  if(plans.length)markPlanStale('Team calendar transport confirmed');renderQuickPlanningReview();
+}
+
 function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,manual:r.dataset.manualShift==='true',conflict:r.dataset.scheduleConflict==='true',...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
 function getActivities(){
-  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual'})).filter(x=>x.date&&x.title);
+  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
   const recurring=recurringActivitiesForWindow();
   const keys=new Set(explicit.map(a=>[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase()));
   for(const a of recurring){
     const k=[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase();
-    if(!keys.has(k)){explicit.push(a);keys.add(k)}
+    if(!keys.has(k)){explicit.push({...a,transportClass:a.transportClass||'required'});keys.add(k)}
   }
   return explicit;
 }
@@ -2385,7 +2730,7 @@ async function generate(){
 }
 
 async function generateCore(){
-  const start=parseDate($('startDate').value), kira=getKira(), acts=getActivities(), adh=getAdhoc(), target=+$('onsiteTarget').value||3;
+  const start=parseDate($('startDate').value), kira=getKira(), allActs=getActivities(), acts=allActs.filter(a=>a.transportClass==='required'), adh=getAdhoc(), target=+$('onsiteTarget').value||3;
   let base=Array.from({length:14},(_,i)=>{
     const date=addDays(start,i), ds=iso(date), weekend=[0,6].includes(date.getDay()), k=kira.find(x=>x.date===ds)||{shift:'off',start:'',end:''};
     let d={date,dateStr:ds,weekend,kiraOff:k.shift==='off',kiraLocation:k.location||kiraShiftInfo(k.shift).location,kiraStart:toMin(k.start),kiraEnd:toMin(k.end),kiraPickupAvailable:k.pickupAvailable??(k.shift==='off'?0:(toMin(k.end)+(+$('kiraCommute').value||30))),activities:acts.filter(a=>a.date===ds),adhoc:adh.filter(a=>a.date===ds),busPlan:$('defaultBus').value,preferRemote:false,mustOnsite:false,holiday:false,chrisUnavailable:false,kiraUnavailable:false,opportunity:false};
@@ -2617,7 +2962,7 @@ function render(){
       await recalcDayForOverride(idx,sel.value);
     };
   });
-  $('bossMessage').value='Proposed schedule for the next two weeks:\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmt(p.arrive)}; planned departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n')+'\n\nPlease let me know if you’d like me to adjust any onsite day or timing.';
+  $('bossMessage').value='Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmt(p.arrive)}; planned departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n');
   const watch=[];
   for(const p of work){
     const backups=p.assignments.filter(a=>a.primary==='Backup');
@@ -2782,7 +3127,7 @@ function dedupeCalendarEvents(events,cfg=loadCalendarHygiene()){
 }
 
 function rowToCalendarEvent(row){
-  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),description:row.dataset.description||''};
+  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),description:row.dataset.description||'',transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',locationOrigin:row.dataset.locationOrigin||'missing'};
 }
 function calendarEventsLikelyDuplicate(a,b,cfg=loadCalendarHygiene()){
   if(eventDateValue(a)!==eventDateValue(b))return false;
@@ -2840,6 +3185,8 @@ function permanentSettings(){
       childOldest:$('childOldest').value,
       childMiddle:$('childMiddle').value,
       childYoungest:$('childYoungest').value,
+      transportPositiveKeywords:$('transportPositiveKeywords').value,
+      transportNegativeKeywords:$('transportNegativeKeywords').value,
       childOldestAliases:$('childOldestAliases').value,childMiddleAliases:$('childMiddleAliases').value,childYoungestAliases:$('childYoungestAliases').value,
       homeAddress:$('homeAddress').value,
       liveRouting:$('liveRouting').value,
@@ -3246,6 +3593,9 @@ updateBackupStatus();
 
 window.addEventListener('load',()=>setTimeout(()=>refreshCalendarsOnAppOpen(),150));
 
+
+if($('quickReviewRefreshBtn'))$('quickReviewRefreshBtn').onclick=renderQuickPlanningReview;
+if($('quickReviewTransportAllTeamBtn'))$('quickReviewTransportAllTeamBtn').onclick=confirmAllTeamCalendarTransport;
 </script>
 </body>
 </html>

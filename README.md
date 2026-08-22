@@ -271,14 +271,14 @@ This repository is packaged as **private / all rights reserved** by default. See
 - [AutoPilot branding guide](docs/BRANDING.md)
 
 
-## v38 stabilization
+## v41 stabilization
 
-v38 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
+v41 is a calendar-correctness and reliability release. It fixes timezone interpretation, recurring-event cancellations and moved instances, cross-source duplicates, protected manual Kira Schedule overrides, ambiguous child assignment, single-primary enforcement, safe browser-storage fallback, and stale-plan regeneration.
 
-See [docs/STABILIZATION-TEST-REPORT-v38.md](docs/STABILIZATION-TEST-REPORT-v38.md) for the defect-to-fix matrix and regression results.
+See [docs/STABILIZATION-TEST-REPORT-v41.md](docs/STABILIZATION-TEST-REPORT-v41.md) for the defect-to-fix matrix and regression results.
 
 
-## v38 — AutoPilot intelligence + LukaLab branding
+## v41 — AutoPilot intelligence + LukaLab branding
 
 - Adds Primary Family Calendar auto-refresh while AutoPilot is open, including refresh-on-focus/resume.
 - Adds a Child Identity Resolver using calendar ownership, actual names, aliases, generic role words, and Unassigned / Verify fallback.
@@ -286,9 +286,9 @@ See [docs/STABILIZATION-TEST-REPORT-v38.md](docs/STABILIZATION-TEST-REPORT-v38.m
 - Adds a distinct AutoPilot product identity and **LukaLab AI Creative** maker signature.
 
 
-## v38 — LukaLab Pittsburgh skyline brand system
+## v41 — LukaLab Pittsburgh skyline brand system
 
-v38 refreshes the AutoPilot shell with a **black-and-gold visual system** and a **Pittsburgh skyline branding theme** inspired by a thin-line tattoo aesthetic.
+v41 refreshes the AutoPilot shell with a **black-and-gold visual system** and a **Pittsburgh skyline branding theme** inspired by a thin-line tattoo aesthetic.
 
 Brand direction:
 - **AutoPilot** remains the product brand.
@@ -296,7 +296,7 @@ Brand direction:
 - The UI now incorporates a minimalist Pittsburgh skyline motif and a black / charcoal / gold palette.
 
 
-## v38 — Typography and compact LukaLab masthead
+## v41 — Typography and compact LukaLab masthead
 
 - Replaced the oversized 16:9 branding treatment with a tightly cropped version of the approved LukaLab skyline lockup.
 - Reduced top-of-page dead space with a compact horizontal AutoPilot / LukaLab masthead.
@@ -305,7 +305,7 @@ Brand direction:
 - Refined black, charcoal, ivory, and Pittsburgh-gold UI colors for higher contrast and a more cohesive LukaLab appearance.
 
 
-## v38 — guaranteed-visible LukaLab header branding
+## v41 — guaranteed-visible LukaLab header branding
 
 - Replaced raster/base64 header branding with the supplied LukaLab SVG embedded directly in `index.html`.
 - Added both the full **LukaLab · AI Creative** skyline lockup and a secondary skyline-only maker mark to the AutoPilot masthead.
@@ -313,7 +313,7 @@ Brand direction:
 - Added the original LukaLab SVG/PNG assets to the GitHub repository for reuse.
 
 
-## v38 — Session-start calendar synchronization
+## v41 — Session-start calendar synchronization
 
 - Removed periodic/background auto-refresh.
 - AutoPilot refreshes **all saved web calendars once when the app opens** and again immediately before Generate.
@@ -323,3 +323,53 @@ Brand direction:
 - Added validation to distinguish provider web pages from actual calendar subscription URLs.
 - Added an optional Calendar Gateway companion Worker for providers that block browser CORS.
 - Added LukaLab branding to the mobile family view, Week at a Glance / fridge preview, print fridge output, and standalone read-only family/mobile outputs.
+
+
+## v41 — Transport Eligibility Intelligence
+
+AutoPilot now separates calendar context from actual child transportation.
+
+- **Transport Required** events enter driver assignment and Chris commute/departure calculations.
+- **Logistics Aware** events remain visible but cannot create a pickup/dropoff leg.
+- **Informational** events remain visible but are excluded from transport analytics.
+- TeamSnap / TeamSnap ONE / GameChanger default to Transport Required.
+- Primary Family Calendar events are evidence-based:
+  - child + activity/transport signal → Transport Required
+  - child-related but ambiguous → Logistics Aware
+  - Epic/training/meeting/conference/work/shift/webinar/Teams/Zoom → Informational
+  - otherwise ambiguous → Logistics Aware, never Transport Required
+- Manual event-level override is available in the Activities table.
+- Kira availability inference remains separate from child transportation inference.
+
+
+## v41 — 10-Minute Planning Review & Location Memory
+
+AutoPilot now has a day-by-day fast-review screen directly above the detailed Activities table.
+
+For each commitment it shows:
+- date/time
+- activity and child
+- source calendar
+- **Requires transport / No transport**
+- venue/address and its source
+
+Explicit transport decisions are remembered for the same recurring activity in later planning cycles.
+
+### Location Memory
+Location priority is:
+1. current calendar-feed location
+2. previously saved/confirmed venue
+3. missing location
+
+Calendar feed locations are automatically saved. If a later occurrence omits the venue, AutoPilot restores the remembered location. A newer feed location always wins and refreshes memory.
+
+Manually corrected venues are saved immediately for future use.
+
+
+## v41 — Boss email editor usability
+
+- Increased the boss-email draft area to approximately 18 visible lines / 520px minimum height.
+- Improved email-editor font size, padding, line-height, and contrast.
+- Added the standard opening:
+  `Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.`
+- Removed the redundant closing adjustment request since the intro already covers it.
