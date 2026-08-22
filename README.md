@@ -399,3 +399,43 @@ The boss-email editor is permanently placed in Outputs and remains visible befor
 
 ### Time format
 All model-rendered/displayed event times use 12-hour AM/PM formatting. Native `<input type="time">` controls retain browser-native internal values, because HTML time inputs use 24-hour machine values even when browsers render localized controls.
+
+
+## v45 — Standardized LukaLab product branding
+
+All AutoPilot product surfaces now use the standardized maker/legal line:
+
+**A LukaLab AI Creative product | Pittsburgh, PA | All Rights Reserved**
+
+Applied to:
+- primary AutoPilot masthead
+- mobile family view
+- Week at a Glance / fridge preview
+- print output
+- downloadable read-only family view
+- downloadable mobile agenda
+- main application footer
+
+
+## v45 — Reusable work-location directories + address-based commute routing
+
+### Chris work locations
+The Chris directory remains fully dynamic. Add as many locations as needed. Each saved site includes its full street address and fallback commute minutes.
+
+**Behavior change:** when Live Address Routing is enabled and Home Address + work-site address are available, AutoPilot now calculates **home → Chris work site** using OSRM/geocoding instead of always using the fallback commute value. The fallback remains available when routing cannot resolve an address.
+
+Work-site → child activity routing already used the Chris site address and continues to do so.
+
+### Kira work locations
+Kira now has an unlimited saved work-location directory with:
+- editable site name
+- full street address
+- fallback work → home minutes
+- add/remove support
+
+Kira's inferred shift types remain Early Main, Early North, Star, Late Main, and Off. A new shift → site mapping lets each inferred shift point to any saved physical work location.
+
+### Kira address-based availability
+During Generate, AutoPilot now calculates **Kira work site → home** using the configured address whenever Live Address Routing is enabled. That calculated commute is added to shift end before Kira becomes available for family transportation.
+
+This makes afternoon driver assignment responsive to the actual Kira work location rather than one global 30-minute assumption.

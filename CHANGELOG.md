@@ -1,3 +1,19 @@
+## v45 — Work-location directories and live commute routing
+
+- Added unlimited add/remove/save work locations for Kira.
+- Added Kira shift-type → saved work-site mapping.
+- Persisted Kira work-site directory and mappings with permanent setup.
+- Chris home → work commute now uses saved work-site address when Live Address Routing is enabled.
+- Kira work → home commute now uses the mapped saved work-site address when Live Address Routing is enabled.
+- Fallback commute-minute fields remain in place when live routing cannot resolve an address.
+- Moved both work-location directories to the Settings tab.
+
+## v45 — Standardized LukaLab product branding
+
+- Replaced prior mixed LukaLab maker signatures with: `A LukaLab AI Creative product | Pittsburgh, PA | All Rights Reserved`.
+- Applied the standardized branding to the main application, mobile output, fridge/week output, print layout, and read-only exports.
+- Added a consistent product/legal footer.
+
 ## v42 — Workflow simplification
 
 - Reorganized AutoPilot into Plan / Calendars / Review / Outputs / Settings tabs.
