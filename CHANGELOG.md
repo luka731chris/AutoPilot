@@ -1,10 +1,16 @@
-## v46 — Reversible Review workflow
+## v47 — Explicit reviewed transport toggles
+- Added large two-position NEEDS TRANSPORT / NO TRANSPORT toggle.
+- Grouped No transport decisions first.
+- Added decision provenance for new review choices.
+- Flagged legacy reviewed decisions with unknown provenance.
+
+## v47 — Reversible Review workflow
 - Added Reviewed decisions section.
 - Added one-click transport reversal.
 - Added Reopen.
 - Added Undo last review change.
 
-## v46 — Work-location directories and live commute routing
+## v47 — Work-location directories and live commute routing
 
 - Added unlimited add/remove/save work locations for Kira.
 - Added Kira shift-type → saved work-site mapping.
@@ -14,7 +20,7 @@
 - Fallback commute-minute fields remain in place when live routing cannot resolve an address.
 - Moved both work-location directories to the Settings tab.
 
-## v46 — Standardized LukaLab product branding
+## v47 — Standardized LukaLab product branding
 
 - Replaced prior mixed LukaLab maker signatures with: `A LukaLab AI Creative product | Pittsburgh, PA | All Rights Reserved`.
 - Applied the standardized branding to the main application, mobile output, fridge/week output, print layout, and read-only exports.

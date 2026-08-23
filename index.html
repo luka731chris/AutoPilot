@@ -253,7 +253,7 @@ td input,td select{margin:0;padding:7px}
 .child-owner-select{font-size:12px;padding:5px 7px;min-width:145px}
 
 
-/* v46 LukaLab AI Creative product branding */
+/* v47 LukaLab AI Creative product branding */
 :root{
   --ap-black:#0d0d0f;
   --ap-charcoal:#17181c;
@@ -836,7 +836,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v46 standardized LukaLab product branding */
+/* v47 standardized LukaLab product branding */
 .lukalab-maker-copy{
   display:flex!important;
   flex-wrap:wrap;
@@ -867,14 +867,14 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v46 reusable work location directories */
+/* v47 reusable work location directories */
 #kiraWorkLocationsCard .table-wrap{margin-top:8px}
 .work-address-status{font-size:9px;color:#777166;margin-top:2px}
 #siteBody .s-address,#kiraSiteBody .ks-address{min-width:260px}
 @media(max-width:760px){#siteBody .s-address,#kiraSiteBody .ks-address{min-width:210px}}
 
 
-/* v46 reversible review decisions */
+/* v47 reversible review decisions */
 .reviewed-section{margin-top:14px;border-top:1px solid #e2dccf;padding-top:10px}
 .reviewed-section-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .reviewed-section-head h4{margin:0;font-size:14px}
@@ -887,6 +887,26 @@ button.secondary,.btn.secondary{
 #undoLastReviewBtn{display:none}#undoLastReviewBtn.available{display:inline-flex}
 .reviewed-empty{font-size:11px;color:#817a6b;padding:6px 0}
 @media(max-width:760px){.reviewed-row{grid-template-columns:1fr}}
+
+/* v47 explicit reviewed transport toggles */
+.reviewed-group{margin-top:12px}
+.reviewed-group-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+.reviewed-group-title{font-size:12px;font-weight:900}
+.reviewed-group-count{font-size:10px;font-weight:850;padding:3px 7px;border-radius:999px;background:#eee9df}
+.reviewed-group.no-transport{border-left:4px solid #7a7163;padding-left:9px}
+.reviewed-group.needs-transport{border-left:4px solid #1f7a45;padding-left:9px}
+.reviewed-row{grid-template-columns:minmax(180px,1.25fr) minmax(260px,1fr)!important}
+.reviewed-decision{display:none!important}
+.reviewed-actions{display:grid!important;grid-template-columns:1fr auto;gap:6px!important;align-items:center}
+.review-toggle{display:grid;grid-template-columns:1fr 1fr;border:2px solid #cfc7b8;border-radius:10px;overflow:hidden;background:#fff}
+.review-toggle button{min-height:42px!important;padding:8px 9px!important;border:0!important;border-radius:0!important;background:#fff!important;color:#696255!important;font-size:10.5px!important;font-weight:900!important}
+.review-toggle button+button{border-left:1px solid #d8d1c4!important}
+.review-toggle button.active.required{background:#166534!important;color:#fff!important}
+.review-toggle button.active.no{background:#332f29!important;color:#fff!important}
+.reviewed-origin{font-size:9px;color:#817a6b;margin-top:4px}
+.reviewed-origin.warn{color:#9a6400;font-weight:800}
+.review-summary-banner{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:9px 0 4px;padding:9px 10px;border-radius:10px;background:#f7f3ea;border:1px solid #e5dccb}
+@media(max-width:760px){.reviewed-row{grid-template-columns:1fr!important}.reviewed-actions{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
@@ -940,7 +960,7 @@ button.secondary,.btn.secondary{
 </nav>
 <div id="tab-plan" class="autopilot-tab-panel active"><div class="tab-intro"><strong>Plan the next two weeks</strong><span>Set the planning window, Kira schedule, work assumptions, then Generate.</span></div></div>
 <div id="tab-calendars" class="autopilot-tab-panel"><div class="tab-intro"><strong>Calendar connections</strong><span>Manage Primary Family, TeamSnap, GameChanger, school, and other feeds.</span></div></div>
-<div id="tab-review" class="autopilot-tab-panel"><div class="tab-intro"><strong>Decide, then revise anytime</strong><span>Items needing action stay at the top. Completed decisions move to Reviewed decisions below, where they remain one-click editable.</span></div></div>
+<div id="tab-review" class="autopilot-tab-panel"><div class="tab-intro"><strong>Transport decisions stay visible</strong><span>Use the two-position toggle. Reviewed NO TRANSPORT items are grouped first so you can quickly audit anything you may have dismissed too fast.</span></div></div>
 <div id="tab-outputs" class="autopilot-tab-panel"><div class="tab-intro"><strong>Publish & communicate</strong><span>Boss email, commute plan, mobile agenda, week-at-a-glance, and fridge output.</span></div></div>
 <div id="tab-settings" class="autopilot-tab-panel"><div class="tab-intro"><strong>Setup & work locations</strong><span>Saved Chris/Kira work sites and addresses, recurring practices, ad-hoc commitments, and permanent assumptions.</span></div></div>
 <div class="toolbar">
@@ -1221,7 +1241,7 @@ zoom</textarea>
           <div><h4>Reviewed decisions</h4><div class="small muted">Resolved items stay here so you can change them instantly.</div></div>
           <button id="undoLastReviewBtn" type="button" class="secondary">Undo last review change</button>
         </div>
-        <div id="reviewedDecisionList" class="reviewed-list"></div>
+        <div id="reviewedDecisionSummary"></div><div id="reviewedDecisionList" class="reviewed-list"></div>
       </div>
     </div>
 
@@ -1808,6 +1828,8 @@ function activityRow(d={}){
   tr.dataset.transportClass=tx.class;
   tr.dataset.transportReason=tx.reason;
   tr.dataset.transportOverride=d.transportOverride||'';
+  tr.dataset.reviewDecisionAt=d.reviewDecisionAt||'';
+  tr.dataset.reviewDecisionSource=d.reviewDecisionSource||'';
   tr.innerHTML=`<td><input class="a-date" type="date" value="${d.date||''}"></td>
   <td><select class="a-child">${childOptions(inferredChild)}</select><div class="verify-child" style="${inferredChild==='Unassigned'?'':'display:none'}">Verify child</div><div class="identity-confidence ${d.childResolution||'verify'}">${identityConfidenceLabel(d.childResolution||'verify')}</div></td>
   <td><input class="a-title" value="${esc(d.title||'')}">${d.source?`<div class="source-note">Imported: ${esc(d.source)}</div>`:''}
@@ -1860,6 +1882,8 @@ function activityRow(d={}){
     tr.dataset.transportClass=tsel.value;tr.dataset.transportOverride=tsel.value;
     if(ev?.isTrusted){
       tr.dataset.transportManual='true';
+      tr.dataset.transportReason='Saved planning decision';
+      stampReviewDecision(tr,'manual-table');
       rememberTransportDecision(rowToCalendarEvent(tr),tsel.value==='required');
     }
     const badge=tr.querySelector('.transport-class');badge.className=`transport-class ${transportClassCss(tsel.value)}`;badge.textContent=transportClassLabel(tsel.value);
@@ -2684,10 +2708,10 @@ function quickLocationStatus(row){
 }
 
 let __lastReviewChange=null;
-function captureReviewState(row){return{row,transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',transportManual:row.dataset.transportManual||'',transportReason:row.dataset.transportReason||'',location:row.querySelector('.a-loc')?.value||'',locationOrigin:row.dataset.locationOrigin||'missing'}}
+function captureReviewState(row){return{row,transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',reviewDecisionAt:row.dataset.reviewDecisionAt||'',reviewDecisionSource:row.dataset.reviewDecisionSource||'',transportManual:row.dataset.transportManual||'',transportReason:row.dataset.transportReason||'',reviewDecisionAt:row.dataset.reviewDecisionAt||'',reviewDecisionSource:row.dataset.reviewDecisionSource||'',location:row.querySelector('.a-loc')?.value||'',locationOrigin:row.dataset.locationOrigin||'missing'}}
 function restoreReviewState(x){
   if(!x?.row||!document.body.contains(x.row))return;
-  const r=x.row;r.dataset.transportClass=x.transportClass;r.dataset.transportOverride=x.transportOverride;r.dataset.transportManual=x.transportManual;r.dataset.transportReason=x.transportReason;r.dataset.locationOrigin=x.locationOrigin;
+  const r=x.row;r.dataset.transportClass=x.transportClass;r.dataset.transportOverride=x.transportOverride;r.dataset.transportManual=x.transportManual;r.dataset.transportReason=x.transportReason;r.dataset.reviewDecisionAt=x.reviewDecisionAt;r.dataset.reviewDecisionSource=x.reviewDecisionSource;r.dataset.locationOrigin=x.locationOrigin;
   const loc=r.querySelector('.a-loc');if(loc)loc.value=x.location;
   const sel=r.querySelector('.transport-override');if(sel)sel.value=x.transportClass;
   const b=r.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(x.transportClass)}`;b.textContent=transportClassLabel(x.transportClass)}
@@ -2695,31 +2719,61 @@ function restoreReviewState(x){
   __lastReviewChange=null;$('undoLastReviewBtn')?.classList.remove('available');renderQuickPlanningReview();
 }
 function setLastReviewChange(row){__lastReviewChange=captureReviewState(row);$('undoLastReviewBtn')?.classList.add('available')}
+function stampReviewDecision(row,source='review-toggle'){
+  row.dataset.reviewDecisionAt=new Date().toISOString();
+  row.dataset.reviewDecisionSource=source;
+}
+function formatReviewDecisionStamp(row){
+  const at=row.dataset.reviewDecisionAt||'',src=row.dataset.reviewDecisionSource||'';
+  if(!at)return {text:'Previous decision — origin not recorded',warn:true};
+  const d=new Date(at),when=isNaN(d)?'recently':d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  const where=src==='attention-toggle'?'from Needs attention':src==='reviewed-toggle'?'changed in Reviewed decisions':src==='manual-table'?'from audit table':'';
+  return {text:`Reviewed ${when}${where?` · ${where}`:''}`,warn:false};
+}
+
 function isReviewedDecision(row){const reason=row.dataset.transportReason||'';return row.dataset.transportManual==='true'||reason==='Saved planning decision'||reason==='Manual transport override'}
 function renderReviewedDecisions(rows){
-  const host=$('reviewedDecisionList');if(!host)return;
+  const host=$('reviewedDecisionList'),summary=$('reviewedDecisionSummary');if(!host)return;
   const reviewed=rows.filter(x=>isReviewedDecision(x.row));
+  const noTransport=reviewed.filter(x=>x.row.dataset.transportClass!=='required');
+  const needsTransport=reviewed.filter(x=>x.row.dataset.transportClass==='required');
+
+  if(summary)summary.innerHTML=`<div class="review-summary-banner"><strong>${reviewed.length} reviewed</strong><span class="qr-chip">${noTransport.length} no transport</span><span class="qr-chip good">${needsTransport.length} need transport</span>${noTransport.length?'<span class="small muted">No-transport items are shown first for easy audit.</span>':''}</div>`;
   if(!reviewed.length){host.innerHTML='<div class="reviewed-empty">No reviewed decisions yet.</div>';return}
-  host.innerHTML=reviewed.map(({row,index,event})=>{
-    const req=row.dataset.transportClass==='required';
-    return `<div class="reviewed-row" data-reviewed-row="${index}">
-      <div><div class="reviewed-time">${displayTime12h(event.start)}${event.end?` – ${displayTime12h(event.end)}`:''}</div><div class="reviewed-title">${esc(event.title)}</div><div class="reviewed-meta">${esc(childLabel(event.child))} · ${esc(event.source||'Manual')}</div></div>
-      <div class="reviewed-decision ${req?'required':'info'}">${req?'Needs transport':'No transport'}</div>
-      <div class="reviewed-actions"><button type="button" data-reviewed-toggle class="secondary">${req?'Change to no transport':'Change to transport'}</button><button type="button" data-reviewed-reopen class="secondary">Reopen</button></div>
-    </div>`;
-  }).join('');
+
+  function groupHtml(items,type,title){
+    if(!items.length)return '';
+    return `<div class="reviewed-group ${type}"><div class="reviewed-group-head"><div class="reviewed-group-title">${title}</div><div class="reviewed-group-count">${items.length}</div></div>${items.map(({row,index,event})=>{
+      const req=row.dataset.transportClass==='required',stamp=formatReviewDecisionStamp(row);
+      return `<div class="reviewed-row" data-reviewed-row="${index}">
+        <div><div class="reviewed-time">${displayTime12h(event.start)}${event.end?` – ${displayTime12h(event.end)}`:''}</div><div class="reviewed-title">${esc(event.title)}</div><div class="reviewed-meta">${esc(childLabel(event.child))} · ${esc(event.source||'Manual')}</div><div class="reviewed-origin ${stamp.warn?'warn':''}">${esc(stamp.text)}</div></div>
+        <div class="reviewed-actions">
+          <div class="review-toggle" role="group" aria-label="Transport decision">
+            <button type="button" data-set-reviewed="required" class="${req?'active required':''}">NEEDS TRANSPORT</button>
+            <button type="button" data-set-reviewed="info" class="${!req?'active no':''}">NO TRANSPORT</button>
+          </div>
+          <button type="button" data-reviewed-reopen class="secondary">Reopen</button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  host.innerHTML=groupHtml(noTransport,'no-transport','No transport — review these first')+groupHtml(needsTransport,'needs-transport','Needs transport');
+
   host.querySelectorAll('[data-reviewed-row]').forEach(card=>{
     const item=rows.find(x=>x.index===+card.dataset.reviewedRow);if(!item)return;
-    card.querySelector('[data-reviewed-toggle]').onclick=()=>{
-      const row=item.row,cur=row.dataset.transportClass==='required';setLastReviewChange(row);
-      row.dataset.transportClass=cur?'info':'required';row.dataset.transportOverride=row.dataset.transportClass;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';
-      const sel=row.querySelector('.transport-override');if(sel)sel.value=row.dataset.transportClass;
-      rememberTransportDecision(rowToCalendarEvent(row),!cur);
-      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(row.dataset.transportClass)}`;b.textContent=transportClassLabel(row.dataset.transportClass)}
+    card.querySelectorAll('[data-set-reviewed]').forEach(btn=>btn.onclick=()=>{
+      const row=item.row,newClass=btn.dataset.setReviewed;if(row.dataset.transportClass===newClass)return;
+      setLastReviewChange(row);
+      row.dataset.transportClass=newClass;row.dataset.transportOverride=newClass;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';stampReviewDecision(row,'reviewed-toggle');
+      const sel=row.querySelector('.transport-override');if(sel)sel.value=newClass;
+      rememberTransportDecision(rowToCalendarEvent(row),newClass==='required');
+      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(newClass)}`;b.textContent=transportClassLabel(newClass)}
+      if(plans.length)markPlanStale('Transport decision changed');
       renderQuickPlanningReview();
-    };
+    });
     card.querySelector('[data-reviewed-reopen]').onclick=()=>{
-      const row=item.row;setLastReviewChange(row);row.dataset.transportManual='';row.dataset.transportOverride='';row.dataset.transportReason='Ambiguous Primary Family event';renderQuickPlanningReview();
+      const row=item.row;setLastReviewChange(row);row.dataset.transportManual='';row.dataset.transportOverride='';row.dataset.transportReason='Ambiguous Primary Family event';row.dataset.reviewDecisionAt='';row.dataset.reviewDecisionSource='';renderQuickPlanningReview();
     };
   });
 }
@@ -2796,7 +2850,7 @@ function renderQuickPlanningReview(){
     card.querySelectorAll('[data-quick-transport]').forEach(btn=>btn.onclick=()=>{
       const required=btn.dataset.quickTransport==='required',row=actual.row,tsel=row.querySelector('.transport-override');
       setLastReviewChange(row);
-      tsel.value=required?'required':'info';row.dataset.transportClass=tsel.value;row.dataset.transportOverride=tsel.value;row.dataset.transportManual='true';
+      tsel.value=required?'required':'info';row.dataset.transportClass=tsel.value;row.dataset.transportOverride=tsel.value;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';stampReviewDecision(row,'attention-toggle');
       rememberTransportDecision(rowToCalendarEvent(row),required);
       const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(tsel.value)}`;b.textContent=transportClassLabel(tsel.value)}
       row.dataset.transportReason='Saved planning decision';
@@ -2831,7 +2885,7 @@ function confirmAllTeamCalendarTransport(){
 
 function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,manual:r.dataset.manualShift==='true',conflict:r.dataset.scheduleConflict==='true',...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
 function getActivities(){
-  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
+  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',reviewDecisionAt:r.dataset.reviewDecisionAt||'',reviewDecisionSource:r.dataset.reviewDecisionSource||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
   const recurring=recurringActivitiesForWindow();
   const keys=new Set(explicit.map(a=>[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase()));
   for(const a of recurring){
