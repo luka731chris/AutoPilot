@@ -253,7 +253,7 @@ td input,td select{margin:0;padding:7px}
 .child-owner-select{font-size:12px;padding:5px 7px;min-width:145px}
 
 
-/* v45 LukaLab AI Creative product branding */
+/* v46 LukaLab AI Creative product branding */
 :root{
   --ap-black:#0d0d0f;
   --ap-charcoal:#17181c;
@@ -836,7 +836,7 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v45 standardized LukaLab product branding */
+/* v46 standardized LukaLab product branding */
 .lukalab-maker-copy{
   display:flex!important;
   flex-wrap:wrap;
@@ -867,12 +867,26 @@ button.secondary,.btn.secondary{
 }
 
 
-/* v45 reusable work location directories */
+/* v46 reusable work location directories */
 #kiraWorkLocationsCard .table-wrap{margin-top:8px}
 .work-address-status{font-size:9px;color:#777166;margin-top:2px}
 #siteBody .s-address,#kiraSiteBody .ks-address{min-width:260px}
 @media(max-width:760px){#siteBody .s-address,#kiraSiteBody .ks-address{min-width:210px}}
 
+
+/* v46 reversible review decisions */
+.reviewed-section{margin-top:14px;border-top:1px solid #e2dccf;padding-top:10px}
+.reviewed-section-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.reviewed-section-head h4{margin:0;font-size:14px}
+.reviewed-list{display:grid;gap:6px;margin-top:8px}
+.reviewed-row{display:grid;grid-template-columns:minmax(170px,1.3fr) minmax(130px,.8fr) auto;gap:9px;align-items:center;padding:8px 9px;border:1px solid #e5dfd4;border-radius:10px;background:#faf9f6}
+.reviewed-time{font-size:9px;font-weight:850;color:#8a7340;text-transform:uppercase}
+.reviewed-title{font-size:12px;font-weight:800}.reviewed-meta{font-size:9.5px;color:#777166;margin-top:2px}
+.reviewed-decision{font-size:11px;font-weight:800}.reviewed-decision.required{color:#176b3a}.reviewed-decision.info{color:#6f695d}
+.reviewed-actions{display:flex;gap:5px;flex-wrap:wrap}.reviewed-actions button{padding:6px 8px!important;font-size:10px!important}
+#undoLastReviewBtn{display:none}#undoLastReviewBtn.available{display:inline-flex}
+.reviewed-empty{font-size:11px;color:#817a6b;padding:6px 0}
+@media(max-width:760px){.reviewed-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -926,7 +940,7 @@ button.secondary,.btn.secondary{
 </nav>
 <div id="tab-plan" class="autopilot-tab-panel active"><div class="tab-intro"><strong>Plan the next two weeks</strong><span>Set the planning window, Kira schedule, work assumptions, then Generate.</span></div></div>
 <div id="tab-calendars" class="autopilot-tab-panel"><div class="tab-intro"><strong>Calendar connections</strong><span>Manage Primary Family, TeamSnap, GameChanger, school, and other feeds.</span></div></div>
-<div id="tab-review" class="autopilot-tab-panel"><div class="tab-intro"><strong>Only what needs your attention</strong><span>Transport and location exceptions first. Open the audit section only when you want to inspect everything.</span></div></div>
+<div id="tab-review" class="autopilot-tab-panel"><div class="tab-intro"><strong>Decide, then revise anytime</strong><span>Items needing action stay at the top. Completed decisions move to Reviewed decisions below, where they remain one-click editable.</span></div></div>
 <div id="tab-outputs" class="autopilot-tab-panel"><div class="tab-intro"><strong>Publish & communicate</strong><span>Boss email, commute plan, mobile agenda, week-at-a-glance, and fridge output.</span></div></div>
 <div id="tab-settings" class="autopilot-tab-panel"><div class="tab-intro"><strong>Setup & work locations</strong><span>Saved Chris/Kira work sites and addresses, recurring practices, ad-hoc commitments, and permanent assumptions.</span></div></div>
 <div class="toolbar">
@@ -1202,6 +1216,13 @@ zoom</textarea>
         
       </div>
       <div id="quickReviewDays" class="quick-review-days"></div>
+      <div class="reviewed-section">
+        <div class="reviewed-section-head">
+          <div><h4>Reviewed decisions</h4><div class="small muted">Resolved items stay here so you can change them instantly.</div></div>
+          <button id="undoLastReviewBtn" type="button" class="secondary">Undo last review change</button>
+        </div>
+        <div id="reviewedDecisionList" class="reviewed-list"></div>
+      </div>
     </div>
 
     <details class="audit-details" id="commitmentAudit">
@@ -2661,6 +2682,48 @@ function quickLocationStatus(row){
   if(origin==='manual')return {text:'Confirmed · saved for future use',cls:'memory'};
   return {text:'From calendar feed · saved',cls:'feed'};
 }
+
+let __lastReviewChange=null;
+function captureReviewState(row){return{row,transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',transportManual:row.dataset.transportManual||'',transportReason:row.dataset.transportReason||'',location:row.querySelector('.a-loc')?.value||'',locationOrigin:row.dataset.locationOrigin||'missing'}}
+function restoreReviewState(x){
+  if(!x?.row||!document.body.contains(x.row))return;
+  const r=x.row;r.dataset.transportClass=x.transportClass;r.dataset.transportOverride=x.transportOverride;r.dataset.transportManual=x.transportManual;r.dataset.transportReason=x.transportReason;r.dataset.locationOrigin=x.locationOrigin;
+  const loc=r.querySelector('.a-loc');if(loc)loc.value=x.location;
+  const sel=r.querySelector('.transport-override');if(sel)sel.value=x.transportClass;
+  const b=r.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(x.transportClass)}`;b.textContent=transportClassLabel(x.transportClass)}
+  const n=r.querySelector('.transport-rule-note');if(n)n.textContent=x.transportReason||'';
+  __lastReviewChange=null;$('undoLastReviewBtn')?.classList.remove('available');renderQuickPlanningReview();
+}
+function setLastReviewChange(row){__lastReviewChange=captureReviewState(row);$('undoLastReviewBtn')?.classList.add('available')}
+function isReviewedDecision(row){const reason=row.dataset.transportReason||'';return row.dataset.transportManual==='true'||reason==='Saved planning decision'||reason==='Manual transport override'}
+function renderReviewedDecisions(rows){
+  const host=$('reviewedDecisionList');if(!host)return;
+  const reviewed=rows.filter(x=>isReviewedDecision(x.row));
+  if(!reviewed.length){host.innerHTML='<div class="reviewed-empty">No reviewed decisions yet.</div>';return}
+  host.innerHTML=reviewed.map(({row,index,event})=>{
+    const req=row.dataset.transportClass==='required';
+    return `<div class="reviewed-row" data-reviewed-row="${index}">
+      <div><div class="reviewed-time">${displayTime12h(event.start)}${event.end?` – ${displayTime12h(event.end)}`:''}</div><div class="reviewed-title">${esc(event.title)}</div><div class="reviewed-meta">${esc(childLabel(event.child))} · ${esc(event.source||'Manual')}</div></div>
+      <div class="reviewed-decision ${req?'required':'info'}">${req?'Needs transport':'No transport'}</div>
+      <div class="reviewed-actions"><button type="button" data-reviewed-toggle class="secondary">${req?'Change to no transport':'Change to transport'}</button><button type="button" data-reviewed-reopen class="secondary">Reopen</button></div>
+    </div>`;
+  }).join('');
+  host.querySelectorAll('[data-reviewed-row]').forEach(card=>{
+    const item=rows.find(x=>x.index===+card.dataset.reviewedRow);if(!item)return;
+    card.querySelector('[data-reviewed-toggle]').onclick=()=>{
+      const row=item.row,cur=row.dataset.transportClass==='required';setLastReviewChange(row);
+      row.dataset.transportClass=cur?'info':'required';row.dataset.transportOverride=row.dataset.transportClass;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';
+      const sel=row.querySelector('.transport-override');if(sel)sel.value=row.dataset.transportClass;
+      rememberTransportDecision(rowToCalendarEvent(row),!cur);
+      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(row.dataset.transportClass)}`;b.textContent=transportClassLabel(row.dataset.transportClass)}
+      renderQuickPlanningReview();
+    };
+    card.querySelector('[data-reviewed-reopen]').onclick=()=>{
+      const row=item.row;setLastReviewChange(row);row.dataset.transportManual='';row.dataset.transportOverride='';row.dataset.transportReason='Ambiguous Primary Family event';renderQuickPlanningReview();
+    };
+  });
+}
+
 function renderQuickPlanningReview(){
   const host=$('quickReviewDays'),progress=$('quickReviewProgress'),badge=$('reviewTabBadge');
   if(!host||!progress)return;
@@ -2669,6 +2732,7 @@ function renderQuickPlanningReview(){
     host.innerHTML='<div class="quick-review-empty">No commitments in this planning window yet.</div>';
     progress.innerHTML='<span class="qr-chip">0 commitments</span>';
     if(badge)badge.style.display='none';
+    renderReviewedDecisions(rows);
     return;
   }
 
@@ -2693,6 +2757,7 @@ function renderQuickPlanningReview(){
 
   if(!attention.length){
     host.innerHTML=`<div class="quick-attention-banner good"><div><strong>Nothing needs your attention.</strong><div class="quick-review-mode-note">${requiredTotal} transport commitment${requiredTotal===1?'':'s'} already classified; locations are ready.</div></div></div>`;
+    renderReviewedDecisions(rows);
     return;
   }
 
@@ -2730,6 +2795,7 @@ function renderQuickPlanningReview(){
     if(!actual)return;
     card.querySelectorAll('[data-quick-transport]').forEach(btn=>btn.onclick=()=>{
       const required=btn.dataset.quickTransport==='required',row=actual.row,tsel=row.querySelector('.transport-override');
+      setLastReviewChange(row);
       tsel.value=required?'required':'info';row.dataset.transportClass=tsel.value;row.dataset.transportOverride=tsel.value;row.dataset.transportManual='true';
       rememberTransportDecision(rowToCalendarEvent(row),required);
       const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(tsel.value)}`;b.textContent=transportClassLabel(tsel.value)}
@@ -2740,7 +2806,7 @@ function renderQuickPlanningReview(){
     });
     const qloc=card.querySelector('[data-quick-location]');
     qloc.onchange=()=>{
-      const row=actual.row,main=row.querySelector('.a-loc');main.value=qloc.value.trim();
+      const row=actual.row,main=row.querySelector('.a-loc');setLastReviewChange(row);main.value=qloc.value.trim();
       row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';
       if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');
       const rn=row.querySelector('.route-note');if(rn)rn.textContent=locationLooksUseful(main.value)?'Saved in Location Memory':'Add address for accurate routing';
@@ -2748,6 +2814,7 @@ function renderQuickPlanningReview(){
       renderQuickPlanningReview();
     };
   });
+  renderReviewedDecisions(rows);
 }
 function confirmAllTeamCalendarTransport(){
   for(const {row,event} of quickReviewRows()){
@@ -3967,6 +4034,8 @@ if($('siteBody'))$('siteBody').addEventListener('input',e=>{
   if(e.target.matches('.s-name,.s-address,.s-commute,.s-leave,.s-hours,.s-pref'))scheduleAutosave();
 });
 
+
+if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewChange)restoreReviewState(__lastReviewChange)};
 </script>
 </body>
 </html>

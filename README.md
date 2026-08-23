@@ -401,7 +401,7 @@ The boss-email editor is permanently placed in Outputs and remains visible befor
 All model-rendered/displayed event times use 12-hour AM/PM formatting. Native `<input type="time">` controls retain browser-native internal values, because HTML time inputs use 24-hour machine values even when browsers render localized controls.
 
 
-## v45 — Standardized LukaLab product branding
+## v46 — Standardized LukaLab product branding
 
 All AutoPilot product surfaces now use the standardized maker/legal line:
 
@@ -417,7 +417,7 @@ Applied to:
 - main application footer
 
 
-## v45 — Reusable work-location directories + address-based commute routing
+## v46 — Reusable work-location directories + address-based commute routing
 
 ### Chris work locations
 The Chris directory remains fully dynamic. Add as many locations as needed. Each saved site includes its full street address and fallback commute minutes.
@@ -439,3 +439,7 @@ Kira's inferred shift types remain Early Main, Early North, Star, Late Main, and
 During Generate, AutoPilot now calculates **Kira work site → home** using the configured address whenever Live Address Routing is enabled. That calculated commute is added to shift end before Kira becomes available for family transportation.
 
 This makes afternoon driver assignment responsive to the actual Kira work location rather than one global 30-minute assumption.
+
+
+## v46 — Reversible Review decisions
+Resolved events now move to **Reviewed decisions** instead of disappearing. Each reviewed event can be flipped between transport/no transport, reopened, or restored with **Undo last review change**.
