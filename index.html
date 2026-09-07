@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
-<!-- AutoPilot v47.9: saved recurring activity locations + clarified settings/calendar refresh -->
+<!-- AutoPilot v47.10: unified review workspace + resilient saved activity locations -->
 <title>AutoPilot — Family Logistics Planner</title>
 <style>
 :root{
@@ -970,6 +970,20 @@ button.secondary,.btn.secondary{
 @media(max-width:620px){.finalize-work-row,.finalize-times{grid-template-columns:1fr}.finalize-item{grid-template-columns:1fr}.finalize-item select{max-width:none}.time-adjust-controls{grid-template-columns:42px 1fr 42px}}
 
 
+
+/* v47.10 unified review workspace */
+.unified-review-card{padding:16px!important}
+.unified-review-section{margin-top:16px;padding-top:14px;border-top:1px solid #e6dfd2}
+.unified-review-section:first-of-type{margin-top:12px}
+.unified-review-section-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px}
+.unified-review-section-head strong{font-size:15px}
+.unified-review-section-head span{font-size:11.5px;color:#746d60}
+#tab-review .plan-corrections{margin-top:0}
+#tab-review .activity-review-title{font-size:15px}
+#tab-review .activity-review-meta{font-size:12px}
+#tab-review .activity-review-controls label,#tab-review .activity-review-location label,#tab-review .activity-review-child label{font-size:11px}
+#tab-review .activity-review-controls select,#tab-review .activity-review-location input,#tab-review .activity-review-child select{font-size:14px;min-height:40px}
+
 /* v47.8 complete activity review */
 .review-filter-bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 4px}.review-filter-bar button{font-size:12px!important;font-weight:850!important;padding:8px 11px!important;min-height:36px}.review-filter-bar button.active{background:#24211c!important;color:#fff!important;border-color:#24211c!important}.review-filter-bar #quickReviewRefreshBtn{display:inline-flex!important}.activity-review-card{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(145px,.72fr) minmax(190px,.9fr);gap:10px;align-items:center;padding:10px 11px;border:1px solid #e5dfd4;border-radius:11px;background:#fff;margin-top:7px}.activity-review-card.attention{border-left:4px solid #c48100;padding-left:8px;background:#fffdf7}.activity-review-card.handled{border-left:4px solid #4f7d59;padding-left:8px}.activity-review-title{font-size:14px;font-weight:900;line-height:1.25}.activity-review-meta{font-size:11px;color:#766f63;margin-top:3px;line-height:1.35}.activity-review-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}.activity-review-controls label,.activity-review-location label{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;color:#776f62}.activity-review-controls select,.activity-review-location input,.activity-review-child select{width:100%;font-size:13px;min-height:36px;padding:6px 7px;border-radius:8px}.activity-review-child{margin-top:6px;max-width:180px}.activity-review-location{min-width:0}.activity-review-status{font-size:10px;font-weight:850;margin-top:4px}.leg-yes{background:#eef7f0}.leg-no{background:#faf9f6}.compact-history{margin-top:10px}.compact-history .reviewed-list{max-height:220px;overflow:auto}.quick-day{padding:10px 0!important}.quick-day-head{margin-bottom:4px!important}
 @media(max-width:900px){.activity-review-card{grid-template-columns:1fr}.activity-review-child{max-width:none}}
@@ -1246,40 +1260,38 @@ private"></textarea>
 </div>
 
 </div></div>
-<div class="autopilot-tab-panel" id="tab-review"><div class="review-finalize-intro"><strong>Review &amp; Finalize</strong><span>Step 1: clear anything that needs attention. Step 2: generate the draft. Step 3: make your final work-time, child, and driver corrections here. Outputs is read-only and ready to share.</span></div><div class="card quick-review-card" id="quickPlanningReview">
-<div class="quick-review-head">
-<div>
-<h3 style="margin:0">Activity Review</h3>
-<p class="small muted" style="margin:4px 0 0">See every commitment in the two-week window. Edit child, drop-off, pickup, and location directly here—even when AutoPilot thinks no action is needed.</p>
-</div>
-<div class="quick-review-progress" id="quickReviewProgress"></div>
-</div>
-<div class="quick-review-actions review-filter-bar" role="group" aria-label="Activity review filter">
-<button id="quickReviewFilterAll" type="button" class="active">All Activities</button>
-<button id="quickReviewFilterAttention" type="button">Needs Decision</button>
-<button id="quickReviewFilterHandled" type="button">Handled</button>
-<button id="quickReviewRefreshBtn" type="button" class="secondary">Refresh</button>
-</div>
-<div class="quick-review-days" id="quickReviewDays"></div>
-<div class="reviewed-section compact-history">
-<div class="reviewed-section-head">
-<div><h4>Recent manual decisions</h4><div class="small muted">Optional history. All activities remain editable above.</div></div>
-<button class="secondary" id="undoLastReviewBtn" type="button">Undo last review change</button>
-</div>
-<div id="reviewedDecisionSummary"></div><div class="reviewed-list" id="reviewedDecisionList"></div>
-</div>
-</div>
-<details class="audit-details" id="commitmentAudit">
-<summary>Show all commitments / audit details</summary>
-<p class="small muted">Transparency view only. You normally do not need to edit this table during the 10-minute planning session.</p>
-<div class="table-wrap"><table>
-<thead><tr><th>Date</th><th>Child</th><th>Activity</th><th>Start</th><th>End</th><th>Activity site / address</th><th>Fallback drive from home (min)</th><th>Drop-off?</th><th>Pickup?</th><th></th></tr></thead>
-<tbody id="activityBody"></tbody>
-</table></div>
-</details><div class="card plan-corrections-card">
-<div class="finalize-head"><div><h3>Finalize the Draft</h3><p>Make only the changes from your first-draft markup. Adjust site, nudge arrival/departure in 15-minute steps, assign unknown events to the right child, and change drivers—all from this one screen.</p></div><span class="badge good">DRAFT → FINAL</span></div>
-<div id="planCorrections" class="plan-corrections"></div>
-<div class="quick-note finalize-tip"><strong>Tip:</strong> use −15 / +15 to make quick time adjustments. <strong>Auto</strong> resets that time or driver to AutoPilot’s recommendation. Final corrections persist in the two-week cycle and backup.</div>
+<div class="autopilot-tab-panel" id="tab-review">
+<div class="review-finalize-intro"><strong>Review &amp; Finalize</strong><span>One workspace for the entire first-draft review. Adjust the workday, arrival/departure, child, transport legs, driver, or location here. Nothing in this tab should erase the generated plan.</span></div>
+<div class="card quick-review-card unified-review-card" id="quickPlanningReview">
+  <div class="quick-review-head">
+    <div>
+      <h3 style="margin:0">Two-Week Finalization</h3>
+      <p class="small muted" style="margin:4px 0 0">Finalize the draft from top to bottom. Workday corrections and every family activity are editable in this single section.</p>
+    </div>
+    <div class="quick-review-progress" id="quickReviewProgress"></div>
+  </div>
+
+  <div class="unified-review-section">
+    <div class="unified-review-section-head"><strong>1. Work schedule</strong><span>Only change what was marked up after the first draft.</span></div>
+    <div id="planCorrections" class="plan-corrections"></div>
+  </div>
+
+  <div class="unified-review-section">
+    <div class="unified-review-section-head"><strong>2. Activities &amp; transportation</strong><span>Every commitment stays visible and editable, including items AutoPilot already handled.</span></div>
+    <div class="quick-review-actions review-filter-bar" role="group" aria-label="Activity review filter">
+      <button id="quickReviewFilterAll" type="button" class="active">All Activities</button>
+      <button id="quickReviewFilterAttention" type="button">Needs Decision</button>
+      <button id="quickReviewFilterHandled" type="button">Handled</button>
+      <button id="quickReviewRefreshBtn" type="button" class="secondary">Refresh list</button>
+    </div>
+    <div class="quick-review-days" id="quickReviewDays"></div>
+  </div>
+
+  <div class="quick-note finalize-tip"><strong>Changes save automatically.</strong> Manual edits in Review &amp; Finalize update the current plan in place; they do not send you back to Generate.</div>
+
+  <div id="activityDataStore" style="display:none" aria-hidden="true">
+    <table><tbody id="activityBody"></tbody></table>
+  </div>
 </div>
 </div>
 <div class="autopilot-tab-panel" id="tab-outputs"><div class="tab-intro"><strong>Outputs &amp; Share</strong><span>Your finalized plan only: calendar view, mobile agenda, Phil email/Outlook FYI, print, and downloads.</span></div><div id="results" style="display:none">
@@ -1340,7 +1352,7 @@ private"></textarea>
     <button id="downloadPhilOutlookBtn" type="button">Download Outlook FYI (.ics)</button>
     <button id="savePhilOutlookBtn" type="button" class="primary">Save to WVU Files</button>
   </div>
-  <div id="philOutlookStatus" class="small muted">Onsite days export as free/available all-day FYI banners using the finalized arrival/departure times from Plan Corrections. Remote days export as all-day FYIs.</div>
+  <div id="philOutlookStatus" class="small muted">Onsite days export as free/available all-day FYI banners using the finalized arrival/departure times from Review & Finalize. Remote days export as all-day FYIs.</div>
 </div>
 <div class="toolbar"><button id="copyBossBtn">Copy schedule</button></div>
 </div>
@@ -1402,15 +1414,15 @@ private"></textarea>
 <div class="section-head">
 <div>
 <h2>3. Saved Activity Locations</h2>
-<p class="muted small">Save a recurring venue once and AutoPilot will reuse it whenever a matching activity arrives without a useful address. Existing calendar venues always win, so meets and tournaments keep their event-specific locations.</p>
+<p class="muted small">Create durable location rules tied to a specific connected calendar, child, and activity type. Example: choose <strong>Sam Soccer</strong> + <strong>Practice</strong>, enter the practice-field address once, and AutoPilot will reuse it for every practice from that feed. Specific full addresses supplied by the calendar still win.</p>
 </div>
 <button id="addSavedActivityLocationBtn" type="button">+ Add saved location</button>
 </div>
 <div class="table-wrap"><table>
-<thead><tr><th>Rule name</th><th>Child</th><th>Match text</th><th>Exclude text</th><th>Saved venue / full address</th><th>Fallback drive</th><th></th></tr></thead>
+<thead><tr><th>Rule name</th><th>Calendar</th><th>Child</th><th>Activity type</th><th>Include words</th><th>Exclude words</th><th>Saved venue / full address</th><th>Fallback drive</th><th></th></tr></thead>
 <tbody id="savedActivityLocationBody"></tbody>
 </table></div>
-<div class="location-rule-note"><strong>Example:</strong> Rule = Gymnastics Home Gym · Child = Whitney · Match = <code>gymnastics</code> · Exclude = <code>meet, tournament</code>. AutoPilot fills the home-gym address only when the incoming event does not already contain a venue.</div>
+<div class="location-rule-note"><strong>Recommended:</strong> link rules to the actual calendar whenever possible. Example: <strong>Sam Soccer Practice</strong> · Calendar = Sam Soccer · Child = Sam · Type = Practice · Address = practice field. Include/exclude words are optional refinements. Rules apply automatically on import/refresh and can also be applied immediately to the current two-week activities.</div>
 <div class="settings-sync-actions"><button id="applySavedActivityLocationsBtn" type="button" class="secondary">Apply saved locations to current activities</button></div>
 </div><div class="card">
 <div class="section-head">
@@ -1932,6 +1944,7 @@ function activityRow(d={}){
   if(d.source)tr.classList.add('imported-row');
   tr.dataset.source=d.source||'Manual';
   tr.dataset.calendarRole=d.calendarRole||roleForSourceName(d.source||'');
+  tr.dataset.calendarId=d.calendarId||'';
   tr.dataset.description=d.description||'';
   tr.dataset.locationOrigin=d.locationOrigin||(locationLooksUseful(d.location)?'feed':'missing');
   const inferredChild=d.child||guessChild(d.title,d.source);
@@ -2410,8 +2423,23 @@ function sourcePriorityForEvent(e){
   return CAL_ROLE_PRIORITY[explicit]||0;
 }
 
+function stableLegacyCalendarId(x={},i=0){
+  const seed=[normalizeCalendarUrl(x.url||''),x.label||'',x.source||'',i].join('|');
+  let h=2166136261;
+  for(let n=0;n<seed.length;n++){h^=seed.charCodeAt(n);h=Math.imul(h,16777619)}
+  return 'cal-legacy-'+(h>>>0).toString(36);
+}
 function getSavedCalendarLinks(){
-  try{return (JSON.parse(storageGet(STORAGE_CAL_LINKS)||'[]')||[]).map((x,i)=>({...x,id:x.id||('cal-'+i+'-'+Math.random().toString(36).slice(2,7)),kind:x.kind||'team',role:normalizeCalendarRole(x.role,x.kind||'team'),childRole:x.childRole||''}))}catch{return[]}
+  try{
+    const raw=JSON.parse(storageGet(STORAGE_CAL_LINKS)||'[]')||[];
+    let migrated=false;
+    const links=raw.map((x,i)=>{
+      const id=x.id||stableLegacyCalendarId(x,i);if(!x.id)migrated=true;
+      return {...x,id,kind:x.kind||'team',role:normalizeCalendarRole(x.role,x.kind||'team'),childRole:x.childRole||''};
+    });
+    if(migrated)storageSet(STORAGE_CAL_LINKS,JSON.stringify(links));
+    return links;
+  }catch{return[]}
 }
 function enforceSinglePrimary(links,preferredId=''){
   const primaries=links.filter(x=>normalizeCalendarRole(x.role,x.kind)==='primaryFamily');
@@ -2447,6 +2475,7 @@ function renderCalendarSyncSummary(){
 
 function renderSavedCalendarLinks(){
   const links=getSavedCalendarLinks(),el=$('savedCalendarLinks');$('calendarSourceCount').textContent=`${links.length} saved`;renderCalendarSyncSummary();
+  setTimeout(()=>{if(typeof refreshSavedActivityLocationCalendarOptions==='function')refreshSavedActivityLocationCalendarOptions()},0);
   if(!links.length){el.innerHTML='<div class="small muted">No saved web calendar subscriptions yet. Uploads work immediately but browsers cannot reopen local files automatically on a future visit.</div>';return}
   el.innerHTML=links.map((x,i)=>`<div class="calendar-source-item">
     <div class="source-main">
@@ -2523,7 +2552,11 @@ function recalledEventLocation(event={}){
   return loadLocationMemory()[eventMemoryKey(event)]?.location||'';
 }
 function applyLocationMemory(event={}){
-  if(locationLooksUseful(event.location)){rememberEventLocation(event,event.location,'feed');return {...event,locationOrigin:'feed'}}
+  if(locationLooksUseful(event.location)){
+    const origin=event.locationOrigin==='saved-rule'?'saved-rule':'feed';
+    rememberEventLocation(event,event.location,origin);
+    return {...event,locationOrigin:origin}
+  }
   const remembered=recalledEventLocation(event);
   return remembered?{...event,location:remembered,locationOrigin:'memory'}:{...event,locationOrigin:'missing'};
 }
@@ -2657,8 +2690,10 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
   try{
     const fetched=await fetchCalendarWithFallbacks(rawUrl);
     let links=getSavedCalendarLinks(),idx=links.findIndex(x=>normalizeCalendarUrl(x.url)===url);
-    const existing=idx>=0?links[idx]:null, identityLink={...existing,...linkObj,role:normalizeCalendarRole(linkObj.role||existing?.role,kind),childRole:linkObj.childRole||existing?.childRole||''};
-    const rows=parseICS(fetched.text,sourceName).map(r=>{const x=resolveChildIdentity({...r,source:sourceName},identityLink);return {...r,calendarRole:identityLink.role,child: x.role,childResolution:x.confidence}});
+    const existing=idx>=0?links[idx]:null;
+    const effectiveId=(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6));
+    const identityLink={...existing,...linkObj,id:effectiveId,role:normalizeCalendarRole(linkObj.role||existing?.role,kind),childRole:linkObj.childRole||existing?.childRole||''};
+    const rows=parseICS(fetched.text,sourceName).map(r=>{const x=resolveChildIdentity({...r,source:sourceName,calendarId:effectiveId},identityLink);return {...r,calendarId:effectiveId,calendarRole:identityLink.role,child:x.role,childResolution:x.confidence}});
     const windowRows=rows.filter(x=>inPlanningWindow(x.date));
     const sig=windowRows.map(x=>[x.date,x.start,x.end,x.title,x.location,x.child].join('|')).sort().join('\n');
     const unchanged=existing?.lastDataSignature===sig;
@@ -2668,9 +2703,10 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
     const activeSourceRows=[...$('activityBody').children].filter(r=>r.dataset.source===sourceName&&inPlanningWindow(r.querySelector('.a-date')?.value||''));
     const needsRehydrate=windowRows.length>0&&activeSourceRows.length===0;
     const stats=(unchanged&&!needsRehydrate)?{total:windowRows.length}:processImportedRows(rows,label,{replaceSource:sourceName});
-    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:(idx>=0?links[idx].id:linkObj.id)||('cal-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)),url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:identityLink.role,childRole:identityLink.childRole,lastDataSignature:sig,lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via,lastProvider:fetched.provider||calendarProvider(rawUrl),lastError:'',lastAttempts:fetched.attempts||[]};
+    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:effectiveId,url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:identityLink.role,childRole:identityLink.childRole,lastDataSignature:sig,lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via,lastProvider:fetched.provider||calendarProvider(rawUrl),lastError:'',lastAttempts:fetched.attempts||[]};
     if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
     saveCalendarLinks(links,updated.role==='primaryFamily'?updated.id:'');
+    applySavedLocationsToCurrentActivities();
     if(kind==='main')hideAppleCalendarFallback();
     $('importStatus').textContent=(unchanged&&!needsRehydrate)?`${label} checked · no changes.`:needsRehydrate?`${label} refreshed · ${stats.total} planning-window events restored.`:`${label} connected · ${stats.total} planning-window events processed${fetched.via==='proxy'?' · automatic proxy used':''}.`;
     return true;
@@ -2753,18 +2789,38 @@ const DAYS=[
 ];
 
 let __savedActivityLocationSeq=0;
+function savedActivityCalendarOptions(selectedId=''){
+  const links=getSavedCalendarLinks();
+  const missing=selectedId&&!links.some(x=>x.id===selectedId)?`<option value="${esc(selectedId)}" selected>Missing calendar connection — rule preserved</option>`:'';
+  return `<option value="">Any calendar</option>${missing}`+links.map(x=>`<option value="${esc(x.id)}"${x.id===selectedId?' selected':''}>${esc(x.label||x.source||'Calendar')}</option>`).join('');
+}
+function refreshSavedActivityLocationCalendarOptions(){
+  const links=getSavedCalendarLinks();
+  document.querySelectorAll('#savedActivityLocationBody .al-calendar').forEach(sel=>{
+    const current=sel.value||sel.dataset.savedCalendarId||'';
+    sel.innerHTML=`<option value="">Any calendar</option>`+links.map(x=>`<option value="${esc(x.id)}">${esc(x.label||x.source||'Calendar')}</option>`).join('');
+    if(current&&links.some(x=>x.id===current))sel.value=current;
+    sel.dataset.savedCalendarId=sel.value||current;
+  });
+}
 function savedActivityLocationRow(d={}){
   const tr=document.createElement('tr');
   tr.dataset.ruleId=d.id||`activity-location-${++__savedActivityLocationSeq}`;
   const kids=childOptions(d.child||'Any').replace('<option value="Unassigned">Unassigned / Verify</option>','<option value="Any">Any child</option><option value="Unassigned">Unassigned / Verify</option>');
-  tr.innerHTML=`<td><input class="al-name" value="${esc(d.name||'Saved activity location')}" placeholder="Gymnastics Home Gym"></td>
+  const activityType=d.activityType||'any';
+  tr.innerHTML=`<td><input class="al-name" value="${esc(d.name||'Saved activity location')}" placeholder="Sam Soccer Practice"></td>
+    <td><select class="al-calendar" data-saved-calendar-id="${esc(d.calendarId||'')}">${savedActivityCalendarOptions(d.calendarId||'')}</select></td>
     <td><select class="al-child">${kids}</select></td>
-    <td><input class="al-match" value="${esc(d.match||'')}" placeholder="gymnastics"></td>
-    <td><input class="al-exclude" value="${esc(d.exclude||'meet, tournament')}" placeholder="meet, tournament"></td>
+    <td><select class="al-type"><option value="any">Any</option><option value="practice">Practice</option><option value="game">Game</option><option value="meet">Meet</option><option value="tournament">Tournament</option><option value="lesson">Lesson</option></select></td>
+    <td><input class="al-match" value="${esc(d.match||'')}" placeholder="optional: soccer"></td>
+    <td><input class="al-exclude" value="${esc(d.exclude||'')}" placeholder="optional: away, tournament"></td>
     <td><input class="al-address" value="${esc(d.address||'')}" placeholder="Full street address, city, state ZIP"></td>
     <td><input class="al-drive" type="number" min="0" value="${d.homeDrive??20}" style="width:80px"></td>
     <td><button class="remove" type="button">Remove</button></td>`;
   tr.querySelector('.al-child').value=d.child||'Any';
+  tr.querySelector('.al-type').value=activityType;
+  const cal=tr.querySelector('.al-calendar');if(d.calendarId)cal.value=d.calendarId;
+  cal.onchange=()=>{cal.dataset.savedCalendarId=cal.value;scheduleAutosave()};
   tr.querySelector('.remove').onclick=()=>{tr.remove();scheduleAutosave()};
   $('savedActivityLocationBody').appendChild(tr);
 }
@@ -2773,37 +2829,72 @@ function getSavedActivityLocations(){
   return [...body.children].map(r=>({
     id:r.dataset.ruleId,
     name:r.querySelector('.al-name').value.trim()||'Saved activity location',
+    calendarId:r.querySelector('.al-calendar')?.value||r.querySelector('.al-calendar')?.dataset.savedCalendarId||'',
     child:r.querySelector('.al-child').value||'Any',
+    activityType:r.querySelector('.al-type')?.value||'any',
     match:r.querySelector('.al-match').value.trim(),
     exclude:r.querySelector('.al-exclude').value.trim(),
     address:r.querySelector('.al-address').value.trim(),
     homeDrive:+r.querySelector('.al-drive').value||20
-  })).filter(x=>x.match&&x.address);
+  })).filter(x=>x.address&&(x.calendarId||x.child!=='Any'||x.activityType!=='any'||x.match));
+}
+function locationLooksSpecific(location=''){
+  const x=String(location||'').trim();
+  if(!locationLooksUseful(x))return false;
+  return /\d{1,6}\s+\S+/.test(x)||/\b\d{5}(?:-\d{4})?\b/.test(x)||x.split(',').length>=3;
+}
+function eventMatchesSavedActivityType(event={},type='any'){
+  if(!type||type==='any')return true;
+  const corpus=normalizeEventText([event.title,event.description].filter(Boolean).join(' '));
+  const patterns={practice:/\bpractice\b/,game:/\bgame\b|\bvs\.?\b|\bversus\b/,meet:/\bmeet\b/,tournament:/\btournament\b/,lesson:/\blesson\b/};
+  return patterns[type]?patterns[type].test(corpus):true;
+}
+function eventSourceMatchesSavedCalendar(event={},calendarId=''){
+  if(!calendarId)return true;
+  if(event.calendarId)return event.calendarId===calendarId;
+  const link=getSavedCalendarLinks().find(x=>x.id===calendarId);
+  if(!link)return false;
+  return normalizeEventText(event.source||'')===normalizeEventText(sourceLabelFor(link));
 }
 function savedActivityLocationFor(event={}){
-  const title=normalizeEventText([event.title,event.description].filter(Boolean).join(' '));
   const child=event.child||guessChild(event.title,event.source);
-  return getSavedActivityLocations().find(rule=>{
-    if(rule.child&&rule.child!=='Any'&&rule.child!==child)return false;
-    const matches=String(rule.match||'').split(/[,;\n]+/).map(normalizeEventText).filter(Boolean);
-    if(!matches.length||!matches.some(x=>title.includes(x)))return false;
+  const corpus=normalizeEventText([event.title,event.description,event.source].filter(Boolean).join(' '));
+  const rules=getSavedActivityLocations().filter(rule=>
+    (!rule.child||rule.child==='Any'||rule.child===child)&&
+    eventSourceMatchesSavedCalendar(event,rule.calendarId)&&
+    eventMatchesSavedActivityType(event,rule.activityType)
+  );
+  if(!rules.length)return null;
+  const eligible=rules.filter(rule=>{
     const excludes=String(rule.exclude||'').split(/[,;\n]+/).map(normalizeEventText).filter(Boolean);
-    if(excludes.some(x=>title.includes(x)))return false;
-    return true;
-  })||null;
+    return !excludes.some(x=>corpus.includes(x));
+  });
+  if(!eligible.length)return null;
+  const includeMatched=eligible.filter(rule=>{
+    const matches=String(rule.match||'').split(/[,;\n]+/).map(normalizeEventText).filter(Boolean);
+    return !matches.length||matches.some(x=>corpus.includes(x));
+  });
+  if(!includeMatched.length)return null;
+  // Most specific rule wins: calendar > child > type > include words.
+  return includeMatched.sort((a,b)=>{
+    const score=r=>(r.calendarId?8:0)+(r.child&&r.child!=='Any'?4:0)+(r.activityType&&r.activityType!=='any'?2:0)+(r.match?1:0);
+    return score(b)-score(a);
+  })[0];
 }
 function applySavedActivityLocation(event={}){
-  if(locationLooksUseful(event.location))return event;
   const rule=savedActivityLocationFor(event);
-  return rule?{...event,location:rule.address,homeDrive:event.homeDrive??rule.homeDrive,locationOrigin:'saved-rule',savedLocationRule:rule.name}:event;
+  if(!rule)return event;
+  const existing=String(event.location||'').trim();
+  // Preserve a genuine full/event-specific address. Generic venue labels may be replaced by the durable rule.
+  if(locationLooksSpecific(existing)&&event.locationOrigin!=='saved-rule')return event;
+  return {...event,location:rule.address,homeDrive:rule.homeDrive??event.homeDrive,locationOrigin:'saved-rule',savedLocationRule:rule.name,savedLocationRuleId:rule.id};
 }
 function applySavedLocationsToCurrentActivities(){
   let changed=0;
   [...$('activityBody').children].forEach(row=>{
     const current=rowToCalendarEvent(row);
-    if(locationLooksUseful(current.location))return;
     const enriched=applySavedActivityLocation(current);
-    if(!locationLooksUseful(enriched.location))return;
+    if(!locationLooksUseful(enriched.location)||enriched.location===current.location)return;
     const input=row.querySelector('.a-loc');if(input)input.value=enriched.location;
     const drive=row.querySelector('.a-home-drive');if(drive&&enriched.homeDrive!=null)drive.value=enriched.homeDrive;
     row.dataset.locationOrigin='saved-rule';
@@ -2811,8 +2902,12 @@ function applySavedLocationsToCurrentActivities(){
     rememberEventLocation({...current,location:enriched.location},enriched.location,'saved-rule');
     changed++;
   });
-  if(changed){saveAllNow();markPlanStale('Saved activity locations applied');renderQuickPlanningReview()}
-  const status=$('settingsRefreshStatus');if(status)status.innerHTML=`Applied saved location rules to <strong>${changed}</strong> current activit${changed===1?'y':'ies'}. Existing event-specific venues were left unchanged.`;
+  if(changed){
+    saveAllNow();
+    if(plans.length)refreshAllReviewPlanDays().catch(()=>{});
+    renderQuickPlanningReview();
+  }
+  const status=$('settingsRefreshStatus');if(status)status.innerHTML=`Applied durable saved-location rules to <strong>${changed}</strong> current activit${changed===1?'y':'ies'}. Full event-specific addresses were preserved.`;
 }
 $('addSavedActivityLocationBtn').onclick=()=>{savedActivityLocationRow();scheduleAutosave()};
 $('applySavedActivityLocationsBtn').onclick=applySavedLocationsToCurrentActivities;
@@ -3004,9 +3099,43 @@ function syncLegClassification(row){
   const ev=rowToCalendarEvent(row);rememberTransportDecision(ev,cls==='required');
   manualLegOverrides[activityLegOverrideKey(ev)]={drop:drop?'yes':'no',pick:pick?'yes':'no'};
 }
-async function refreshPlanAfterReviewEdit(){
+async function recalcReviewPlanDay(dateStr){
+  if(!plans.length)return;
+  const idx=plans.findIndex(p=>p.dateStr===dateStr);if(idx<0)return;
+  const p=plans[idx];
+  const allActs=getActivities().filter(a=>a.transportClass==='required'&&a.date===dateStr);
+  p.activities=[...allActs,...adhocActivitiesForDay(p)];
+  if(p.onsite){
+    const site=getSites().find(s=>s.name===p.site);
+    if(site){
+      const best=await evaluateSite(p,site);
+      p.chrisWorkAddress=site.address||'';p.chrisCommuteMinutes=best.commute;
+      p.departHome=best.departHome;p.arrive=best.arrive;p.leaveWork=best.leave;
+      p.status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';
+    }
+    delete p.manualArrivalOverride;delete p.manualDepartureOverride;
+    applyArrivalOverrideToPlan(p);applyDepartureOverrideToPlan(p);
+  }
+  p.assignments=await assignTransport(p);
+  applyTransportOverridesToPlan(p);
+}
+async function refreshAllReviewPlanDays(){
+  if(!plans.length)return;
+  for(const p of plans.filter(x=>!x.weekend))await recalcReviewPlanDay(p.dateStr);
+  render();
+}
+async function refreshPlanAfterReviewEdit(row=null){
   saveCycle();markChanged();
-  if(plans.length)await generateCore();
+  try{
+    if(plans.length){
+      const dateStr=row?.querySelector?.('.a-date')?.value||'';
+      if(dateStr)await recalcReviewPlanDay(dateStr);
+      render();
+    }
+  }catch(err){
+    console.error('Review edit recalculation failed',err);
+    const status=$('importStatus');if(status)status.textContent='Review change saved. The plan could not be fully recalculated; use Refresh list or Generate if needed.';
+  }
   renderQuickPlanningReview();
 }
 function renderQuickPlanningReview(){
@@ -3038,10 +3167,10 @@ function renderQuickPlanningReview(){
   }).join('');
   host.querySelectorAll('[data-quick-row]').forEach(card=>{
     const actual=rows.find(x=>x.index===+card.dataset.quickRow);if(!actual)return;const row=actual.row;
-    const child=card.querySelector('[data-review-child]');child.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-child');main.value=child.value;row.dataset.childManual='true';await refreshPlanAfterReviewEdit()};
-    const bindLeg=(selector,mainClass)=>{const ctl=card.querySelector(selector);ctl.onchange=async()=>{setLastReviewChange(row);row.querySelector(mainClass).value=ctl.value;syncLegClassification(row);await refreshPlanAfterReviewEdit()}};
+    const child=card.querySelector('[data-review-child]');child.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-child');main.value=child.value;row.dataset.childManual='true';await refreshPlanAfterReviewEdit(row)};
+    const bindLeg=(selector,mainClass)=>{const ctl=card.querySelector(selector);ctl.onchange=async()=>{setLastReviewChange(row);row.querySelector(mainClass).value=ctl.value;syncLegClassification(row);await refreshPlanAfterReviewEdit(row)}};
     bindLeg('[data-review-drop]','.a-drop');bindLeg('[data-review-pick]','.a-pick');
-    const loc=card.querySelector('[data-review-location]');loc.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-loc');main.value=loc.value.trim();row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');await refreshPlanAfterReviewEdit()};
+    const loc=card.querySelector('[data-review-location]');loc.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-loc');main.value=loc.value.trim();row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');await refreshPlanAfterReviewEdit(row)};
   });
   renderReviewedDecisions(rows);
 }
@@ -3060,7 +3189,7 @@ function confirmAllTeamCalendarTransport(){
 
 function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,manual:r.dataset.manualShift==='true',conflict:r.dataset.scheduleConflict==='true',...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
 function getActivities(){
-  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',reviewDecisionAt:r.dataset.reviewDecisionAt||'',reviewDecisionSource:r.dataset.reviewDecisionSource||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
+  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',calendarId:r.dataset.calendarId||'',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',reviewDecisionAt:r.dataset.reviewDecisionAt||'',reviewDecisionSource:r.dataset.reviewDecisionSource||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
   const recurring=recurringActivitiesForWindow();
   const keys=new Set(explicit.map(a=>[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase()));
   for(const a of recurring){
@@ -3599,9 +3728,9 @@ function renderPlanCorrections(){
     const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto · ${label}</button>`:'<div style="height:22px"></div>'}</div>`:'<div></div>';
     return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'} · ${dayChallengeLabel(p)}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div><div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:11px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
   }).join('')}</div>`;
-  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;sel.disabled=true;await recalcDayForOverride(idx,sel.value);markChanged();});
-  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{sel.disabled=true;await applyQuickChildOverride(sel.dataset.rowKey,sel.value);});
-  host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;await recalcDayForOverride(idx,sel.value);markChanged();renderQuickPlanningReview();});
+  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{await applyQuickChildOverride(sel.dataset.rowKey,sel.value);renderQuickPlanningReview();});
+  host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];try{await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();render();renderQuickPlanningReview()}catch(err){console.error('Driver override failed',err);saveAllNow();markChanged();}});
   host.querySelectorAll('.time-nudge').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;const delta=+btn.dataset.delta||0,kind=btn.dataset.timeKind;if(kind==='arrival'){const base=manualArrivalOverrides[p.dateStr]!=null?Number(manualArrivalOverrides[p.dateStr]):Number(p.arrive);manualArrivalOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}else{const base=manualDepartureOverrides[p.dateStr]!=null?Number(manualDepartureOverrides[p.dateStr]):Number(p.leaveWork);manualDepartureOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
   host.querySelectorAll('.time-auto').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p)return;if(btn.dataset.timeKind==='arrival')delete manualArrivalOverrides[p.dateStr];else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
 }
@@ -3769,7 +3898,7 @@ function dedupeCalendarEvents(events,cfg=loadCalendarHygiene()){
 }
 
 function rowToCalendarEvent(row){
-  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),description:row.dataset.description||'',transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',locationOrigin:row.dataset.locationOrigin||'missing'};
+  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarId:row.dataset.calendarId||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),description:row.dataset.description||'',transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',locationOrigin:row.dataset.locationOrigin||'missing'};
 }
 function calendarEventsLikelyDuplicate(a,b,cfg=loadCalendarHygiene()){
   if(eventDateValue(a)!==eventDateValue(b))return false;
@@ -4055,7 +4184,7 @@ function importBackupFile(file){
   reader.readAsText(file);
 }
 function installAutosaveListeners(){
-  const isFinalizationControl=e=>!!e.target.closest('#planCorrections');
+  const isFinalizationControl=e=>!!e.target.closest('#tab-review');
   document.addEventListener('input',e=>{
     if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results')&&!isFinalizationControl(e))markPlanStale('Planner input changed')}
   });
