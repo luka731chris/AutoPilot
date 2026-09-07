@@ -931,6 +931,43 @@ button.secondary,.btn.secondary{
 #philOutlookStatus{margin-top:7px;line-height:1.4}
 @media(max-width:760px){.phil-outlook-controls{display:grid;grid-template-columns:1fr}.phil-outlook-controls label,.phil-outlook-controls select,.phil-outlook-controls button{width:100%}}
 
+
+
+/* v47.7 Review & Finalize rebuild */
+.review-finalize-intro{margin-bottom:12px;padding:12px 14px;border:1px solid #e0d7bd;border-left:4px solid #d6a800;border-radius:10px;background:#fffaf0}
+.review-finalize-intro strong{font-size:16px}.review-finalize-intro span{display:block;margin-top:3px;font-size:12px;color:#6f695d;line-height:1.4}
+#tab-review .quick-review-card{margin-bottom:12px!important}
+.plan-corrections-card{border:1px solid #d9d2c2!important;background:#fff!important}
+.finalize-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.finalize-head h3{font-size:20px!important;margin:0}.finalize-head p{font-size:13px!important;line-height:1.45;max-width:760px;margin:4px 0 0!important}
+.finalize-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.finalize-day{border:1px solid #ded8cc;border-radius:12px;background:#fff;padding:11px 12px;min-width:0}
+.finalize-day.manual{border-left:4px solid #d6a800;padding-left:9px;background:#fffdf7}
+.finalize-day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}
+.finalize-date{font-size:16px;font-weight:900;color:#211f1a}.finalize-date small{display:block;font-size:11px;font-weight:650;color:#766f62;margin-top:1px}
+.finalize-status{font-size:10px;font-weight:850;padding:4px 7px;border-radius:999px;background:#f1eee6;white-space:nowrap}
+.finalize-work-row{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,1.5fr);gap:8px;align-items:end;margin-bottom:9px}
+.finalize-work-row label{font-size:11px;font-weight:800;color:#665f53}.finalize-work-row select{width:100%;font-size:14px;min-height:38px;padding:7px 9px;border-radius:8px}
+.finalize-times{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
+.time-adjust{border:1px solid #e3ded4;border-radius:9px;padding:7px;background:#faf9f6}
+.time-adjust-label{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;color:#777064;margin-bottom:5px}
+.time-adjust-controls{display:grid;grid-template-columns:34px minmax(82px,1fr) 34px;gap:4px;align-items:center}
+.time-adjust-controls button{min-height:34px!important;padding:4px!important;font-size:17px!important;font-weight:850!important}
+.time-adjust-value{min-height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d8d2c7;border-radius:7px;background:#fff;font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.time-auto{margin-top:4px;border:0!important;background:transparent!important;padding:2px 3px!important;min-height:22px!important;font-size:10px!important;color:#756d5e!important;text-decoration:underline}
+.finalize-section{border-top:1px solid #eee9df;padding-top:8px;margin-top:7px}
+.finalize-section-title{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#81796b;margin-bottom:5px}
+.finalize-item{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:7px;align-items:center;padding:6px 0;border-top:1px dotted #ece7dd}
+.finalize-item:first-of-type{border-top:0}.finalize-item-copy{font-size:12px;line-height:1.25;color:#343029;min-width:0}.finalize-item-copy strong{font-size:12.5px}.finalize-item-copy .muted{font-size:10.5px}
+.finalize-item select{font-size:12px;min-height:34px;padding:5px 6px;border-radius:7px;width:100%}
+.finalize-empty{font-size:11px;color:#817a6b;padding:2px 0}
+.finalize-tip{font-size:11px!important;line-height:1.4!important;margin-top:9px!important}
+.output-readonly-note{font-size:12px;color:#6f695d;margin:0 0 10px;padding:9px 11px;background:#f7f6f2;border-radius:9px}
+#commutePlan .override-row{display:none!important}
+#commutePlan .dayrec{padding:9px 10px}.output-grid .card h3{font-size:17px}
+@media(max-width:980px){.finalize-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.finalize-work-row,.finalize-times{grid-template-columns:1fr}.finalize-item{grid-template-columns:1fr}.finalize-item select{max-width:none}.time-adjust-controls{grid-template-columns:42px 1fr 42px}}
+
 </style>
 </head>
 <body>
@@ -976,7 +1013,7 @@ button.secondary,.btn.secondary{
 <nav aria-label="AutoPilot sections" class="autopilot-tabs" id="autopilotTabs">
 <button class="active" data-tab="plan" type="button">Plan</button>
 <button data-tab="calendars" type="button">Calendars</button>
-<button data-tab="review" type="button">Review <span class="tab-badge" id="reviewTabBadge" style="display:none">0</span></button>
+<button data-tab="review" type="button">Review &amp; Finalize <span class="tab-badge" id="reviewTabBadge" style="display:none">0</span></button>
 <button data-tab="outputs" type="button">Outputs</button>
 <button data-tab="settings" type="button">Settings</button>
 </nav>
@@ -1191,7 +1228,9 @@ private"></textarea>
 </div>
 </details>
 </div>
-<div class="card quick-review-card" id="quickPlanningReview">
+
+</div></div>
+<div class="autopilot-tab-panel" id="tab-review"><div class="review-finalize-intro"><strong>Review &amp; Finalize</strong><span>Step 1: clear anything that needs attention. Step 2: generate the draft. Step 3: make your final work-time, child, and driver corrections here. Outputs is read-only and ready to share.</span></div><div class="card quick-review-card" id="quickPlanningReview">
 <div class="quick-review-head">
 <div>
 <h3 style="margin:0">Planning Decisions</h3>
@@ -1218,10 +1257,13 @@ private"></textarea>
 <thead><tr><th>Date</th><th>Child</th><th>Activity</th><th>Start</th><th>End</th><th>Activity site / address</th><th>Fallback drive from home (min)</th><th>Drop-off?</th><th>Pickup?</th><th></th></tr></thead>
 <tbody id="activityBody"></tbody>
 </table></div>
-</details>
-</div></div>
-<div class="autopilot-tab-panel" id="tab-review"><div class="tab-intro"><strong>Transport decisions stay visible</strong><span>Use the two-position toggle. Reviewed NO TRANSPORT items are grouped first so you can quickly audit anything you may have dismissed too fast.</span></div></div>
-<div class="autopilot-tab-panel" id="tab-outputs"><div class="tab-intro"><strong>Publish &amp; communicate</strong><span>Boss email, commute plan, mobile agenda, week-at-a-glance, and fridge output.</span></div><div id="results" style="display:none">
+</details><div class="card plan-corrections-card">
+<div class="finalize-head"><div><h3>Finalize the Draft</h3><p>Make only the changes from your first-draft markup. Adjust site, nudge arrival/departure in 15-minute steps, assign unknown events to the right child, and change drivers—all from this one screen.</p></div><span class="badge good">DRAFT → FINAL</span></div>
+<div id="planCorrections" class="plan-corrections"></div>
+<div class="quick-note finalize-tip"><strong>Tip:</strong> use −15 / +15 to make quick time adjustments. <strong>Auto</strong> resets that time or driver to AutoPilot’s recommendation. Final corrections persist in the two-week cycle and backup.</div>
+</div>
+</div>
+<div class="autopilot-tab-panel" id="tab-outputs"><div class="tab-intro"><strong>Outputs &amp; Share</strong><span>Your finalized plan only: calendar view, mobile agenda, Phil email/Outlook FYI, print, and downloads.</span></div><div id="results" style="display:none">
 <div class="callout"><strong>Recommended commute schedule</strong><div id="summary" style="margin-top:5px"></div></div>
 <div class="card" id="mobilePlanCard">
 <div class="section-head">
@@ -1260,14 +1302,10 @@ private"></textarea>
 <div class="mobile-plan-body" id="mobilePlanBody"></div>
 </div>
 </div>
-<div class="card plan-corrections-card">
-<div class="section-head"><div><h3 style="margin:0">Plan Corrections</h3><p class="muted small" style="margin-top:4px">Use this as the markup-to-final pass. Quietly adjust work location, onsite arrival/departure, child assignment, or the primary driver for any transport leg without hunting through the rest of AutoPilot.</p></div><span class="badge good">QUICK OVERRIDES</span></div>
-<div id="planCorrections" class="plan-corrections"></div>
-<div class="quick-note"><strong>Arrival / departure</strong> fields default to AutoPilot's recommendation. Change only the days that need refinement; edited fields are marked as manual overrides. <strong>Auto</strong> returns a driver leg to AutoPilot's recommendation. Manual corrections are saved with the current two-week cycle and included in full backups.</div>
-</div>
+<div class="output-readonly-note"><strong>Outputs are read-only.</strong> Make draft corrections in <strong>Review &amp; Finalize</strong>; use this tab only to view, print, download, and share the finalized plan.</div>
 <div class="output-grid">
 <div class="card">
-<h3>Chris — recommended day-by-day commute</h3><p class="muted small" style="margin-top:5px"><strong>To override a day:</strong> choose the final site/Remote/Holiday under <em>Final Work Plan</em>, then click <strong>Apply &amp; Recalculate</strong>. The tool will recalculate commute timing and all transport assignments before you publish.</p>
+<h3>Chris — finalized day-by-day work plan</h3><p class="muted small" style="margin-top:5px">Read-only summary. Make any changes in <strong>Review &amp; Finalize</strong>.</p>
 <div id="commutePlan" style="margin-top:10px"></div>
 </div>
 <div class="card boss-output-card" id="bossEmailCard">
@@ -3432,27 +3470,27 @@ async function applyQuickChildOverride(rowKey,value){
 function renderPlanCorrections(){
   const host=$('planCorrections'); if(!host)return;
   const work=plans.filter(p=>!p.weekend);
-  if(!work.length){host.innerHTML='<div class="muted small">Generate a plan to enable quick corrections.</div>';return}
-  host.innerHTML=`<div class="table-wrap"><table class="correction-table"><thead><tr><th>Day</th><th>Final work plan</th><th>Arrive</th><th>Depart</th><th>Activity / child</th><th>Driver overrides</th></tr></thead><tbody>${work.map(p=>{
+  if(!work.length){host.innerHTML='<div class="muted" style="font-size:13px;padding:8px 0">Generate the first-draft plan to unlock final corrections here.</div>';return}
+  host.innerHTML=`<div class="finalize-grid">${work.map(p=>{
     const idx=plans.indexOf(p);
     const activityRows=correctionActivityRows(p.dateStr);
     const childEdits=activityRows.map(r=>{
       const ev=rowToCalendarEvent(r),key=correctionActivityKey(r),needs=ev.child==='Unassigned';
-      return `<div class="transport-override-row${needs?' override-active':''}"><div class="transport-override-label"><strong>${esc(ev.start?fmt(toMin(ev.start)):'All day')}</strong> ${esc(ev.title)}<br><span class="muted">${esc(ev.source||'Manual')}</span></div><select class="quick-child-override" data-row-key="${esc(key)}">${quickChildOptions(ev.child)}</select></div>`;
+      return `<div class="finalize-item${needs?' override-active':''}"><div class="finalize-item-copy"><strong>${esc(ev.start?fmt(toMin(ev.start)):'All day')} · ${esc(ev.title)}</strong><br><span class="muted">${esc(ev.source||'Manual')}${needs?' · NEEDS CHILD':''}</span></div><select class="quick-child-override finalization-control" data-row-key="${esc(key)}">${quickChildOptions(ev.child)}</select></div>`;
     }).join('');
     const legs=(p.assignments||[]).map(a=>{
       const key=assignmentOverrideKey(p.dateStr,a),active=manualTransportOverrides[key]?' override-active':'';
-      return `<div class="transport-override-row${active}"><div class="transport-override-label"><strong>${esc(a.kind)}</strong> ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}<br>${esc(a.activity.title)}</div><select class="quick-driver-override" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
+      return `<div class="finalize-item${active}"><div class="finalize-item-copy"><strong>${esc(a.kind)} ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}</strong><br><span class="muted">${esc(a.activity.title)}</span></div><select class="quick-driver-override finalization-control" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
     }).join('');
-    const arrive=p.onsite&&p.arrive!=null?minToTimeValue(p.arrive):'';
-    const leave=p.onsite&&p.leaveWork!=null?minToTimeValue(p.leaveWork):'';
-    return `<tr><td class="correction-day">${dayName(p.date).slice(0,3)} ${shortDate(p.date)}<small>${dayChallengeLabel(p)}</small></td><td><select class="quick-work-override" data-plan-index="${idx}">${workLocationOptions(p)}</select></td><td>${p.onsite?`<input type="time" class="quick-arrival-override${manualArrivalOverrides[p.dateStr]!=null?' override-active':''}" data-plan-index="${idx}" value="${arrive}" title="Tentative onsite arrival">`:'<span class="muted">—</span>'}</td><td>${p.onsite?`<input type="time" class="quick-departure-override${manualDepartureOverrides[p.dateStr]!=null?' override-active':''}" data-plan-index="${idx}" value="${leave}" title="Tentative onsite departure">`:'<span class="muted">—</span>'}</td><td><div class="transport-overrides">${childEdits||'<span class="muted">No activities</span>'}</div></td><td><div class="transport-overrides">${legs||'<span class="muted">No transport legs</span>'}</div></td></tr>`;
-  }).join('')}</tbody></table></div>`;
+    const hasManual=p.manualOverride||manualArrivalOverrides[p.dateStr]!=null||manualDepartureOverrides[p.dateStr]!=null||(p.assignments||[]).some(a=>manualTransportOverrides[assignmentOverrideKey(p.dateStr,a)]);
+    const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto · ${label}</button>`:'<div style="height:22px"></div>'}</div>`:'<div></div>';
+    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'} · ${dayChallengeLabel(p)}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div><div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:11px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
+  }).join('')}</div>`;
   host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;sel.disabled=true;await recalcDayForOverride(idx,sel.value);markChanged();});
-  host.querySelectorAll('.quick-arrival-override').forEach(inp=>inp.onchange=async()=>{const idx=+inp.dataset.planIndex,p=plans[idx];if(!p)return; if(inp.value){manualArrivalOverrides[p.dateStr]=toMin(inp.value)}else delete manualArrivalOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
-  host.querySelectorAll('.quick-departure-override').forEach(inp=>inp.onchange=async()=>{const idx=+inp.dataset.planIndex,p=plans[idx];if(!p)return; if(inp.value){manualDepartureOverrides[p.dateStr]=toMin(inp.value)}else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
   host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{sel.disabled=true;await applyQuickChildOverride(sel.dataset.rowKey,sel.value);});
   host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+  host.querySelectorAll('.time-nudge').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;const delta=+btn.dataset.delta||0,kind=btn.dataset.timeKind;if(kind==='arrival'){const base=manualArrivalOverrides[p.dateStr]!=null?Number(manualArrivalOverrides[p.dateStr]):Number(p.arrive);manualArrivalOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}else{const base=manualDepartureOverrides[p.dateStr]!=null?Number(manualDepartureOverrides[p.dateStr]):Number(p.leaveWork);manualDepartureOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+  host.querySelectorAll('.time-auto').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p)return;if(btn.dataset.timeKind==='arrival')delete manualArrivalOverrides[p.dateStr];else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
 }
 function minToTimeValue(m){if(m==null||isNaN(m))return'';return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 
@@ -3470,28 +3508,8 @@ function render(){
       </div>
       <div class="small" style="margin-top:6px">${p.holiday?'Holiday / no work':p.onsite?`Leave home ${fmt(p.departHome)} · Arrive ${fmt(p.arrive)} · Leave work ${fmt(p.leaveWork)}`:'Recommended remote day'}</div>
       <div class="kira-line">Kira: ${esc(p.kiraLocation||'—')} · transport feasibility includes work → home → activity travel</div>
-      <div class="override-row" style="margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)">
-        <label><strong>Final Work Plan</strong>
-          <select class="work-override-select" data-plan-index="${idx}">
-            ${workLocationOptions(p)}
-          </select>
-        </label>
-        <div>
-          <button class="apply-override" data-plan-index="${idx}" style="margin-top:18px">Apply & Recalculate</button>
-          <div class="override-note">${p.manualOverride?'Manual override is active for this day.':'Optimizer recommendation shown above. Use this only when business needs require a different site or remote day.'}</div>
-        </div>
-      </div>
     </div>`;
   }).join('');
-  $('commutePlan').querySelectorAll('.apply-override').forEach(btn=>{
-    btn.onclick=async()=>{
-      const idx=+btn.dataset.planIndex;
-      const sel=$('commutePlan').querySelector(`.work-override-select[data-plan-index="${idx}"]`);
-      btn.textContent='Recalculating…';
-      btn.disabled=true;
-      await recalcDayForOverride(idx,sel.value);
-    };
-  });
   $('bossMessage').value='Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmt(p.arrive)}; planned departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n');
   const watch=[];
   for(const p of work){
@@ -3917,11 +3935,12 @@ function importBackupFile(file){
   reader.readAsText(file);
 }
 function installAutosaveListeners(){
+  const isFinalizationControl=e=>!!e.target.closest('#planCorrections');
   document.addEventListener('input',e=>{
-    if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results'))markPlanStale('Planner input changed')}
+    if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results')&&!isFinalizationControl(e))markPlanStale('Planner input changed')}
   });
   document.addEventListener('change',e=>{
-    if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results')&&e.target.id!=='startDate')markPlanStale('Planner input changed')}
+    if(e.target.matches('input,select,textarea')){scheduleAutosave();if(e.isTrusted&&!e.target.closest('#results')&&!isFinalizationControl(e)&&e.target.id!=='startDate')markPlanStale('Planner input changed')}
   });
   const observer=new MutationObserver(()=>scheduleAutosave());
   observer.observe($('siteBody'),{childList:true,subtree:true});
@@ -3936,7 +3955,7 @@ $('mobilePrevBtn').onclick=()=>moveMobilePlan(-1);
 $('mobileNextBtn').onclick=()=>moveMobilePlan(1);
 $('mobileTodayBtn').onclick=()=>{const t=planDateOnly(new Date()),first=plans.length?planDateOnly(plans[0].date):t,last=plans.length?planDateOnly(plans[plans.length-1].date):t;mobilePlanDate=(t>=first&&t<=last)?t:first;renderMobilePlan()};
 
-$('generateBtn').onclick=async()=>{await generate();saveAllNow();};
+$('generateBtn').onclick=async()=>{await generate();saveAllNow();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
 $('exportBackupBtn').onclick=exportBackup;
 $('importBackupBtn').onclick=()=>$('backupFile').click();
