@@ -998,6 +998,16 @@ button.secondary,.btn.secondary{
 .settings-sync-actions button{min-height:40px}
 .settings-sync-status{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f3f6fa;font-size:12px;color:#475569;line-height:1.4}
 @media(max-width:760px){.settings-sync-actions{display:grid;grid-template-columns:1fr}.settings-sync-actions button{width:100%}}
+
+/* v47.15 restored 14-day finalization */
+#tab-review #planCorrections .finalize-grid{grid-template-columns:1fr!important;gap:12px}
+#tab-review #planCorrections .finalize-day{padding:14px 16px}
+#tab-review #planCorrections .finalize-date{font-size:18px}
+#tab-review #planCorrections .finalize-section-title{font-size:13px}
+#tab-review #planCorrections .finalize-item-copy strong{font-size:14px}
+#tab-review #planCorrections .finalize-item select{font-size:15px;min-height:40px}
+#tab-review #planCorrections .time-nudge{min-width:52px;font-size:13px}
+#tab-review #planCorrections .time-adjust-value{font-size:16px;font-weight:850}
 </style>
 </head>
 <body>
@@ -1272,12 +1282,12 @@ private"></textarea>
   </div>
 
   <div class="unified-review-section">
-    <div class="unified-review-section-head"><strong>1. Work schedule</strong><span>Only change what was marked up after the first draft.</span></div>
+    <div class="unified-review-section-head"><strong>1. Final 14-day plan</strong><span>Edit work times, child assignments, and drop-off/pickup drivers directly on each day.</span></div>
     <div id="planCorrections" class="plan-corrections"></div>
   </div>
 
   <div class="unified-review-section">
-    <div class="unified-review-section-head"><strong>2. Activities &amp; transportation</strong><span>Every commitment stays visible and editable, including items AutoPilot already handled.</span></div>
+    <div class="unified-review-section-head"><strong>2. Activity audit</strong><span>Secondary audit view for filtering all activities, handled items, and decisions needing attention.</span></div>
     <div class="quick-review-actions review-filter-bar" role="group" aria-label="Activity review filter">
       <button id="quickReviewFilterAll" type="button" class="active">All Activities</button>
       <button id="quickReviewFilterAttention" type="button">Needs Decision</button>
@@ -3709,11 +3719,16 @@ async function applyQuickChildOverride(rowKey,value){
   await generateCore();
 }
 
+function dayHasManualFinalization(p){
+  if(!p)return false;
+  return !!(p.manualOverride||manualArrivalOverrides[p.dateStr]!=null||manualDepartureOverrides[p.dateStr]!=null||(p.assignments||[]).some(a=>manualTransportOverrides[assignmentOverrideKey(p.dateStr,a)]));
+}
+
 function renderPlanCorrections(){
   const host=$('planCorrections'); if(!host)return;
-  const work=plans.filter(p=>!p.weekend);
-  if(!work.length){host.innerHTML='<div class="muted" style="font-size:13px;padding:8px 0">Generate the first-draft plan to unlock final corrections here.</div>';return}
-  host.innerHTML=`<div class="finalize-grid">${work.map(p=>{
+  if(!plans.length){host.innerHTML='<div class="muted" style="font-size:14px;padding:10px 0">Generate the first-draft plan to unlock the 14-day final review here.</div>';return}
+  const days=plans;
+  host.innerHTML=`<div class="finalize-grid">${days.map(p=>{
     const idx=plans.indexOf(p);
     const activityRows=correctionActivityRows(p.dateStr);
     const childEdits=activityRows.map(r=>{
@@ -3724,22 +3739,44 @@ function renderPlanCorrections(){
       const key=assignmentOverrideKey(p.dateStr,a),active=manualTransportOverrides[key]?' override-active':'';
       return `<div class="finalize-item${active}"><div class="finalize-item-copy"><strong>${esc(a.kind)} ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}</strong><br><span class="muted">${esc(a.activity.title)}</span></div><select class="quick-driver-override finalization-control" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
     }).join('');
-    const hasManual=p.manualOverride||manualArrivalOverrides[p.dateStr]!=null||manualDepartureOverrides[p.dateStr]!=null||(p.assignments||[]).some(a=>manualTransportOverrides[assignmentOverrideKey(p.dateStr,a)]);
-    const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto · ${label}</button>`:'<div style="height:22px"></div>'}</div>`:'<div></div>';
-    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'} · ${dayChallengeLabel(p)}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div><div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:11px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
+    const hasManual=dayHasManualFinalization(p);
+    const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−15</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+15</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto</button>`:'<div style="height:22px"></div>'}</div>`:'';
+    const workControl=!p.weekend?`<div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:12px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}`:`<div class="muted" style="font-size:12px;margin-bottom:8px">Weekend · family logistics only</div>`;
+    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.weekend?'Weekend':p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'}${!p.weekend?' · '+dayChallengeLabel(p):''}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div>${workControl}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drop-off / pickup drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
   }).join('')}</div>`;
-  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;await recalcDayForOverride(idx,sel.value);markChanged();renderQuickPlanningReview();});
-  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{await applyQuickChildOverride(sel.dataset.rowKey,sel.value);renderQuickPlanningReview();});
-  host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];try{await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();render();renderQuickPlanningReview()}catch(err){console.error('Driver override failed',err);saveAllNow();markChanged();}});
-  host.querySelectorAll('.time-nudge').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;const delta=+btn.dataset.delta||0,kind=btn.dataset.timeKind;if(kind==='arrival'){const base=manualArrivalOverrides[p.dateStr]!=null?Number(manualArrivalOverrides[p.dateStr]):Number(p.arrive);manualArrivalOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}else{const base=manualDepartureOverrides[p.dateStr]!=null?Number(manualDepartureOverrides[p.dateStr]):Number(p.leaveWork);manualDepartureOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
-  host.querySelectorAll('.time-auto').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p)return;if(btn.dataset.timeKind==='arrival')delete manualArrivalOverrides[p.dateStr];else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;await recalcDayForOverride(idx,sel.value);saveAllNow();markChanged();renderPlanCorrections();renderQuickPlanningReview();render({skipCorrections:true});});
+  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{await applyQuickChildOverride(sel.dataset.rowKey,sel.value);saveAllNow();markChanged();renderPlanCorrections();renderQuickPlanningReview();render({skipCorrections:true});});
+  host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{
+    const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey,card=sel.closest('.finalize-day'),item=sel.closest('.finalize-item');
+    sel.disabled=true;
+    try{
+      if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];
+      await recalcPlanDayWithManuals(idx); saveAllNow(); markChanged();
+      item?.classList.toggle('override-active',!!sel.value);
+      if(card){card.classList.toggle('manual',dayHasManualFinalization(plans[idx]));const st=card.querySelector('.finalize-status');if(st)st.textContent=dayHasManualFinalization(plans[idx])?'MANUAL EDIT':'AUTO DRAFT'}
+      renderQuickPlanningReview(); render({skipCorrections:true});
+    }catch(err){console.error('Driver override failed',err);saveAllNow();markChanged();const status=$('saveStatus');if(status)status.textContent='Driver change saved; downstream refresh failed.'}
+    finally{sel.disabled=false}
+  });
+  host.querySelectorAll('.time-nudge').forEach(btn=>btn.onclick=async()=>{
+    const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;const delta=+btn.dataset.delta||0,kind=btn.dataset.timeKind,box=btn.closest('.time-adjust');btn.disabled=true;
+    try{
+      if(kind==='arrival'){const base=manualArrivalOverrides[p.dateStr]!=null?Number(manualArrivalOverrides[p.dateStr]):Number(p.arrive);manualArrivalOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}
+      else{const base=manualDepartureOverrides[p.dateStr]!=null?Number(manualDepartureOverrides[p.dateStr]):Number(p.leaveWork);manualDepartureOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}
+      await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();
+      const value=box?.querySelector('.time-adjust-value');if(value)value.textContent=fmt(kind==='arrival'?p.arrive:p.leaveWork);box?.classList.add('override-active');
+      const card=btn.closest('.finalize-day');if(card){card.classList.add('manual');const st=card.querySelector('.finalize-status');if(st)st.textContent='MANUAL EDIT'}
+      renderQuickPlanningReview();render({skipCorrections:true});
+    }finally{btn.disabled=false}
+  });
+  host.querySelectorAll('.time-auto').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p)return;btn.disabled=true;try{if(btn.dataset.timeKind==='arrival')delete manualArrivalOverrides[p.dateStr];else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();renderPlanCorrections();renderQuickPlanningReview();render({skipCorrections:true});}finally{btn.disabled=false}});
 }
 function minToTimeValue(m){if(m==null||isNaN(m))return'';return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 
-function render(){
+function render(options={}){
   const work=plans.filter(p=>!p.weekend), onsite=work.filter(p=>p.onsite), remote=work.filter(p=>!p.onsite);
   $('summary').textContent=`Recommended: ${onsite.length} onsite days and ${remote.length} remote days. Arrival time is determined by morning logistics first; site arrival preference is used only as a minor tie-breaker when multiple options are otherwise similarly workable.`;
-  renderPlanCorrections();
+  if(!options.skipCorrections)renderPlanCorrections();
   $('commutePlan').innerHTML=work.map(p=>{
     const idx=plans.indexOf(p);
     const state=p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__';
@@ -4550,4 +4587,5 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 </script>
 </div></body>
 </html>
+<!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
 <!-- AutoPilot v47.8: complete activity review + independent dropoff/pickup decisions + Sam away soccer pickup-only default -->
