@@ -968,6 +968,11 @@ button.secondary,.btn.secondary{
 @media(max-width:980px){.finalize-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.finalize-work-row,.finalize-times{grid-template-columns:1fr}.finalize-item{grid-template-columns:1fr}.finalize-item select{max-width:none}.time-adjust-controls{grid-template-columns:42px 1fr 42px}}
 
+
+/* v47.8 complete activity review */
+.review-filter-bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 4px}.review-filter-bar button{font-size:12px!important;font-weight:850!important;padding:8px 11px!important;min-height:36px}.review-filter-bar button.active{background:#24211c!important;color:#fff!important;border-color:#24211c!important}.review-filter-bar #quickReviewRefreshBtn{display:inline-flex!important}.activity-review-card{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(145px,.72fr) minmax(190px,.9fr);gap:10px;align-items:center;padding:10px 11px;border:1px solid #e5dfd4;border-radius:11px;background:#fff;margin-top:7px}.activity-review-card.attention{border-left:4px solid #c48100;padding-left:8px;background:#fffdf7}.activity-review-card.handled{border-left:4px solid #4f7d59;padding-left:8px}.activity-review-title{font-size:14px;font-weight:900;line-height:1.25}.activity-review-meta{font-size:11px;color:#766f63;margin-top:3px;line-height:1.35}.activity-review-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}.activity-review-controls label,.activity-review-location label{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;color:#776f62}.activity-review-controls select,.activity-review-location input,.activity-review-child select{width:100%;font-size:13px;min-height:36px;padding:6px 7px;border-radius:8px}.activity-review-child{margin-top:6px;max-width:180px}.activity-review-location{min-width:0}.activity-review-status{font-size:10px;font-weight:850;margin-top:4px}.leg-yes{background:#eef7f0}.leg-no{background:#faf9f6}.compact-history{margin-top:10px}.compact-history .reviewed-list{max-height:220px;overflow:auto}.quick-day{padding:10px 0!important}.quick-day-head{margin-bottom:4px!important}
+@media(max-width:900px){.activity-review-card{grid-template-columns:1fr}.activity-review-child{max-width:none}}
+
 </style>
 </head>
 <body>
@@ -1233,18 +1238,21 @@ private"></textarea>
 <div class="autopilot-tab-panel" id="tab-review"><div class="review-finalize-intro"><strong>Review &amp; Finalize</strong><span>Step 1: clear anything that needs attention. Step 2: generate the draft. Step 3: make your final work-time, child, and driver corrections here. Outputs is read-only and ready to share.</span></div><div class="card quick-review-card" id="quickPlanningReview">
 <div class="quick-review-head">
 <div>
-<h3 style="margin:0">Planning Decisions</h3>
-<p class="small muted" style="margin:4px 0 0">AutoPilot hides routine items and surfaces only commitments that need a transport decision or location fix. Reviewed items stay available in the audit view.</p>
+<h3 style="margin:0">Activity Review</h3>
+<p class="small muted" style="margin:4px 0 0">See every commitment in the two-week window. Edit child, drop-off, pickup, and location directly here—even when AutoPilot thinks no action is needed.</p>
 </div>
 <div class="quick-review-progress" id="quickReviewProgress"></div>
 </div>
-<div class="quick-review-actions">
-<button id="quickReviewRefreshBtn" type="button">Refresh review</button>
+<div class="quick-review-actions review-filter-bar" role="group" aria-label="Activity review filter">
+<button id="quickReviewFilterAll" type="button" class="active">All Activities</button>
+<button id="quickReviewFilterAttention" type="button">Needs Decision</button>
+<button id="quickReviewFilterHandled" type="button">Handled</button>
+<button id="quickReviewRefreshBtn" type="button" class="secondary">Refresh</button>
 </div>
 <div class="quick-review-days" id="quickReviewDays"></div>
-<div class="reviewed-section">
+<div class="reviewed-section compact-history">
 <div class="reviewed-section-head">
-<div><h4>Reviewed decisions</h4><div class="small muted">Resolved items stay here so you can change them instantly.</div></div>
+<div><h4>Recent manual decisions</h4><div class="small muted">Optional history. All activities remain editable above.</div></div>
 <button class="secondary" id="undoLastReviewBtn" type="button">Undo last review change</button>
 </div>
 <div id="reviewedDecisionSummary"></div><div class="reviewed-list" id="reviewedDecisionList"></div>
@@ -1873,6 +1881,20 @@ function refreshChildLabels(){
 }
 ['childOldest','childMiddle','childYoungest','childOldestAliases','childMiddleAliases','childYoungestAliases'].forEach(id=>$(id).oninput=()=>{refreshChildLabels();reResolveCurrentActivities();scheduleAutosave()});
 ['transportPositiveKeywords','transportNegativeKeywords'].forEach(id=>{if($(id))$(id).oninput=()=>{reclassifyCurrentActivities();scheduleAutosave()}});
+function activityLegOverrideKey(event={}){
+  return [event.date||'',event.start||'',event.title||'',event.source||''].join('|').toLowerCase();
+}
+function isSamAwaySoccerEvent(event={},childKey=''){
+  const who=String(childLabel(childKey)||'').trim().toLowerCase();
+  const text=[event.title||'',event.source||'',event.description||''].join(' ').toLowerCase();
+  return who==='sam' && /\baway\b/.test(text) && /\bsoccer\b/.test(text);
+}
+function legDefaultsForEvent(event={},childKey=''){
+  const remembered=(manualLegOverrides&&manualLegOverrides[activityLegOverrideKey(event)])||null;
+  if(remembered)return {drop:remembered.drop||'no',pick:remembered.pick||'no',reason:'Manual leg override'};
+  if(isSamAwaySoccerEvent(event,childKey))return {drop:'no',pick:'yes',reason:'Sam away soccer: pickup only'};
+  return {drop:event.drop||'yes',pick:event.pick||'yes',reason:''};
+}
 function activityRow(d={}){
   const tr=document.createElement('tr');
   if(d.source)tr.classList.add('imported-row');
@@ -1881,6 +1903,7 @@ function activityRow(d={}){
   tr.dataset.description=d.description||'';
   tr.dataset.locationOrigin=d.locationOrigin||(locationLooksUseful(d.location)?'feed':'missing');
   const inferredChild=d.child||guessChild(d.title,d.source);
+  const legDefaults=legDefaultsForEvent({...d,source:tr.dataset.source,description:tr.dataset.description},inferredChild);
   const tx=d.transportClass?{class:d.transportClass,reason:d.transportReason||''}:transportClassification({...d,child:inferredChild,source:tr.dataset.source,calendarRole:tr.dataset.calendarRole},calendarLinkForEvent({...d,source:tr.dataset.source}));
   tr.dataset.transportClass=tx.class;
   tr.dataset.transportReason=tx.reason;
@@ -1922,7 +1945,7 @@ function activityRow(d={}){
     }
     markPlanStale('Child assignment changed')
   };
-  if(d.drop)tr.querySelector('.a-drop').value=d.drop;if(d.pick)tr.querySelector('.a-pick').value=d.pick;
+  tr.querySelector('.a-drop').value=legDefaults.drop;tr.querySelector('.a-pick').value=legDefaults.pick;if(legDefaults.reason){tr.dataset.transportClass='required';tr.dataset.transportReason=legDefaults.reason;const tb=tr.querySelector('.transport-class');if(tb){tb.className='transport-class required';tb.textContent='Transport Required'}tr.querySelector('.transport-override').value='required';tr.querySelector('.transport-rule-note').textContent=legDefaults.reason;}
   const locInput=tr.querySelector('.a-loc');
   locInput.onchange=(ev)=>{
     const e=rowToCalendarEvent(tr);
@@ -2841,95 +2864,63 @@ function renderReviewedDecisions(rows){
   });
 }
 
+let quickReviewFilter='all';
+function reviewAttentionState(row,event){
+  const reason=row.dataset.transportReason||'';
+  const transport=row.dataset.transportClass||'info';
+  const manuallyDecided=row.dataset.transportManual==='true'||reason==='Saved planning decision'||reason==='Manual transport override';
+  const missingRequiredLocation=transport==='required'&&!locationLooksUseful(event.location);
+  const ambiguous=/Ambiguous|transport not explicit/i.test(reason) && !manuallyDecided;
+  const unassigned=event.child==='Unassigned';
+  return missingRequiredLocation||ambiguous||unassigned;
+}
+function syncLegClassification(row){
+  const drop=row.querySelector('.a-drop')?.value==='yes',pick=row.querySelector('.a-pick')?.value==='yes';
+  const cls=(drop||pick)?'required':'info';
+  row.dataset.transportClass=cls;row.dataset.transportOverride=cls;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';stampReviewDecision(row,'attention-toggle');
+  const sel=row.querySelector('.transport-override');if(sel)sel.value=cls;
+  const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(cls)}`;b.textContent=transportClassLabel(cls)}
+  const ev=rowToCalendarEvent(row);rememberTransportDecision(ev,cls==='required');
+  manualLegOverrides[activityLegOverrideKey(ev)]={drop:drop?'yes':'no',pick:pick?'yes':'no'};
+}
+async function refreshPlanAfterReviewEdit(){
+  saveCycle();markChanged();
+  if(plans.length)await generateCore();
+  renderQuickPlanningReview();
+}
 function renderQuickPlanningReview(){
   const host=$('quickReviewDays'),progress=$('quickReviewProgress'),badge=$('reviewTabBadge');
   if(!host||!progress)return;
   const rows=quickReviewRows();
-  if(!rows.length){
-    host.innerHTML='<div class="quick-review-empty">No commitments in this planning window yet.</div>';
-    progress.innerHTML='<span class="qr-chip">0 commitments</span>';
-    if(badge)badge.style.display='none';
-    renderReviewedDecisions(rows);
-    return;
-  }
-
-  // Attention = ambiguous/unconfirmed Primary Family item OR required transport without location.
-  const attention=rows.filter(({row,event})=>{
-    const reason=row.dataset.transportReason||'';
-    const transport=row.dataset.transportClass||'info';
-    const manuallyDecided=row.dataset.transportManual==='true'||reason==='Saved planning decision'||reason==='Manual transport override';
-    const missingRequiredLocation=transport==='required'&&!locationLooksUseful(event.location);
-    const ambiguous=/Ambiguous|transport not explicit/i.test(reason) && !manuallyDecided;
-    return missingRequiredLocation||ambiguous;
-  });
-
-  if(badge){
-    badge.textContent=String(attention.length);
-    badge.style.display=attention.length?'inline-flex':'none';
-  }
-
-  const requiredTotal=rows.filter(x=>x.row.dataset.transportClass==='required').length;
-  const reviewed=rows.length-attention.length;
-  progress.innerHTML=`<span class="qr-chip">${rows.length} total</span><span class="qr-chip good">${reviewed} no action needed</span>${attention.length?`<span class="qr-chip warn">${attention.length} need attention</span>`:'<span class="qr-chip good">All set</span>'}`;
-
-  if(!attention.length){
-    host.innerHTML=`<div class="quick-attention-banner good"><div><strong>Nothing needs your attention.</strong><div class="quick-review-mode-note">${requiredTotal} transport commitment${requiredTotal===1?'':'s'} already classified; locations are ready.</div></div></div>`;
-    renderReviewedDecisions(rows);
-    return;
-  }
-
-  const groups={};attention.forEach(x=>(groups[x.event.date]??=[]).push(x));
-  host.innerHTML=`<div class="quick-attention-banner"><div><strong>${attention.length} item${attention.length===1?'':'s'} to resolve</strong><div class="quick-review-mode-note">Everything else is already handled and hidden from this view.</div></div></div>`+
-  Object.entries(groups).map(([date,items])=>{
+  const attention=rows.filter(({row,event})=>reviewAttentionState(row,event));
+  const handled=rows.filter(({row,event})=>!reviewAttentionState(row,event));
+  if(badge){badge.textContent=String(attention.length);badge.style.display=attention.length?'inline-flex':'none'}
+  progress.innerHTML=`<span class="qr-chip">${rows.length} total</span><span class="qr-chip good">${handled.length} handled</span>${attention.length?`<span class="qr-chip warn">${attention.length} need decision</span>`:'<span class="qr-chip good">All set</span>'}`;
+  const allBtn=$('quickReviewFilterAll'),attBtn=$('quickReviewFilterAttention'),handledBtn=$('quickReviewFilterHandled');
+  [allBtn,attBtn,handledBtn].forEach(b=>b&&b.classList.remove('active'));
+  if(quickReviewFilter==='attention')attBtn?.classList.add('active'); else if(quickReviewFilter==='handled')handledBtn?.classList.add('active'); else allBtn?.classList.add('active');
+  if(!rows.length){host.innerHTML='<div class="quick-review-empty">No commitments in this planning window yet.</div>';renderReviewedDecisions(rows);return}
+  const visible=quickReviewFilter==='attention'?attention:quickReviewFilter==='handled'?handled:rows;
+  if(!visible.length){host.innerHTML=`<div class="quick-attention-banner good"><div><strong>No items in this view.</strong><div class="quick-review-mode-note">Switch filters to review the rest of the two-week commitments.</div></div></div>`;renderReviewedDecisions(rows);return}
+  const groups={};visible.forEach(x=>(groups[x.event.date]??=[]).push(x));
+  host.innerHTML=Object.entries(groups).map(([date,items])=>{
     const d=parseDate(date),label=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
-    return `<div class="quick-day">
-      <div class="quick-day-head"><div class="quick-day-title">${esc(label)}</div><div class="quick-day-count">${items.length} decision${items.length===1?'':'s'}</div></div>
-      ${items.map(({row,index,event})=>{
-        const required=row.dataset.transportClass==='required',ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
-        const reason=row.dataset.transportReason||'Needs review';
-        return `<div class="quick-event" data-quick-row="${index}">
-          <div class="quick-event-main">
-            <div class="quick-event-time time-12h">${displayTime12h(event.start)}${event.end?` – ${displayTime12h(event.end)}`:''}</div>
-            <div class="quick-event-title">${esc(event.title)}</div>
-            <div class="quick-event-meta">${esc(childLabel(event.child))} · ${esc(source)} · ${esc(reason)}</div>
-          </div>
-          <div class="quick-transport">
-            <button type="button" data-quick-transport="required" class="${required?'active required':''}">Needs transport</button>
-            <button type="button" data-quick-transport="no" class="${!required?'active no':''}">No transport</button>
-          </div>
-          <div>
-            <input class="quick-location" data-quick-location value="${esc(event.location||'')}" placeholder="${required?'Venue / address needed':'Venue / address (optional)'}">
-            <div class="quick-location-status ${ls.cls}">${ls.text}</div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`;
+    return `<div class="quick-day"><div class="quick-day-head"><div class="quick-day-title">${esc(label)}</div><div class="quick-day-count">${items.length} activit${items.length===1?'y':'ies'}</div></div>${items.map(({row,index,event})=>{
+      const needs=reviewAttentionState(row,event),ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
+      const drop=row.querySelector('.a-drop')?.value||'no',pick=row.querySelector('.a-pick')?.value||'no';
+      return `<div class="activity-review-card ${needs?'attention':'handled'}" data-quick-row="${index}">
+        <div><div class="activity-review-title">${esc(event.start?displayTime12h(event.start)+' · ':'')}${esc(event.title)}</div><div class="activity-review-meta">${esc(source)}${event.end?` · ends ${esc(displayTime12h(event.end))}`:''}${needs?' · CHECK':''}</div><div class="activity-review-child"><label>Child<select data-review-child>${quickChildOptions(event.child)}</select></label></div></div>
+        <div class="activity-review-controls"><label>Drop-off<select data-review-drop class="${drop==='yes'?'leg-yes':'leg-no'}"><option value="no"${drop==='no'?' selected':''}>No</option><option value="yes"${drop==='yes'?' selected':''}>Yes</option></select></label><label>Pickup<select data-review-pick class="${pick==='yes'?'leg-yes':'leg-no'}"><option value="no"${pick==='no'?' selected':''}>No</option><option value="yes"${pick==='yes'?' selected':''}>Yes</option></select></label></div>
+        <div class="activity-review-location"><label>Location / pickup point<input data-review-location value="${esc(event.location||'')}" placeholder="Venue, Central, or address"></label><div class="activity-review-status ${ls.cls}">${esc(ls.text)}</div></div>
+      </div>`;
+    }).join('')}</div>`;
   }).join('');
-
   host.querySelectorAll('[data-quick-row]').forEach(card=>{
-    const attentionRows=attention;
-    const actual=rows.find(x=>x.index===+card.dataset.quickRow);
-    if(!actual)return;
-    card.querySelectorAll('[data-quick-transport]').forEach(btn=>btn.onclick=()=>{
-      const required=btn.dataset.quickTransport==='required',row=actual.row,tsel=row.querySelector('.transport-override');
-      setLastReviewChange(row);
-      tsel.value=required?'required':'info';row.dataset.transportClass=tsel.value;row.dataset.transportOverride=tsel.value;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';stampReviewDecision(row,'attention-toggle');
-      rememberTransportDecision(rowToCalendarEvent(row),required);
-      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(tsel.value)}`;b.textContent=transportClassLabel(tsel.value)}
-      row.dataset.transportReason='Saved planning decision';
-      const note=row.querySelector('.transport-rule-note');if(note)note.textContent='Saved planning decision';
-      if(plans.length)markPlanStale('Transport decision changed');
-      renderQuickPlanningReview();
-    });
-    const qloc=card.querySelector('[data-quick-location]');
-    qloc.onchange=()=>{
-      const row=actual.row,main=row.querySelector('.a-loc');setLastReviewChange(row);main.value=qloc.value.trim();
-      row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';
-      if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');
-      const rn=row.querySelector('.route-note');if(rn)rn.textContent=locationLooksUseful(main.value)?'Saved in Location Memory':'Add address for accurate routing';
-      if(plans.length)markPlanStale('Activity location changed');
-      renderQuickPlanningReview();
-    };
+    const actual=rows.find(x=>x.index===+card.dataset.quickRow);if(!actual)return;const row=actual.row;
+    const child=card.querySelector('[data-review-child]');child.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-child');main.value=child.value;row.dataset.childManual='true';await refreshPlanAfterReviewEdit()};
+    const bindLeg=(selector,mainClass)=>{const ctl=card.querySelector(selector);ctl.onchange=async()=>{setLastReviewChange(row);row.querySelector(mainClass).value=ctl.value;syncLegClassification(row);await refreshPlanAfterReviewEdit()}};
+    bindLeg('[data-review-drop]','.a-drop');bindLeg('[data-review-pick]','.a-pick');
+    const loc=card.querySelector('[data-review-location]');loc.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-loc');main.value=loc.value.trim();row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');await refreshPlanAfterReviewEdit()};
   });
   renderReviewedDecisions(rows);
 }
@@ -3292,6 +3283,7 @@ function dayChallengeLabel(p){
 
 
 let manualTransportOverrides={};
+let manualLegOverrides={};
 let manualArrivalOverrides={};
 let manualDepartureOverrides={};
 
@@ -3741,6 +3733,7 @@ function rollingCycle(){
       value:p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__'
     })),
     transportOverrides:manualTransportOverrides,
+    legOverrides:manualLegOverrides,
     arrivalOverrides:manualArrivalOverrides,
     departureOverrides:manualDepartureOverrides
   };
@@ -3834,6 +3827,7 @@ function applyCycle(data){
       if(d){setKiraShiftProgrammatically(r,d.shift,d.manual?'manual':'inferred',d.manual?'Saved manual override':'Saved cycle');if(d.manual)r.dataset.manualShift='true'}
     });
     applyCachedKiraSchedule();
+    manualLegOverrides=(data.legOverrides&&typeof data.legOverrides==='object')?data.legOverrides:{};
     $('activityBody').innerHTML='';
     (data.activities||[]).forEach(activityRow);
     $('adhocBody').innerHTML='';
@@ -3870,7 +3864,7 @@ function startNewCycle(){
     applyCachedKiraSchedule();
     $('activityBody').innerHTML='';
     $('adhocBody').innerHTML='';
-    manualTransportOverrides={};manualArrivalOverrides={};manualDepartureOverrides={};
+    manualTransportOverrides={};manualLegOverrides={};manualArrivalOverrides={};manualDepartureOverrides={};
     renderSavedCalendarLinks();
     plans=[];
     $('results').style.display='none';
@@ -3955,7 +3949,7 @@ $('mobilePrevBtn').onclick=()=>moveMobilePlan(-1);
 $('mobileNextBtn').onclick=()=>moveMobilePlan(1);
 $('mobileTodayBtn').onclick=()=>{const t=planDateOnly(new Date()),first=plans.length?planDateOnly(plans[0].date):t,last=plans.length?planDateOnly(plans[plans.length-1].date):t;mobilePlanDate=(t>=first&&t<=last)?t:first;renderMobilePlan()};
 
-$('generateBtn').onclick=async()=>{await generate();saveAllNow();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
+$('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
 $('exportBackupBtn').onclick=exportBackup;
 $('importBackupBtn').onclick=()=>$('backupFile').click();
@@ -4236,6 +4230,9 @@ window.addEventListener('load',()=>setTimeout(()=>refreshCalendarsOnAppOpen(),15
 
 
 if($('quickReviewRefreshBtn'))$('quickReviewRefreshBtn').onclick=renderQuickPlanningReview;
+if($('quickReviewFilterAll'))$('quickReviewFilterAll').onclick=()=>{quickReviewFilter='all';renderQuickPlanningReview()};
+if($('quickReviewFilterAttention'))$('quickReviewFilterAttention').onclick=()=>{quickReviewFilter='attention';renderQuickPlanningReview()};
+if($('quickReviewFilterHandled'))$('quickReviewFilterHandled').onclick=()=>{quickReviewFilter='handled';renderQuickPlanningReview()};
 if($('quickReviewTransportAllTeamBtn'))$('quickReviewTransportAllTeamBtn').onclick=confirmAllTeamCalendarTransport;
 
 const STORAGE_ACTIVE_TAB='autopilotActiveTabV42';
@@ -4298,4 +4295,4 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 </script>
 </div></body>
 </html>
-<!-- AutoPilot v47.6: rapid arrival/departure corrections -->
+<!-- AutoPilot v47.8: complete activity review + independent dropoff/pickup decisions + Sam away soccer pickup-only default -->
