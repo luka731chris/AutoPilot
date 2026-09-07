@@ -35,6 +35,18 @@ td input,td select{margin:0;padding:7px}
 .copybox{white-space:pre-line;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px}
 .dayrec{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px;background:#fff}.override-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end;margin-top:8px}.override-note{font-size:10px;color:var(--muted)}
 .week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+/* v47.2 rapid plan corrections + dense two-week view */
+.plan-corrections{margin-top:10px}
+.correction-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+.correction-table th{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#7b8492;text-align:left;padding:6px 7px;border-bottom:1px solid #dfe3e8;background:#f8f9fb;position:sticky;top:0;z-index:1}
+.correction-table td{padding:6px 7px;border-bottom:1px solid #eceff2;vertical-align:top}
+.correction-day{white-space:nowrap;font-weight:850}.correction-day small{display:block;font-weight:600;color:#7a8492;margin-top:1px}
+.correction-table select,.correction-table input[type=time]{min-height:30px;padding:4px 6px;font-size:11px;border-radius:7px}
+.transport-overrides{display:flex;flex-direction:column;gap:4px;min-width:220px}.transport-override-row{display:grid;grid-template-columns:minmax(112px,1fr) 92px;gap:5px;align-items:center}.transport-override-label{font-size:10px;line-height:1.14;color:#384253}.transport-override-label strong{font-size:10.5px}.override-active{background:#fff8df}
+.quick-note{font-size:10.5px;color:#6f7885;margin-top:5px;line-height:1.25}
+.dense-logistics{display:grid;grid-template-columns:1fr auto;gap:4px 7px;align-items:center;margin:0 0 5px;padding:5px 6px;background:#f7f8fa;border-radius:7px}
+.dense-work{font-size:10.5px;font-weight:850;line-height:1.1;color:#172033;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dense-times{font-size:8.9px;font-weight:800;color:#526071;white-space:nowrap}.dense-kira{grid-column:1/-1;font-size:8.7px;color:#6b7280;line-height:1.1}.event-compact{display:grid;grid-template-columns:37px minmax(0,1fr);gap:5px;margin-top:4px;padding-top:4px;border-top:1px solid #eceef1}.event-compact:first-child{margin-top:0;padding-top:0;border-top:0}.event-time{font-size:8.7px;font-weight:850;color:#5b6675;line-height:1.08}.event-main{min-width:0}.event-title{font-size:9.7px;font-weight:850;line-height:1.08;color:#1d2735}.event-drivers{font-size:8.5px;font-weight:750;line-height:1.1;color:#4f5c6d;margin-top:2px}.event-drivers .drv{white-space:nowrap}.daybox{overflow:visible!important;min-height:0!important}.daybox .tilesection.activities-section{padding-top:4px}.daybox .tilelabel{margin-bottom:3px}
+
 .daybox{min-height:210px;border:1px solid #d5d9df;border-radius:12px;background:#fff;padding:10px 10px 9px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.035)}
 .daybox.challenge-med{background:linear-gradient(180deg,#fffdf7 0%,#ffffff 23%);border-color:#e4c98a}
 .daybox.challenge-high{background:linear-gradient(180deg,#fff8f5 0%,#ffffff 23%);border-color:#e2a294}
@@ -1236,6 +1248,11 @@ private"></textarea>
 </div>
 <div class="mobile-plan-body" id="mobilePlanBody"></div>
 </div>
+</div>
+<div class="card plan-corrections-card">
+<div class="section-head"><div><h3 style="margin:0">Plan Corrections</h3><p class="muted small" style="margin-top:4px">Use this as the markup-to-final pass. Change work location, onsite departure, or the primary driver for any transport leg without hunting through the rest of AutoPilot.</p></div><span class="badge good">QUICK OVERRIDES</span></div>
+<div id="planCorrections" class="plan-corrections"></div>
+<div class="quick-note"><strong>Auto</strong> returns a driver leg to AutoPilot's recommendation. Manual corrections are saved with the current two-week cycle and included in full backups.</div>
 </div>
 <div class="output-grid">
 <div class="card">
@@ -3125,7 +3142,9 @@ async function generateCore(){
       const best=evals[0];site=best.site.name;departHome=best.departHome;arrive=best.arrive;leaveWork=best.leave;status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';d.chrisWorkAddress=best.site.address||'';d.chrisCommuteMinutes=best.commute;
     }
     const p={...d,onsite,site,departHome,arrive,leaveWork,status};
+    applyDepartureOverrideToPlan(p);
     p.assignments=await assignTransport(p);
+    applyTransportOverridesToPlan(p);
     plans.push(p);
   }
   if(window.__savedWorkOverrides?.length){
@@ -3174,7 +3193,9 @@ async function recalcDayForOverride(index,newValue){
     p.status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';
   }
 
+  applyDepartureOverrideToPlan(p);
   p.assignments=await assignTransport(p);
+  applyTransportOverridesToPlan(p);
   p.manualOverride=true;
   render();
   saveAllNow();
@@ -3204,6 +3225,52 @@ function dayChallengeLabel(p){
   return 'On Track';
 }
 
+
+let manualTransportOverrides={};
+let manualDepartureOverrides={};
+
+function assignmentOverrideKey(dateStr,a){
+  return [dateStr,a.kind,a.activity.child,a.activity.title,a.time].join('|');
+}
+function applyTransportOverridesToPlan(p){
+  for(const a of (p.assignments||[])){
+    const key=assignmentOverrideKey(p.dateStr,a);
+    const forced=manualTransportOverrides[key];
+    if(forced){
+      const prior=a.primary;
+      a.primary=forced;
+      if(a.secondary===forced || !a.secondary || a.secondary==='—') a.secondary=(prior&&prior!==forced)?prior:'Backup';
+      a.manualDriverOverride=true;
+    }
+  }
+}
+function applyDepartureOverrideToPlan(p){
+  if(!p?.onsite)return;
+  const v=manualDepartureOverrides[p.dateStr];
+  if(v!=null && v!==''){p.leaveWork=Number(v);p.manualDepartureOverride=true}
+}
+function driverOverrideOptions(a,p){
+  const key=assignmentOverrideKey(p.dateStr,a);
+  const forced=manualTransportOverrides[key]||'';
+  const opts=['','Chris','Kira',childLabel('Oldest'),'Backup'];
+  return opts.map(v=>`<option value="${esc(v)}"${v===forced?' selected':''}>${v?esc(v):'Auto'}</option>`).join('');
+}
+async function recalcPlanDayWithManuals(index){
+  const p=plans[index]; if(!p||p.weekend)return;
+  if(p.onsite){
+    const site=getSites().find(s=>s.name===p.site);
+    if(site){
+      const best=await evaluateSite(p,site);
+      p.chrisWorkAddress=site.address||'';p.chrisCommuteMinutes=best.commute;
+      p.departHome=best.departHome;p.arrive=best.arrive;p.leaveWork=best.leave;
+      p.status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';
+    }
+  }
+  delete p.manualDepartureOverride;
+  applyDepartureOverrideToPlan(p);
+  p.assignments=await assignTransport(p);
+  applyTransportOverridesToPlan(p);
+}
 
 let mobilePlanView='day';
 let mobilePlanDate=null;
@@ -3296,9 +3363,29 @@ function moveMobilePlan(delta){
   renderMobilePlan();
 }
 
+function renderPlanCorrections(){
+  const host=$('planCorrections'); if(!host)return;
+  const work=plans.filter(p=>!p.weekend);
+  if(!work.length){host.innerHTML='<div class="muted small">Generate a plan to enable quick corrections.</div>';return}
+  host.innerHTML=`<div class="table-wrap"><table class="correction-table"><thead><tr><th>Day</th><th>Final work plan</th><th>Leave onsite</th><th>Driver overrides</th></tr></thead><tbody>${work.map(p=>{
+    const idx=plans.indexOf(p);
+    const legs=(p.assignments||[]).map(a=>{
+      const key=assignmentOverrideKey(p.dateStr,a),active=manualTransportOverrides[key]?' override-active':'';
+      return `<div class="transport-override-row${active}"><div class="transport-override-label"><strong>${esc(a.kind)}</strong> ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}<br>${esc(a.activity.title)}</div><select class="quick-driver-override" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
+    }).join('');
+    const leave=p.onsite&&p.leaveWork!=null?minToTimeValue(p.leaveWork):'';
+    return `<tr><td class="correction-day">${dayName(p.date).slice(0,3)} ${shortDate(p.date)}<small>${dayChallengeLabel(p)}</small></td><td><select class="quick-work-override" data-plan-index="${idx}">${workLocationOptions(p)}</select></td><td>${p.onsite?`<input type="time" class="quick-departure-override${manualDepartureOverrides[p.dateStr]!=null?' override-active':''}" data-plan-index="${idx}" value="${leave}">`:'<span class="muted">—</span>'}</td><td><div class="transport-overrides">${legs||'<span class="muted">No transport legs</span>'}</div></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;sel.disabled=true;await recalcDayForOverride(idx,sel.value);markChanged();});
+  host.querySelectorAll('.quick-departure-override').forEach(inp=>inp.onchange=async()=>{const idx=+inp.dataset.planIndex,p=plans[idx];if(!p)return; if(inp.value){manualDepartureOverrides[p.dateStr]=toMin(inp.value)}else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+  host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+}
+function minToTimeValue(m){if(m==null||isNaN(m))return'';return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+
 function render(){
   const work=plans.filter(p=>!p.weekend), onsite=work.filter(p=>p.onsite), remote=work.filter(p=>!p.onsite);
   $('summary').textContent=`Recommended: ${onsite.length} onsite days and ${remote.length} remote days. Arrival time is determined by morning logistics first; site arrival preference is used only as a minor tie-breaker when multiple options are otherwise similarly workable.`;
+  renderPlanCorrections();
   $('commutePlan').innerHTML=work.map(p=>{
     const idx=plans.indexOf(p);
     const state=p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__';
@@ -3359,44 +3446,25 @@ function render(){
 function renderCalendar(id){
   const work=plans.filter(p=>!p.weekend);
   $(id).innerHTML=work.map(p=>{
-    const level=dayChallengeLevel(p);
-    const dp=calendarDateParts(p.date);
-    const commuteMode=p.holiday?'HOLIDAY':p.onsite?esc(p.site):'REMOTE';
+    const level=dayChallengeLevel(p),dp=calendarDateParts(p.date);
     const byActivity={};
-    for(const a of p.assignments){
-      const key=a.activity.child+'|'+a.activity.title+'|'+a.activity.start+'|'+a.activity.end;
-      if(!byActivity[key])byActivity[key]={activity:a.activity,legs:[]};
-      byActivity[key].legs.push(a);
-    }
+    for(const a of p.assignments){const key=a.activity.child+'|'+a.activity.title+'|'+a.activity.start+'|'+a.activity.end;(byActivity[key]??={activity:a.activity,legs:[]}).legs.push(a)}
     const events=Object.values(byActivity).map(x=>{
       const backup=x.legs.some(l=>l.primary==='Backup');
-      const driverBlocks=x.legs.map(l=>`<div class="driverline">${l.kind}: ${l.primary}${l.secondary&&l.secondary!=='—'?` / ${l.secondary}`:''}</div>`).join('');
-      return `<div class="event"><strong>${esc(childLabel(x.activity.child))} — ${esc(x.activity.title)}</strong><br>${x.activity.start?fmt(toMin(x.activity.start)):''}${x.activity.end?`–${fmt(toMin(x.activity.end))}`:''}${driverBlocks}${backup?`<div class="backup">BACKUP DRIVER NEEDED</div>`:''}</div>`;
+      const time=x.activity.start?fmt(toMin(x.activity.start)).replace(' ',''):'';
+      const driver=x.legs.map(l=>`<span class="drv">${esc(l.kind)}: <strong>${esc(l.primary)}</strong>${l.manualDriverOverride?'*':''}</span>`).join(' · ');
+      return `<div class="event-compact${backup?' backup-event':''}"><div class="event-time">${time}</div><div class="event-main"><div class="event-title">${esc(childLabel(x.activity.child))} · ${esc(x.activity.title)}</div><div class="event-drivers">${driver}${backup?' · <strong>BACKUP NEEDED</strong>':''}</div></div></div>`;
     }).join('');
-    const chips=p.holiday?`<div class="timechip">No work</div>`:p.onsite?`<div class="timechip">Leave ${fmt(p.departHome)}</div><div class="timechip">Arrive ${fmt(p.arrive)}</div><div class="timechip">Leave work ${fmt(p.leaveWork)}</div>`:`<div class="timechip">Remote day</div>`;
-    return `<div class="daybox ${level}${p.holiday?' holiday':''}">
-      <div class="marker">${p.opportunity?'◇':''}</div>
-      <div class="tilehead">
-        <div class="dateblock"><div class="datenum">${dp.num}</div><div class="datewords"><div class="dow">${dp.dow}</div><div class="month">${dp.month}</div></div></div>
-        <div class="tilepill ${level}">${dayChallengeLabel(p)}</div>
-      </div>
-      <div class="mode">${commuteMode}</div>
-      <div class="tilesection">
-        <div class="tilelabel">Commute</div>
-        <div class="timechips">${chips}</div>
-        <div class="kira-line">Kira: ${esc(p.kiraLocation||'—')}</div>
-      </div>
-      <div class="tilesection">
-        <div class="tilelabel">Activities & drivers</div>
-        ${events || '<div class="event"><strong>No scheduled activities</strong></div>'}
-      </div>
-    </div>`;
+    const workMode=p.holiday?'Holiday':p.onsite?p.site:'Remote';
+    const timeText=p.holiday?'No work':p.onsite?`Home ${fmt(p.departHome)} · Arr ${fmt(p.arrive)} · Out ${fmt(p.leaveWork)}${p.manualDepartureOverride?'*':''}`:'Remote day';
+    return `<div class="daybox ${level}${p.holiday?' holiday':''}"><div class="tilehead"><div class="dateblock"><div class="datenum">${dp.num}</div><div class="datewords"><div class="dow">${dp.dow}</div><div class="month">${dp.month}</div></div></div><div class="tilepill ${level}">${dayChallengeLabel(p)}</div></div><div class="dense-logistics"><div class="dense-work">${esc(workMode)}${p.manualOverride?' *':''}</div><div class="dense-times">${timeText}</div><div class="dense-kira">Kira: ${esc(p.kiraLocation||'—')}</div></div><div class="tilesection activities-section"><div class="tilelabel">Activities & drivers</div>${events||'<div class="event-compact"><div class="event-time">—</div><div class="event-main"><div class="event-title">No scheduled activities</div></div></div>'}</div></div>`;
   }).join('');
 }
 
+
 const STORAGE_SETTINGS='familyOptimizerV23.settings';
 const STORAGE_CYCLE='familyOptimizerV23.cycle';
-const STORAGE_VERSION=31;
+const STORAGE_VERSION=32;
 
 const STORAGE_CAL_HYGIENE='familyOptimizerCalendarHygieneV26';
 function defaultCalendarHygiene(){
@@ -3579,7 +3647,9 @@ function rollingCycle(){
     workOverrides:plans.filter(p=>!p.weekend&&p.manualOverride).map(p=>({
       date:p.dateStr,
       value:p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__'
-    }))
+    })),
+    transportOverrides:manualTransportOverrides,
+    departureOverrides:manualDepartureOverrides
   };
 }
 function setSaveStatus(text){
@@ -3676,6 +3746,8 @@ function applyCycle(data){
     $('adhocBody').innerHTML='';
     (data.adhoc||[]).forEach(adhocRow);
     window.__savedWorkOverrides=data.workOverrides||[];
+    manualTransportOverrides=(data.transportOverrides&&typeof data.transportOverrides==='object')?data.transportOverrides:{};
+    manualDepartureOverrides=(data.departureOverrides&&typeof data.departureOverrides==='object')?data.departureOverrides:{};
   }finally{isApplying=false}
 }
 function loadFromStorage(){
@@ -3704,6 +3776,7 @@ function startNewCycle(){
     applyCachedKiraSchedule();
     $('activityBody').innerHTML='';
     $('adhocBody').innerHTML='';
+    manualTransportOverrides={};manualDepartureOverrides={};
     renderSavedCalendarLinks();
     plans=[];
     $('results').style.display='none';
