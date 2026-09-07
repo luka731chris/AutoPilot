@@ -920,6 +920,17 @@ button.secondary,.btn.secondary{
 .reviewed-origin.warn{color:#9a6400;font-weight:800}
 .review-summary-banner{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:9px 0 4px;padding:9px 10px;border-radius:10px;background:#f7f3ea;border:1px solid #e5dccb}
 @media(max-width:760px){.reviewed-row{grid-template-columns:1fr!important}.reviewed-actions{grid-template-columns:1fr!important}}
+
+/* v47.6 rapid arrival/departure corrections + Phil banner export */
+.phil-outlook-export{margin-top:12px;padding:12px;border:1px solid #d8cfb8;border-radius:11px;background:#fffdf7}
+.phil-outlook-head{display:flex;flex-direction:column;gap:2px;margin-bottom:9px}
+.phil-outlook-head strong{font-size:14px;color:#2b271e}.phil-outlook-head span{font-size:11px;color:#756f62}
+.phil-outlook-controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.phil-outlook-controls label{min-width:145px;display:flex;flex-direction:column;gap:4px}
+.phil-outlook-controls select{min-width:145px}
+#philOutlookStatus{margin-top:7px;line-height:1.4}
+@media(max-width:760px){.phil-outlook-controls{display:grid;grid-template-columns:1fr}.phil-outlook-controls label,.phil-outlook-controls select,.phil-outlook-controls button{width:100%}}
+
 </style>
 </head>
 <body>
@@ -1250,9 +1261,9 @@ private"></textarea>
 </div>
 </div>
 <div class="card plan-corrections-card">
-<div class="section-head"><div><h3 style="margin:0">Plan Corrections</h3><p class="muted small" style="margin-top:4px">Use this as the markup-to-final pass. Change work location, onsite departure, or the primary driver for any transport leg without hunting through the rest of AutoPilot.</p></div><span class="badge good">QUICK OVERRIDES</span></div>
+<div class="section-head"><div><h3 style="margin:0">Plan Corrections</h3><p class="muted small" style="margin-top:4px">Use this as the markup-to-final pass. Quietly adjust work location, onsite arrival/departure, child assignment, or the primary driver for any transport leg without hunting through the rest of AutoPilot.</p></div><span class="badge good">QUICK OVERRIDES</span></div>
 <div id="planCorrections" class="plan-corrections"></div>
-<div class="quick-note"><strong>Auto</strong> returns a driver leg to AutoPilot's recommendation. Manual corrections are saved with the current two-week cycle and included in full backups.</div>
+<div class="quick-note"><strong>Arrival / departure</strong> fields default to AutoPilot's recommendation. Change only the days that need refinement; edited fields are marked as manual overrides. <strong>Auto</strong> returns a driver leg to AutoPilot's recommendation. Manual corrections are saved with the current two-week cycle and included in full backups.</div>
 </div>
 <div class="output-grid">
 <div class="card">
@@ -1263,6 +1274,17 @@ private"></textarea>
 <h3>Email to Phil — two-week schedule</h3>
 <textarea class="copybox" id="bossMessage" placeholder="Generate a plan to populate your two-week email to Phil." rows="18" style="margin-top:10px;min-height:520px;width:100%;resize:vertical;font-family:var(--ap-body-font);font-size:15px;line-height:1.55;padding:14px 16px;background:#fffefa;color:#24221d;border:1px solid #d7cfbf;border-radius:10px"></textarea>
 <div class="small muted" style="margin-top:8px">Full email draft shown below. Edit anything you want, then copy it directly into email.</div>
+<div class="phil-outlook-export">
+  <div class="phil-outlook-head"><strong>Phil Outlook FYI</strong><span>Creates free/available all-day FYI banners that sit at the top of Phil's Outlook calendar without blocking working time.</span></div>
+  <div class="phil-outlook-controls">
+    <label class="small">Export window
+      <select id="philOutlookScope"><option value="week1">Week 1</option><option value="week2">Week 2</option><option value="all">Full 2 weeks</option></select>
+    </label>
+    <button id="downloadPhilOutlookBtn" type="button">Download Outlook FYI (.ics)</button>
+    <button id="savePhilOutlookBtn" type="button" class="primary">Save to WVU Files</button>
+  </div>
+  <div id="philOutlookStatus" class="small muted">Onsite days export as free/available all-day FYI banners using the finalized arrival/departure times from Plan Corrections. Remote days export as all-day FYIs.</div>
+</div>
 <div class="toolbar"><button id="copyBossBtn">Copy schedule</button></div>
 </div>
 </div>
@@ -1746,6 +1768,11 @@ function aliasesForChild(role){
 }
 function resolveChildIdentity(event={},link=null){
   if(link?.childRole)return {role:link.childRole,confidence:'calendar'};
+  const role=normalizeCalendarRole(link?.role||event.calendarRole||'',link?.kind||'');
+  const titleText=normalizeIdentityText(event.title||'');
+  // Standing family rule: gymnastics coming from Kira's Primary Family Calendar belongs to Whitney.
+  // Individual manual child selections remain authoritative because activity rows marked childManual are not re-resolved.
+  if(role==='primaryFamily' && /(^|\s)gymnastics?(\s|$)/.test(' '+titleText+' '))return {role:'Youngest',confidence:'rule'};
   const hay=' '+normalizeIdentityText([event.title,event.description,event.location,event.source].filter(Boolean).join(' '))+' ';
   const hits=[];
   for(const role of ['Oldest','Middle','Youngest'])for(const alias of aliasesForChild(role))if(hay.includes(' '+alias+' ')){hits.push(role);break}
@@ -1754,7 +1781,7 @@ function resolveChildIdentity(event={},link=null){
   return {role:'Unassigned',confidence:'verify'};
 }
 function guessChild(title='',source=''){return resolveChildIdentity({title,source}).role}
-function identityConfidenceLabel(c){return({calendar:'Calendar mapped',name:'Name matched',generic:'Role inferred',explicit:'Explicit',verify:'Verify'})[c]||'Verify'}
+function identityConfidenceLabel(c){return({calendar:'Calendar mapped',rule:'Family rule',name:'Name matched',generic:'Role inferred',explicit:'Manual override',verify:'Verify'})[c]||'Verify'}
 function reResolveCurrentActivities(){
   const links=getSavedCalendarLinks();
   [...$('activityBody').children].forEach(r=>{
@@ -3227,6 +3254,7 @@ function dayChallengeLabel(p){
 
 
 let manualTransportOverrides={};
+let manualArrivalOverrides={};
 let manualDepartureOverrides={};
 
 function assignmentOverrideKey(dateStr,a){
@@ -3244,11 +3272,21 @@ function applyTransportOverridesToPlan(p){
     }
   }
 }
+function applyArrivalOverrideToPlan(p){
+  if(!p?.onsite)return;
+  const v=manualArrivalOverrides[p.dateStr];
+  if(v!=null && v!==''){
+    p.arrive=Number(v);
+    if(p.chrisCommuteMinutes!=null) p.departHome=Math.max(0,p.arrive-Number(p.chrisCommuteMinutes));
+    p.manualArrivalOverride=true;
+  }
+}
 function applyDepartureOverrideToPlan(p){
   if(!p?.onsite)return;
   const v=manualDepartureOverrides[p.dateStr];
   if(v!=null && v!==''){p.leaveWork=Number(v);p.manualDepartureOverride=true}
 }
+
 function driverOverrideOptions(a,p){
   const key=assignmentOverrideKey(p.dateStr,a);
   const forced=manualTransportOverrides[key]||'';
@@ -3266,7 +3304,9 @@ async function recalcPlanDayWithManuals(index){
       p.status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';
     }
   }
+  delete p.manualArrivalOverride;
   delete p.manualDepartureOverride;
+  applyArrivalOverrideToPlan(p);
   applyDepartureOverrideToPlan(p);
   p.assignments=await assignTransport(p);
   applyTransportOverridesToPlan(p);
@@ -3363,21 +3403,55 @@ function moveMobilePlan(delta){
   renderMobilePlan();
 }
 
+
+function correctionActivityRows(dateStr){
+  return [...$('activityBody').children].filter(r=>r.querySelector('.a-date')?.value===dateStr);
+}
+function correctionActivityKey(row){
+  return [row.querySelector('.a-date')?.value||'',row.querySelector('.a-start')?.value||'',row.querySelector('.a-title')?.value||'',row.dataset.source||''].join('|');
+}
+function quickChildOptions(selected=''){
+  return ['Oldest','Middle','Youngest','Unassigned'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
+}
+async function applyQuickChildOverride(rowKey,value){
+  const row=[...$('activityBody').children].find(r=>correctionActivityKey(r)===rowKey); if(!row)return;
+  const sel=row.querySelector('.a-child'); if(!sel)return;
+  sel.value=value; row.dataset.childManual='true';
+  const verify=row.querySelector('.verify-child'); if(verify)verify.style.display=value==='Unassigned'?'':'none';
+  const badge=row.querySelector('.identity-confidence'); if(badge){badge.className='identity-confidence explicit';badge.textContent='Manual override'}
+  if(row.dataset.transportManual!=='true'){
+    const ev=rowToCalendarEvent(row),x=transportClassification(ev,calendarLinkForEvent(ev));
+    row.dataset.transportClass=x.class;row.dataset.transportReason=x.reason;
+    const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${transportClassCss(x.class)}`;b.textContent=transportClassLabel(x.class)}
+    const ts=row.querySelector('.transport-override');if(ts)ts.value=x.class;
+  }
+  saveCycle(); markChanged();
+  await generateCore();
+}
+
 function renderPlanCorrections(){
   const host=$('planCorrections'); if(!host)return;
   const work=plans.filter(p=>!p.weekend);
   if(!work.length){host.innerHTML='<div class="muted small">Generate a plan to enable quick corrections.</div>';return}
-  host.innerHTML=`<div class="table-wrap"><table class="correction-table"><thead><tr><th>Day</th><th>Final work plan</th><th>Leave onsite</th><th>Driver overrides</th></tr></thead><tbody>${work.map(p=>{
+  host.innerHTML=`<div class="table-wrap"><table class="correction-table"><thead><tr><th>Day</th><th>Final work plan</th><th>Arrive</th><th>Depart</th><th>Activity / child</th><th>Driver overrides</th></tr></thead><tbody>${work.map(p=>{
     const idx=plans.indexOf(p);
+    const activityRows=correctionActivityRows(p.dateStr);
+    const childEdits=activityRows.map(r=>{
+      const ev=rowToCalendarEvent(r),key=correctionActivityKey(r),needs=ev.child==='Unassigned';
+      return `<div class="transport-override-row${needs?' override-active':''}"><div class="transport-override-label"><strong>${esc(ev.start?fmt(toMin(ev.start)):'All day')}</strong> ${esc(ev.title)}<br><span class="muted">${esc(ev.source||'Manual')}</span></div><select class="quick-child-override" data-row-key="${esc(key)}">${quickChildOptions(ev.child)}</select></div>`;
+    }).join('');
     const legs=(p.assignments||[]).map(a=>{
       const key=assignmentOverrideKey(p.dateStr,a),active=manualTransportOverrides[key]?' override-active':'';
       return `<div class="transport-override-row${active}"><div class="transport-override-label"><strong>${esc(a.kind)}</strong> ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}<br>${esc(a.activity.title)}</div><select class="quick-driver-override" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
     }).join('');
+    const arrive=p.onsite&&p.arrive!=null?minToTimeValue(p.arrive):'';
     const leave=p.onsite&&p.leaveWork!=null?minToTimeValue(p.leaveWork):'';
-    return `<tr><td class="correction-day">${dayName(p.date).slice(0,3)} ${shortDate(p.date)}<small>${dayChallengeLabel(p)}</small></td><td><select class="quick-work-override" data-plan-index="${idx}">${workLocationOptions(p)}</select></td><td>${p.onsite?`<input type="time" class="quick-departure-override${manualDepartureOverrides[p.dateStr]!=null?' override-active':''}" data-plan-index="${idx}" value="${leave}">`:'<span class="muted">—</span>'}</td><td><div class="transport-overrides">${legs||'<span class="muted">No transport legs</span>'}</div></td></tr>`;
+    return `<tr><td class="correction-day">${dayName(p.date).slice(0,3)} ${shortDate(p.date)}<small>${dayChallengeLabel(p)}</small></td><td><select class="quick-work-override" data-plan-index="${idx}">${workLocationOptions(p)}</select></td><td>${p.onsite?`<input type="time" class="quick-arrival-override${manualArrivalOverrides[p.dateStr]!=null?' override-active':''}" data-plan-index="${idx}" value="${arrive}" title="Tentative onsite arrival">`:'<span class="muted">—</span>'}</td><td>${p.onsite?`<input type="time" class="quick-departure-override${manualDepartureOverrides[p.dateStr]!=null?' override-active':''}" data-plan-index="${idx}" value="${leave}" title="Tentative onsite departure">`:'<span class="muted">—</span>'}</td><td><div class="transport-overrides">${childEdits||'<span class="muted">No activities</span>'}</div></td><td><div class="transport-overrides">${legs||'<span class="muted">No transport legs</span>'}</div></td></tr>`;
   }).join('')}</tbody></table></div>`;
   host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;sel.disabled=true;await recalcDayForOverride(idx,sel.value);markChanged();});
+  host.querySelectorAll('.quick-arrival-override').forEach(inp=>inp.onchange=async()=>{const idx=+inp.dataset.planIndex,p=plans[idx];if(!p)return; if(inp.value){manualArrivalOverrides[p.dateStr]=toMin(inp.value)}else delete manualArrivalOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
   host.querySelectorAll('.quick-departure-override').forEach(inp=>inp.onchange=async()=>{const idx=+inp.dataset.planIndex,p=plans[idx];if(!p)return; if(inp.value){manualDepartureOverrides[p.dateStr]=toMin(inp.value)}else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
+  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{sel.disabled=true;await applyQuickChildOverride(sel.dataset.rowKey,sel.value);});
   host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];await recalcPlanDayWithManuals(idx);render();saveAllNow();markChanged();});
 }
 function minToTimeValue(m){if(m==null||isNaN(m))return'';return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
@@ -3649,6 +3723,7 @@ function rollingCycle(){
       value:p.holiday?'__HOLIDAY__':p.onsite?p.site:'__REMOTE__'
     })),
     transportOverrides:manualTransportOverrides,
+    arrivalOverrides:manualArrivalOverrides,
     departureOverrides:manualDepartureOverrides
   };
 }
@@ -3747,6 +3822,7 @@ function applyCycle(data){
     (data.adhoc||[]).forEach(adhocRow);
     window.__savedWorkOverrides=data.workOverrides||[];
     manualTransportOverrides=(data.transportOverrides&&typeof data.transportOverrides==='object')?data.transportOverrides:{};
+    manualArrivalOverrides=(data.arrivalOverrides&&typeof data.arrivalOverrides==='object')?data.arrivalOverrides:{};
     manualDepartureOverrides=(data.departureOverrides&&typeof data.departureOverrides==='object')?data.departureOverrides:{};
   }finally{isApplying=false}
 }
@@ -3776,7 +3852,7 @@ function startNewCycle(){
     applyCachedKiraSchedule();
     $('activityBody').innerHTML='';
     $('adhocBody').innerHTML='';
-    manualTransportOverrides={};manualDepartureOverrides={};
+    manualTransportOverrides={};manualArrivalOverrides={};manualDepartureOverrides={};
     renderSavedCalendarLinks();
     plans=[];
     $('results').style.display='none';
@@ -4030,7 +4106,82 @@ $('publishBtn').onclick=downloadReadOnlySnapshot;
 $('downloadMobilePlanBtn').onclick=downloadMobileSnapshot;
 
 $('printBtn').onclick=()=>{if(!plans.length)generate();setTimeout(()=>window.print(),50)};
+
+
+// v47.5 — Outlook FYI banner export for Phil
+function philIcsEscape(value=''){
+  return String(value??'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+}
+function philDateKey(p){
+  if(p?.dateStr)return String(p.dateStr);
+  if(p?.date instanceof Date)return iso(p.date);
+  if(typeof p?.date==='string')return p.date.slice(0,10);
+  return '';
+}
+function philYmd(key=''){ return String(key).replace(/-/g,''); }
+function philIcsLocalDateTime(key,minutes){
+  const m=Math.max(0,Math.min(1439,Number(minutes)||0));
+  const hh=String(Math.floor(m/60)).padStart(2,'0'), mm=String(m%60).padStart(2,'0');
+  return `${philYmd(key)}T${hh}${mm}00`;
+}
+function philNextDateKey(key){
+  const [y,m,d]=String(key).split('-').map(Number); const x=new Date(y,m-1,d); x.setDate(x.getDate()+1); return iso(x);
+}
+function philUtcStamp(){
+  const d=new Date(); return d.getUTCFullYear()+String(d.getUTCMonth()+1).padStart(2,'0')+String(d.getUTCDate()).padStart(2,'0')+'T'+String(d.getUTCHours()).padStart(2,'0')+String(d.getUTCMinutes()).padStart(2,'0')+String(d.getUTCSeconds()).padStart(2,'0')+'Z';
+}
+function philOutlookPlans(scope='week1'){
+  const work=(plans||[]).filter(p=>!p.weekend);
+  if(scope==='all')return work;
+  if(!work.length)return [];
+  const first=philDateKey(work[0]);
+  const [y,m,d]=first.split('-').map(Number); const start=new Date(y,m-1,d);
+  const offset=scope==='week2'?7:0; const lo=new Date(start);lo.setDate(lo.getDate()+offset); const hi=new Date(lo);hi.setDate(hi.getDate()+7);
+  return work.filter(p=>{const k=philDateKey(p);const [yy,mm,dd]=k.split('-').map(Number);const x=new Date(yy,mm-1,dd);return x>=lo&&x<hi;});
+}
+function buildPhilOutlookIcs(scope='week1'){
+  const rows=philOutlookPlans(scope); if(!rows.length)throw new Error('Generate the plan first.');
+  const stamp=philUtcStamp(), lines=['BEGIN:VCALENDAR','PRODID:-//LukaLab AI Creative//AutoPilot Phil FYI//EN','VERSION:2.0','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Chris Luka — WVU FYI Banners','X-WR-TIMEZONE:America/New_York'];
+  for(const p of rows){
+    const key=philDateKey(p); if(!key)continue;
+    const uid=`autopilot-phil-${key}-${p.onsite?'onsite':'remote'}@lukalab.local`;
+    lines.push('BEGIN:VEVENT',`UID:${uid}`,`DTSTAMP:${stamp}`,'STATUS:TENTATIVE','TRANSP:TRANSPARENT','CATEGORIES:WVU Medicine,AutoPilot,FYI');
+    if(p.holiday){
+      lines.push(`DTSTART;VALUE=DATE:${philYmd(key)}`,`DTEND;VALUE=DATE:${philYmd(philNextDateKey(key))}`,'SUMMARY:'+philIcsEscape('FYI - Chris holiday / no work'),'DESCRIPTION:'+philIcsEscape('AutoPilot FYI for Phil. All-day banner only; shown as Free/Available and does not block working time.'));
+    }else if(p.onsite){
+      const arrive=Number.isFinite(+p.arrive)?+p.arrive:(Number.isFinite(+p.departHome)?+p.departHome:8*60);
+      let depart=Number.isFinite(+p.leaveWork)?+p.leaveWork:arrive+8*60; if(depart<=arrive)depart=Math.min(1439,arrive+60);
+      const site=p.site||'Onsite';
+      lines.push(`DTSTART;VALUE=DATE:${philYmd(key)}`,`DTEND;VALUE=DATE:${philYmd(philNextDateKey(key))}`,'SUMMARY:'+philIcsEscape(`FYI - Chris arrive ${fmt(arrive)}, depart ${fmt(depart)}`),'LOCATION:'+philIcsEscape(site),'DESCRIPTION:'+philIcsEscape(`AutoPilot FYI for Phil. Planned site: ${site}. Tentative arrival: ${fmt(arrive)}. Tentative departure: ${fmt(depart)}. All-day banner only; shown as Free/Available and does not block working time.`));
+    }else{
+      lines.push(`DTSTART;VALUE=DATE:${philYmd(key)}`,`DTEND;VALUE=DATE:${philYmd(philNextDateKey(key))}`,'SUMMARY:'+philIcsEscape('FYI - Chris remote'),'DESCRIPTION:'+philIcsEscape('AutoPilot FYI for Phil. Planned remote work day. All-day banner only; shown as Free/Available and does not block working time.'));
+    }
+    lines.push('END:VEVENT');
+  }
+  lines.push('END:VCALENDAR'); return lines.join('\r\n')+'\r\n';
+}
+function philOutlookFilename(scope='week1'){
+  const rows=philOutlookPlans(scope), first=rows.length?philDateKey(rows[0]):($('startDate')?.value||'current');
+  const suffix=scope==='all'?'Two-Week':scope==='week2'?'Week-2':'Week-1';
+  return `Chris-Luka-WVU-Schedule-${first}-${suffix}.ics`;
+}
+function setPhilOutlookStatus(message,good=false){ const el=$('philOutlookStatus'); if(el){el.textContent=message;el.style.color=good?'#176b3a':'';} }
+function downloadPhilOutlookIcs(){
+  try{const scope=$('philOutlookScope')?.value||'week1',ics=buildPhilOutlookIcs(scope),blob=new Blob([ics],{type:'text/calendar;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=philOutlookFilename(scope);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);setPhilOutlookStatus(`Outlook FYI created: ${a.download}`,true);}catch(err){alert(err.message);}
+}
+async function savePhilOutlookIcs(){
+  try{
+    const scope=$('philOutlookScope')?.value||'week1',ics=buildPhilOutlookIcs(scope),name=philOutlookFilename(scope);
+    if(window.showSaveFilePicker){
+      const handle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Outlook Calendar file',accept:{'text/calendar':['.ics']}}]});
+      const writable=await handle.createWritable(); await writable.write(ics); await writable.close(); setPhilOutlookStatus(`Saved ${name}. Choose your WVU/OneDrive folder in the Windows save dialog.`,true);
+    }else{downloadPhilOutlookIcs();setPhilOutlookStatus('Your browser does not support direct folder saving, so AutoPilot downloaded the Outlook file instead. Move it to your WVU/OneDrive folder.',true);}
+  }catch(err){if(err?.name!=='AbortError')alert(err.message);}
+}
+
 $('copyBossBtn').onclick=async()=>{try{await navigator.clipboard.writeText($('bossMessage').value);$('copyBossBtn').textContent='Copied';setTimeout(()=>$('copyBossBtn').textContent='Copy schedule',1000)}catch{alert('Copy blocked; select manually.')}};
+if($('downloadPhilOutlookBtn'))$('downloadPhilOutlookBtn').onclick=downloadPhilOutlookIcs;
+if($('savePhilOutlookBtn'))$('savePhilOutlookBtn').onclick=savePhilOutlookIcs;
 loadFromStorage();
 installAutosaveListeners();
 updateBackupStatus();
@@ -4128,3 +4279,4 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 </script>
 </div></body>
 </html>
+<!-- AutoPilot v47.6: rapid arrival/departure corrections -->
