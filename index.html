@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
+<!-- AutoPilot v47.9: saved recurring activity locations + clarified settings/calendar refresh -->
 <title>AutoPilot — Family Logistics Planner</title>
 <style>
 :root{
@@ -973,6 +974,16 @@ button.secondary,.btn.secondary{
 .review-filter-bar{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 4px}.review-filter-bar button{font-size:12px!important;font-weight:850!important;padding:8px 11px!important;min-height:36px}.review-filter-bar button.active{background:#24211c!important;color:#fff!important;border-color:#24211c!important}.review-filter-bar #quickReviewRefreshBtn{display:inline-flex!important}.activity-review-card{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(145px,.72fr) minmax(190px,.9fr);gap:10px;align-items:center;padding:10px 11px;border:1px solid #e5dfd4;border-radius:11px;background:#fff;margin-top:7px}.activity-review-card.attention{border-left:4px solid #c48100;padding-left:8px;background:#fffdf7}.activity-review-card.handled{border-left:4px solid #4f7d59;padding-left:8px}.activity-review-title{font-size:14px;font-weight:900;line-height:1.25}.activity-review-meta{font-size:11px;color:#766f63;margin-top:3px;line-height:1.35}.activity-review-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}.activity-review-controls label,.activity-review-location label{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;color:#776f62}.activity-review-controls select,.activity-review-location input,.activity-review-child select{width:100%;font-size:13px;min-height:36px;padding:6px 7px;border-radius:8px}.activity-review-child{margin-top:6px;max-width:180px}.activity-review-location{min-width:0}.activity-review-status{font-size:10px;font-weight:850;margin-top:4px}.leg-yes{background:#eef7f0}.leg-no{background:#faf9f6}.compact-history{margin-top:10px}.compact-history .reviewed-list{max-height:220px;overflow:auto}.quick-day{padding:10px 0!important}.quick-day-head{margin-bottom:4px!important}
 @media(max-width:900px){.activity-review-card{grid-template-columns:1fr}.activity-review-child{max-width:none}}
 
+
+/* v47.9 saved recurring locations + settings refresh */
+.saved-location-card .table-wrap{margin-top:10px}
+.saved-location-card table{min-width:980px}
+.saved-location-card .location-rule-note{font-size:12px;color:#5b6472;line-height:1.4;margin-top:8px}
+.settings-sync-card{border:1px solid #d7dbe2;background:#fbfcfe}
+.settings-sync-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.settings-sync-actions button{min-height:40px}
+.settings-sync-status{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f3f6fa;font-size:12px;color:#475569;line-height:1.4}
+@media(max-width:760px){.settings-sync-actions{display:grid;grid-template-columns:1fr}.settings-sync-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -1387,10 +1398,24 @@ private"></textarea>
 </div>
 <div class="small muted" style="margin-top:6px">Calendar inference still identifies Early Main, Early North, Star, Late Main, or Off. These mappings tell AutoPilot which saved physical work location/address applies to each shift type.</div>
 </div>
+</div><div class="card saved-location-card" id="savedActivityLocationsCard">
+<div class="section-head">
+<div>
+<h2>3. Saved Activity Locations</h2>
+<p class="muted small">Save a recurring venue once and AutoPilot will reuse it whenever a matching activity arrives without a useful address. Existing calendar venues always win, so meets and tournaments keep their event-specific locations.</p>
+</div>
+<button id="addSavedActivityLocationBtn" type="button">+ Add saved location</button>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Rule name</th><th>Child</th><th>Match text</th><th>Exclude text</th><th>Saved venue / full address</th><th>Fallback drive</th><th></th></tr></thead>
+<tbody id="savedActivityLocationBody"></tbody>
+</table></div>
+<div class="location-rule-note"><strong>Example:</strong> Rule = Gymnastics Home Gym · Child = Whitney · Match = <code>gymnastics</code> · Exclude = <code>meet, tournament</code>. AutoPilot fills the home-gym address only when the incoming event does not already contain a venue.</div>
+<div class="settings-sync-actions"><button id="applySavedActivityLocationsBtn" type="button" class="secondary">Apply saved locations to current activities</button></div>
 </div><div class="card">
 <div class="section-head">
 <div>
-<h2>3. Recurring sports practices</h2>
+<h2>4. Recurring sports practices</h2>
 <p class="muted small">Create a practice pattern once. It automatically populates every applicable 2-week cycle and remains saved with your permanent setup.</p>
 </div>
 <button id="addPracticeBtn">+ Add recurring practice</button>
@@ -1402,13 +1427,20 @@ private"></textarea>
 <div class="small muted" style="margin-top:8px">Use recurring practices for stable weekly patterns. GameChanger/TeamSnap subscriptions remain the source of truth for games, tournaments, and practices that change frequently. Imported venue/location fields are used for live routing when the feed supplies them.</div>
 </div><div class="card">
 <div class="section-head">
-<div><h2>4. Fixed input — ad-hoc commitments</h2><p class="muted small">Only enter items that constrain the two-week period.</p></div>
+<div><h2>5. Fixed input — ad-hoc commitments</h2><p class="muted small">Only enter items that constrain the two-week period.</p></div>
 <button id="addAdhocBtn">+ Add commitment</button>
 </div>
 <div class="table-wrap"><table>
 <thead><tr><th>Date</th><th>Who</th><th>Type</th><th>Start</th><th>End</th><th>Location / address</th><th>Fallback drive from home</th><th>Impact</th><th></th></tr></thead>
 <tbody id="adhocBody"></tbody>
 </table></div>
+</div><div class="card settings-sync-card" id="settingsRefreshCard">
+<div class="section-head"><div><h2>6. Saved Data &amp; Calendar Refresh</h2><p class="muted small">Use these controls when you want AutoPilot to reread saved setup or pull fresh calendar events. The Calendar Gateway is only a fetch helper; it does not store your AutoPilot settings.</p></div></div>
+<div class="settings-sync-actions">
+<button id="reloadSavedSettingsBtn" type="button">Reload saved settings</button>
+<button id="refreshSettingsCalendarsBtn" type="button" class="primary">Refresh calendars now</button>
+</div>
+<div class="settings-sync-status" id="settingsRefreshStatus"><strong>Reload saved settings</strong> rereads your locally saved work sites, recurring locations, rules, and current cycle. <strong>Refresh calendars now</strong> fetches the latest events from every saved calendar (using the Gateway when direct access is blocked). Neither action clears your manual final-plan overrides.</div>
 </div></div>
 
 
@@ -1923,7 +1955,9 @@ function activityRow(d={}){
   </td>
   <td><input class="a-start" type="time" value="${d.start||''}"></td><td><input class="a-end" type="time" value="${d.end||''}"></td>
   <td><input class="a-loc" value="${esc(d.location||'')}" placeholder="Full street address preferred">
-  <div class="route-note">${tr.dataset.locationOrigin==='memory'
+  <div class="route-note">${tr.dataset.locationOrigin==='saved-rule'
+    ? 'Saved recurring activity location applied'
+    : tr.dataset.locationOrigin==='memory'
     ? 'Saved venue reused from Location Memory'
     : d.source&&/GameChanger|TeamSnap/i.test(d.source)
       ? (d.location ? 'Imported venue/location — saved for future use' : '⚠ No venue/address supplied by calendar')
@@ -2603,7 +2637,7 @@ function processImportedRows(imported,sourceDescription,opts={}){
     const resolution=resolveCrossSourceDuplicate(item,cfg);
     if(resolution.action==='skip'){crossDeduped++;continue}
     if(resolution.action==='replace'){resolution.row.remove();crossDeduped++}
-    activityRow(classifyImportedTransport(applyLocationMemory(item)));activityCount++;
+    activityRow(classifyImportedTransport(applyLocationMemory(applySavedActivityLocation(item))));activityCount++;
   }
   dedupedCount+=crossDeduped;
   const locationReview=cleaned.filter(x=>!(x.calendarRole==='primaryFamily'&&detectKiraShift(x.title,x.source))&&locationNeedsReview(x.location)).length;
@@ -2683,6 +2717,26 @@ if(proxySaveBtn)proxySaveBtn.onclick=()=>{
   }catch(e){$('importStatus').textContent=e.message}
 };
 renderCalendarProxyStatus();
+const reloadSavedSettingsBtn=document.getElementById('reloadSavedSettingsBtn');
+if(reloadSavedSettingsBtn)reloadSavedSettingsBtn.onclick=()=>{
+  try{
+    loadFromStorage();
+    renderSavedCalendarLinks();
+    renderCalendarProxyStatus();
+    refreshKiraWorkLocationDisplays();
+    renderQuickPlanningReview();
+    const status=$('settingsRefreshStatus');if(status)status.innerHTML='<strong>Saved settings reloaded.</strong> Work sites, saved activity locations, recurring practices, calendar registry, and the current cycle were reread from this browser. No calendar feed was fetched.';
+  }catch(err){const status=$('settingsRefreshStatus');if(status)status.textContent='Could not reload saved settings: '+err.message}
+};
+const refreshSettingsCalendarsBtn=document.getElementById('refreshSettingsCalendarsBtn');
+if(refreshSettingsCalendarsBtn)refreshSettingsCalendarsBtn.onclick=async()=>{
+  const status=$('settingsRefreshStatus');if(status)status.innerHTML='<strong>Refreshing calendars…</strong> Pulling the latest events from all saved feeds.';
+  try{
+    const r=await refreshAllCalendarsCore({quiet:true,reason:'settings-refresh'});
+    if(status)status.innerHTML=`<strong>Calendar refresh complete.</strong> ${r.ok}/${r.total} source${r.total===1?'':'s'} refreshed${r.failed?.length?'. Needs attention: '+r.failed.join(', '):'. All reachable sources are current.'}`;
+    renderQuickPlanningReview();
+  }catch(err){if(status)status.textContent='Calendar refresh failed: '+err.message}
+};
 const appleChoose=document.getElementById('appleChooseDownloadedBtn');
 if(appleChoose)appleChoose.onclick=()=>document.getElementById('mainCalendarFile').click();
 const appleRetry=document.getElementById('appleRetryBtn');
@@ -2697,6 +2751,72 @@ renderSavedCalendarLinks();
 const DAYS=[
   {v:1,l:'Mon'},{v:2,l:'Tue'},{v:3,l:'Wed'},{v:4,l:'Thu'},{v:5,l:'Fri'},{v:6,l:'Sat'},{v:0,l:'Sun'}
 ];
+
+let __savedActivityLocationSeq=0;
+function savedActivityLocationRow(d={}){
+  const tr=document.createElement('tr');
+  tr.dataset.ruleId=d.id||`activity-location-${++__savedActivityLocationSeq}`;
+  const kids=childOptions(d.child||'Any').replace('<option value="Unassigned">Unassigned / Verify</option>','<option value="Any">Any child</option><option value="Unassigned">Unassigned / Verify</option>');
+  tr.innerHTML=`<td><input class="al-name" value="${esc(d.name||'Saved activity location')}" placeholder="Gymnastics Home Gym"></td>
+    <td><select class="al-child">${kids}</select></td>
+    <td><input class="al-match" value="${esc(d.match||'')}" placeholder="gymnastics"></td>
+    <td><input class="al-exclude" value="${esc(d.exclude||'meet, tournament')}" placeholder="meet, tournament"></td>
+    <td><input class="al-address" value="${esc(d.address||'')}" placeholder="Full street address, city, state ZIP"></td>
+    <td><input class="al-drive" type="number" min="0" value="${d.homeDrive??20}" style="width:80px"></td>
+    <td><button class="remove" type="button">Remove</button></td>`;
+  tr.querySelector('.al-child').value=d.child||'Any';
+  tr.querySelector('.remove').onclick=()=>{tr.remove();scheduleAutosave()};
+  $('savedActivityLocationBody').appendChild(tr);
+}
+function getSavedActivityLocations(){
+  const body=$('savedActivityLocationBody');if(!body)return[];
+  return [...body.children].map(r=>({
+    id:r.dataset.ruleId,
+    name:r.querySelector('.al-name').value.trim()||'Saved activity location',
+    child:r.querySelector('.al-child').value||'Any',
+    match:r.querySelector('.al-match').value.trim(),
+    exclude:r.querySelector('.al-exclude').value.trim(),
+    address:r.querySelector('.al-address').value.trim(),
+    homeDrive:+r.querySelector('.al-drive').value||20
+  })).filter(x=>x.match&&x.address);
+}
+function savedActivityLocationFor(event={}){
+  const title=normalizeEventText([event.title,event.description].filter(Boolean).join(' '));
+  const child=event.child||guessChild(event.title,event.source);
+  return getSavedActivityLocations().find(rule=>{
+    if(rule.child&&rule.child!=='Any'&&rule.child!==child)return false;
+    const matches=String(rule.match||'').split(/[,;\n]+/).map(normalizeEventText).filter(Boolean);
+    if(!matches.length||!matches.some(x=>title.includes(x)))return false;
+    const excludes=String(rule.exclude||'').split(/[,;\n]+/).map(normalizeEventText).filter(Boolean);
+    if(excludes.some(x=>title.includes(x)))return false;
+    return true;
+  })||null;
+}
+function applySavedActivityLocation(event={}){
+  if(locationLooksUseful(event.location))return event;
+  const rule=savedActivityLocationFor(event);
+  return rule?{...event,location:rule.address,homeDrive:event.homeDrive??rule.homeDrive,locationOrigin:'saved-rule',savedLocationRule:rule.name}:event;
+}
+function applySavedLocationsToCurrentActivities(){
+  let changed=0;
+  [...$('activityBody').children].forEach(row=>{
+    const current=rowToCalendarEvent(row);
+    if(locationLooksUseful(current.location))return;
+    const enriched=applySavedActivityLocation(current);
+    if(!locationLooksUseful(enriched.location))return;
+    const input=row.querySelector('.a-loc');if(input)input.value=enriched.location;
+    const drive=row.querySelector('.a-home-drive');if(drive&&enriched.homeDrive!=null)drive.value=enriched.homeDrive;
+    row.dataset.locationOrigin='saved-rule';
+    const note=row.querySelector('.route-note');if(note)note.textContent=`Saved location rule applied${enriched.savedLocationRule?': '+enriched.savedLocationRule:''}`;
+    rememberEventLocation({...current,location:enriched.location},enriched.location,'saved-rule');
+    changed++;
+  });
+  if(changed){saveAllNow();markPlanStale('Saved activity locations applied');renderQuickPlanningReview()}
+  const status=$('settingsRefreshStatus');if(status)status.innerHTML=`Applied saved location rules to <strong>${changed}</strong> current activit${changed===1?'y':'ies'}. Existing event-specific venues were left unchanged.`;
+}
+$('addSavedActivityLocationBtn').onclick=()=>{savedActivityLocationRow();scheduleAutosave()};
+$('applySavedActivityLocationsBtn').onclick=applySavedLocationsToCurrentActivities;
+
 function practiceRow(d={}){
   const tr=document.createElement('tr');
   const selected=new Set((d.days||[]).map(Number));
@@ -2742,11 +2862,11 @@ function recurringActivitiesForWindow(){
       if(!p.days.includes(d.getDay()))continue;
       if(from&&d<from)continue;
       if(through&&d>through)continue;
-      rows.push({
+      rows.push(applySavedActivityLocation({
         date:iso(d),child:p.child,title:p.title,start:p.start,end:p.end,
         location:p.location,homeDrive:p.homeDrive,drop:p.drop,pick:p.pick,
         source:'Recurring practice'
-      });
+      }));
     }
   }
   return rows;
@@ -2789,6 +2909,7 @@ function quickLocationStatus(row){
   const val=row.querySelector('.a-loc')?.value.trim()||'',origin=row.dataset.locationOrigin||'missing';
   if(!val)return {text:'Needs location',cls:'missing'};
   if(origin==='memory')return {text:'Reused from saved venue',cls:'memory'};
+  if(origin==='saved-rule')return {text:'From saved activity location',cls:'memory'};
   if(origin==='manual')return {text:'Confirmed · saved for future use',cls:'memory'};
   return {text:'From calendar feed · saved',cls:'feed'};
 }
@@ -3718,6 +3839,7 @@ function permanentSettings(){
     sites:getSites(),
     kiraSites:getKiraSites(),
     kiraSiteMappings:getKiraSiteMappings(),
+    savedActivityLocations:getSavedActivityLocations(),
     practices:getPractices()
   };
 }
@@ -3809,6 +3931,10 @@ function applyPermanent(data){
     if($('kiraMapLateMain'))$('kiraMapLateMain').value=maps.lateMain||$('kiraMapLateMain').value;
     Object.entries(data.rules||{}).forEach(([k,v])=>{if(!$(k))return;$(k).value=v});
     refreshPreferredSite();
+    if($('savedActivityLocationBody')){
+      $('savedActivityLocationBody').innerHTML='';
+      (data.savedActivityLocations||[]).forEach(savedActivityLocationRow);
+    }
     $('practiceBody').innerHTML='';
     (data.practices||[]).forEach(practiceRow);
     refreshChildLabels();
