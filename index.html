@@ -5418,6 +5418,132 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
   setTimeout(()=>{forceGymRows();renderPickupReview();rebuildPhilEmail();},1200);
 })();
 </script>
+
+<!-- AutoPilot v47.25: gymnastics identity invariant binds to configured child name Whitney, never ordinal role. -->
+<script id="v4725WhitneyIdentityInvariant">
+(function(){
+  if(window.__apV4725)return; window.__apV4725=true;
+  const norm=v=>String(v||'').toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+  function configuredRoleForWhitney(){
+    const roles=[
+      ['Oldest','childOldest','childOldestAliases'],
+      ['Middle','childMiddle','childMiddleAliases'],
+      ['Youngest','childYoungest','childYoungestAliases']
+    ];
+    for(const [role,nameId,aliasId] of roles){
+      const name=norm(document.getElementById(nameId)?.value||'');
+      const aliases=String(document.getElementById(aliasId)?.value||'').split(/[,;\n]/).map(norm).filter(Boolean);
+      if(name==='whitney'||aliases.includes('whitney')) return role;
+    }
+    // If a configured name contains Whitney as part of a longer label, accept it.
+    for(const [role,nameId,aliasId] of roles){
+      const values=[document.getElementById(nameId)?.value||'',...(String(document.getElementById(aliasId)?.value||'').split(/[,;\n]/))].map(norm);
+      if(values.some(v=>/(^| )whitney( |$)/.test(v))) return role;
+    }
+    return null;
+  }
+  function whitneyRole(){
+    const r=configuredRoleForWhitney();
+    if(r) return r;
+    // Do not silently bind gymnastics to another named child when Whitney is not resolvable.
+    return 'Unassigned';
+  }
+  function gymText(ev={},link=null){
+    return norm([ev.title,ev.description,ev.source,ev.calendarId,ev.calendarRole,link?.label,link?.url].filter(Boolean).join(' '));
+  }
+  function eventLink(ev={}){try{return typeof calendarLinkForEvent==='function'?(calendarLinkForEvent(ev)||null):null}catch{return null}}
+  function isGym(ev={},link=null){return /gymnast/.test(gymText(ev,link));}
+  function forceWhitneyOnEvent(ev={}){
+    if(!isGym(ev,eventLink(ev)))return ev;
+    const role=whitneyRole();
+    return {...ev,child:role,childManual:role!=='Unassigned',childResolution:role==='Unassigned'?'verify':'rule'};
+  }
+
+  // Override every owner-resolution path after all previous hardening layers.
+  const prevLearned=window.learnedRuleFor;
+  window.learnedRuleFor=function(ev={}){
+    const prior=prevLearned?prevLearned(ev):null;
+    if(!isGym(ev,eventLink(ev)))return prior;
+    const role=whitneyRole();
+    if(role==='Unassigned')return {...(prior||{}),owner:undefined,lockedOwner:false,ownerReason:'Whitney is not mapped in Family settings'};
+    return {...(prior||{}),owner:role,lockedOwner:true,ownerReason:'Hard-coded family invariant: gymnastics = Whitney'};
+  };
+  const prevResolve=window.resolveChildIdentity;
+  window.resolveChildIdentity=function(ev={},link=null){
+    if(isGym(ev,link||eventLink(ev))){
+      const role=whitneyRole();
+      return role==='Unassigned'?{role:'Unassigned',confidence:'verify'}:{role,confidence:'rule'};
+    }
+    return prevResolve?prevResolve(ev,link):{role:'Unassigned',confidence:'verify'};
+  };
+  const prevRowToEvent=window.rowToCalendarEvent;
+  window.rowToCalendarEvent=function(row){return forceWhitneyOnEvent(prevRowToEvent(row));};
+  const prevActivityRow=window.activityRow;
+  window.activityRow=function(d={}){return prevActivityRow(forceWhitneyOnEvent({...d}));};
+
+  function scrubGymnasticsState(){
+    const role=whitneyRole();
+    try{
+      if(typeof getSavedCalendarLinks==='function'){
+        const links=getSavedCalendarLinks(); let changed=false;
+        for(const l of links){
+          if(isGym({},l) && role!=='Unassigned' && l.childRole!==role){l.childRole=role;changed=true;}
+        }
+        if(changed && typeof saveCalendarLinks==='function')saveCalendarLinks(links);
+      }
+    }catch(e){console.warn('v47.25 calendar scrub',e)}
+    try{
+      const body=document.getElementById('activityBody');
+      if(!body)return;
+      for(const row of [...body.children]){
+        const raw=prevRowToEvent(row),link=eventLink(raw);
+        if(!isGym(raw,link))continue;
+        const sel=row.querySelector('.a-child');
+        if(sel){
+          sel.innerHTML=typeof childOptions==='function'?childOptions(role):sel.innerHTML;
+          sel.value=role;
+          sel.disabled=role!=='Unassigned';
+          sel.title=role==='Unassigned'?'Set one child name or alias to Whitney in Family settings':'Hard-coded: gymnastics is Whitney';
+        }
+        row.dataset.childManual=role!=='Unassigned'?'true':'';
+        row.dataset.gymnasticsLocked=role!=='Unassigned'?'true':'';
+        const badge=row.querySelector('.identity-confidence');
+        if(badge){
+          badge.className='identity-confidence '+(role==='Unassigned'?'verify':'rule');
+          badge.textContent=role==='Unassigned'?'VERIFY · Map Whitney in Family settings':'LOCKED · Gymnastics = Whitney';
+        }
+        if(role!=='Unassigned' && typeof saveLearnedRule==='function'){
+          saveLearnedRule({...raw,child:role},{owner:role,lockedOwner:true,ownerName:'Whitney'},'series');
+        }
+      }
+    }catch(e){console.error('v47.25 row scrub',e)}
+  }
+
+  const prevReresolve=window.reResolveCurrentActivities;
+  window.reResolveCurrentActivities=function(){
+    try{if(prevReresolve)prevReresolve();}finally{scrubGymnasticsState(); if(typeof refreshChildLabels==='function')refreshChildLabels();}
+  };
+  if(typeof window.generateCore==='function'){
+    const prevGenerate=window.generateCore;
+    window.generateCore=async function(...args){scrubGymnasticsState();const r=await prevGenerate.apply(this,args);scrubGymnasticsState();return r;};
+  }
+  if(typeof window.render==='function'){
+    const prevRender=window.render;
+    window.render=function(...args){scrubGymnasticsState();const r=prevRender.apply(this,args);scrubGymnasticsState();return r;};
+  }
+
+  function bindFamilyIdentityRefresh(){
+    ['childOldest','childMiddle','childYoungest','childOldestAliases','childMiddleAliases','childYoungestAliases'].forEach(id=>{
+      const el=document.getElementById(id); if(!el||el.dataset.v4725Bound)return; el.dataset.v4725Bound='1';
+      el.addEventListener('change',()=>{scrubGymnasticsState();try{saveAllNow()}catch{};try{renderEyeball()}catch{}});
+    });
+  }
+  bindFamilyIdentityRefresh();
+  setTimeout(()=>{scrubGymnasticsState();try{saveAllNow()}catch{};try{renderEyeball()}catch{}},80);
+  setTimeout(()=>{scrubGymnasticsState();try{renderEyeball()}catch{}},600);
+  setTimeout(()=>{scrubGymnasticsState();},1800);
+})();
+</script>
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
