@@ -4470,6 +4470,42 @@ function rweek(){let s=mon(focus),h='';for(let i=0;i<7;i++){const d=add(s,i),a=r
 function rmonth(){const f=new Date(focus.getFullYear(),focus.getMonth(),1),s=mon(f);let h=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<div class="ml">'+x+'</div>').join('');for(let i=0;i<42;i++){const d=add(s,i),a=rows(plan(d)),out=d.getMonth()!==f.getMonth(),sel=iso(d)===iso(focus);h+='<div class="mc'+(out?' out':'')+(sel?' sel':'')+'" data-date="'+iso(d)+'"><div class="mn">'+d.getDate()+'</div><div class="dots">'+a.slice(0,4).map(x=>'<span class="dot '+x.k+'"></span>').join('')+'</div></div>'}return '<div class="monthgrid">'+h+'</div>'}
 function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===view));document.getElementById('title').textContent=view==='month'?focus.toLocaleDateString(undefined,{month:'long',year:'numeric'}):view==='week'?'Week of '+mon(focus).toLocaleDateString(undefined,{month:'short',day:'numeric'}):focus.toLocaleDateString(undefined,{month:'long',day:'numeric'});document.getElementById('body').innerHTML=view==='day'?rday():view==='week'?rweek():rmonth();document.querySelectorAll('[data-date]').forEach(c=>c.onclick=()=>{focus=pd(c.dataset.date);view='day';render()})}document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;render()});document.getElementById('prev').onclick=()=>{focus=view==='month'?new Date(focus.getFullYear(),focus.getMonth()-1,1):add(focus,view==='week'?-7:-1);render()};document.getElementById('next').onclick=()=>{focus=view==='month'?new Date(focus.getFullYear(),focus.getMonth()+1,1):add(focus,view==='week'?7:1);render()};document.getElementById('today').onclick=()=>{focus=(today0>=first&&today0<=last)?today0:first;render()};render();
 <\/script></div>
+
+<style id="v4724ZeroCognitiveCss">
+.simple-driver-help{margin:10px 0;padding:11px 13px;border:1px solid #d9d2c4;border-radius:10px;background:#fffdf7;font-size:12px;line-height:1.45}.simple-driver-help strong{color:#171719}.ride-rec{margin-top:5px!important;padding:6px 8px!important;background:#f4f7f4!important;border-radius:7px!important;font-size:11px!important;line-height:1.35!important}.finalize-ride-row label{font-weight:900!important}.finalize-ride-row select{min-width:150px!important;border:2px solid #c8a84e!important;background:#fffef9!important}
+@media print{body.simple-workflow-print .simple-print-target.active-print{display:block!important;visibility:visible!important;position:static!important}body.simple-workflow-print .simple-print-target.active-print .week-grid{display:grid!important;visibility:visible!important}body.simple-workflow-print .simple-print-target.active-print .daybox{display:block!important;visibility:visible!important;break-inside:avoid!important}}
+</style>
+<script id="v4724ZeroCognitivePatch">
+(function(){
+  const $id=id=>document.getElementById(id);
+  // Make the weekly workflow self-explanatory: recommendation first, overrides only if needed.
+  const prelim=$id('simplePrelimPanel');
+  if(prelim){
+    const hero=prelim.querySelector('.simple-hero');
+    if(hero)hero.insertAdjacentHTML('beforeend','<div class="simple-driver-help"><strong>AutoPilot already chose the recommended driver.</strong> The printed draft shows DROP and PICKUP for every ride. If one is wrong, click <strong>CHANGE A RIDE</strong>; otherwise do nothing.</div>');
+    const bar=prelim.querySelector('.simple-actionbar');
+    if(bar&&!$id('simpleChangeRide')){const b=document.createElement('button');b.type='button';b.id='simpleChangeRide';b.textContent='CHANGE A RIDE';bar.appendChild(b);b.onclick=()=>{document.querySelector('[data-simple-step="finalize"]')?.click();setTimeout(()=>$id('simpleFinalizeHost')?.scrollIntoView({behavior:'smooth',block:'start'}),80)}}
+  }
+  const step=document.querySelector('[data-simple-step="finalize"]');if(step)step.innerHTML='<strong>3 · RIDE CHECK + SEND</strong>Change only exceptions';
+
+  function pDate(p){return p?.date instanceof Date?p.date:(p?.date?new Date(p.date+'T12:00:00'):new Date())}
+  function assignmentFor(p,a,kind){const key=typeof planActivityKey==='function'?planActivityKey(a):'';return (p.assignments||[]).find(x=>x.kind===kind&&(!key||planActivityKey(x.activity)===key))}
+  function buildPrintCalendar(targetId){
+    const host=$id(targetId);if(!host||typeof plans==='undefined'||!plans.length)return false;
+    const work=plans.filter(p=>!p.weekend).slice(0,10);
+    host.innerHTML=work.map(p=>{
+      const d=pDate(p),acts=(p.activities||[]).filter(a=>a.title);
+      const rides=acts.map(a=>{const drop=assignmentFor(p,a,'Drop'),pick=assignmentFor(p,a,'Pickup');return `<div style="margin-top:7px;padding-top:6px;border-top:1px solid #ddd6c8"><b>${esc(a.start?fmt(toMin(a.start)):'All day')} · ${esc(childLabel(a.child))} · ${esc(a.title)}</b>${a.location?`<div style="font-size:9px;color:#6f685b">${esc(a.location)}</div>`:''}<div style="font-size:10px;margin-top:3px"><b>DROP:</b> ${drop?esc(drop.primary):'—'} &nbsp; <b>PICKUP:</b> ${pick?esc(pick.primary):'—'}</div>${drop?.recommendationReason?`<div style="font-size:8.5px;color:#777064">${esc(drop.recommendationReason)}</div>`:''}${pick?.recommendationReason?`<div style="font-size:8.5px;color:#777064">${esc(pick.recommendationReason)}</div>`:''}</div>`}).join('');
+      return `<div class="daybox"><div style="font-size:13px;font-weight:950">${esc(dayName(d))} ${esc(shortDate(d))}</div><div style="font-size:10px;margin-top:4px"><b>Chris:</b> ${p.holiday?'Holiday':p.onsite?esc(p.site)+' · '+fmt(p.arrive)+'–'+fmt(p.leaveWork):'Remote'}<br><b>Kira:</b> ${esc(p.kiraOff?'Off':(p.kiraLocation||'—'))}</div>${rides||'<div style="font-size:10px;color:#777064;margin-top:10px">No family rides.</div>'}</div>`;
+    }).join('');return true;
+  }
+  // Populate the actual print DOM directly from canonical plans before the old print handler runs.
+  ['simplePrintPrelim','simplePrintFinal'].forEach(id=>{const b=$id(id);if(b)b.addEventListener('click',()=>{buildPrintCalendar(id==='simplePrintPrelim'?'simplePrelimCalendar':'simpleFinalCalendar')},true)});
+  const toPre=$id('simpleToPrelim');if(toPre)toPre.addEventListener('click',()=>setTimeout(()=>buildPrintCalendar('simplePrelimCalendar'),0),true);
+  window.__apBuildKiraPrint=()=>buildPrintCalendar('simplePrelimCalendar');
+})();
+</script>
+
 </body></html>`;
 }
 function downloadMobileSnapshot(){
@@ -4594,6 +4630,42 @@ body{background:#fff;color:#111}
   <div class="grid">${days}</div>
   <div class="footer">Read-only family view. Update the master planner during the weekly sync and republish this file when the plan changes.</div>
 </div>
+
+<style id="v4724ZeroCognitiveCss">
+.simple-driver-help{margin:10px 0;padding:11px 13px;border:1px solid #d9d2c4;border-radius:10px;background:#fffdf7;font-size:12px;line-height:1.45}.simple-driver-help strong{color:#171719}.ride-rec{margin-top:5px!important;padding:6px 8px!important;background:#f4f7f4!important;border-radius:7px!important;font-size:11px!important;line-height:1.35!important}.finalize-ride-row label{font-weight:900!important}.finalize-ride-row select{min-width:150px!important;border:2px solid #c8a84e!important;background:#fffef9!important}
+@media print{body.simple-workflow-print .simple-print-target.active-print{display:block!important;visibility:visible!important;position:static!important}body.simple-workflow-print .simple-print-target.active-print .week-grid{display:grid!important;visibility:visible!important}body.simple-workflow-print .simple-print-target.active-print .daybox{display:block!important;visibility:visible!important;break-inside:avoid!important}}
+</style>
+<script id="v4724ZeroCognitivePatch">
+(function(){
+  const $id=id=>document.getElementById(id);
+  // Make the weekly workflow self-explanatory: recommendation first, overrides only if needed.
+  const prelim=$id('simplePrelimPanel');
+  if(prelim){
+    const hero=prelim.querySelector('.simple-hero');
+    if(hero)hero.insertAdjacentHTML('beforeend','<div class="simple-driver-help"><strong>AutoPilot already chose the recommended driver.</strong> The printed draft shows DROP and PICKUP for every ride. If one is wrong, click <strong>CHANGE A RIDE</strong>; otherwise do nothing.</div>');
+    const bar=prelim.querySelector('.simple-actionbar');
+    if(bar&&!$id('simpleChangeRide')){const b=document.createElement('button');b.type='button';b.id='simpleChangeRide';b.textContent='CHANGE A RIDE';bar.appendChild(b);b.onclick=()=>{document.querySelector('[data-simple-step="finalize"]')?.click();setTimeout(()=>$id('simpleFinalizeHost')?.scrollIntoView({behavior:'smooth',block:'start'}),80)}}
+  }
+  const step=document.querySelector('[data-simple-step="finalize"]');if(step)step.innerHTML='<strong>3 · RIDE CHECK + SEND</strong>Change only exceptions';
+
+  function pDate(p){return p?.date instanceof Date?p.date:(p?.date?new Date(p.date+'T12:00:00'):new Date())}
+  function assignmentFor(p,a,kind){const key=typeof planActivityKey==='function'?planActivityKey(a):'';return (p.assignments||[]).find(x=>x.kind===kind&&(!key||planActivityKey(x.activity)===key))}
+  function buildPrintCalendar(targetId){
+    const host=$id(targetId);if(!host||typeof plans==='undefined'||!plans.length)return false;
+    const work=plans.filter(p=>!p.weekend).slice(0,10);
+    host.innerHTML=work.map(p=>{
+      const d=pDate(p),acts=(p.activities||[]).filter(a=>a.title);
+      const rides=acts.map(a=>{const drop=assignmentFor(p,a,'Drop'),pick=assignmentFor(p,a,'Pickup');return `<div style="margin-top:7px;padding-top:6px;border-top:1px solid #ddd6c8"><b>${esc(a.start?fmt(toMin(a.start)):'All day')} · ${esc(childLabel(a.child))} · ${esc(a.title)}</b>${a.location?`<div style="font-size:9px;color:#6f685b">${esc(a.location)}</div>`:''}<div style="font-size:10px;margin-top:3px"><b>DROP:</b> ${drop?esc(drop.primary):'—'} &nbsp; <b>PICKUP:</b> ${pick?esc(pick.primary):'—'}</div>${drop?.recommendationReason?`<div style="font-size:8.5px;color:#777064">${esc(drop.recommendationReason)}</div>`:''}${pick?.recommendationReason?`<div style="font-size:8.5px;color:#777064">${esc(pick.recommendationReason)}</div>`:''}</div>`}).join('');
+      return `<div class="daybox"><div style="font-size:13px;font-weight:950">${esc(dayName(d))} ${esc(shortDate(d))}</div><div style="font-size:10px;margin-top:4px"><b>Chris:</b> ${p.holiday?'Holiday':p.onsite?esc(p.site)+' · '+fmt(p.arrive)+'–'+fmt(p.leaveWork):'Remote'}<br><b>Kira:</b> ${esc(p.kiraOff?'Off':(p.kiraLocation||'—'))}</div>${rides||'<div style="font-size:10px;color:#777064;margin-top:10px">No family rides.</div>'}</div>`;
+    }).join('');return true;
+  }
+  // Populate the actual print DOM directly from canonical plans before the old print handler runs.
+  ['simplePrintPrelim','simplePrintFinal'].forEach(id=>{const b=$id(id);if(b)b.addEventListener('click',()=>{buildPrintCalendar(id==='simplePrintPrelim'?'simplePrelimCalendar':'simpleFinalCalendar')},true)});
+  const toPre=$id('simpleToPrelim');if(toPre)toPre.addEventListener('click',()=>setTimeout(()=>buildPrintCalendar('simplePrelimCalendar'),0),true);
+  window.__apBuildKiraPrint=()=>buildPrintCalendar('simplePrelimCalendar');
+})();
+</script>
+
 </body>
 </html>`;
 }
@@ -5257,293 +5329,41 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 </script>
 <!-- AutoPilot v47.23: canonical gymnastics ownership at model level; exception-only instant validation; no expandable/freeze-prone Eyeball controls. -->
 
-<!-- AutoPilot v47.24: production-output hardening; absolute gymnastics invariant, quick pickup review, dedicated print documents, direct Phil email rebuild, final PDF-style preview. -->
-<style id="v4724ProductionFixCss">
-#v4724PickupReview{margin:0 0 16px;padding:14px;border:2px solid #d8cfb8;border-radius:13px;background:#fffdf8}
-#v4724PickupReview h3{margin:0 0 4px;font-size:20px}#v4724PickupReview .pickup-help{font-size:12px;color:#6f675c;margin-bottom:10px}
-.v4724-pickup-day{border-top:1px solid #e7e0d5;padding-top:10px;margin-top:10px}.v4724-pickup-day:first-of-type{border-top:0;margin-top:0;padding-top:0}
-.v4724-pickup-day-head{font-size:14px;font-weight:900;margin-bottom:5px}.v4724-pick-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,1fr);gap:10px;align-items:center;padding:8px 0;border-top:1px dotted #e8e1d7}.v4724-pick-row:first-child{border-top:0}
-.v4724-pick-copy strong{font-size:13px}.v4724-pick-copy .muted{font-size:11px}.v4724-driver-buttons{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
-.v4724-driver-buttons button{border:1px solid #d5cec3;background:#fff;border-radius:999px;padding:6px 9px;min-height:34px;font-size:11px;font-weight:850;color:#312e29}.v4724-driver-buttons button.active{background:#25221e;color:#fff;border-color:#25221e}.v4724-driver-buttons button.recommend.active{background:#2e6d3f;border-color:#2e6d3f}.v4724-driver-buttons button.no.active{background:#7b4b3b;border-color:#7b4b3b}
-#v4724FinalPreviewWrap{display:none;margin-top:16px;border-top:3px solid #222;padding-top:14px}#v4724FinalPreviewWrap.ready{display:block}.v4724-preview-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
-#v4724FinalPreview{background:white;border:1px solid #d8d2c7;border-radius:10px;padding:18px;max-width:1050px}.v4724-doc-head{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #2e2b26;padding-bottom:10px;margin-bottom:10px}.v4724-doc-head h2{margin:0}.v4724-doc-head .muted{text-align:right;font-size:11px}
-.v4724-doc-day{padding:10px 0;border-bottom:1px solid #e2ddd5;break-inside:avoid}.v4724-doc-day:last-child{border-bottom:0}.v4724-doc-date{font-size:15px;font-weight:900}.v4724-doc-work{font-size:12px;margin:3px 0 6px}.v4724-doc-ride{display:grid;grid-template-columns:75px minmax(0,1fr) 130px;gap:8px;font-size:11.5px;padding:3px 0}.v4724-doc-ride b{text-align:right}.v4724-email-preview{white-space:pre-wrap;background:#faf8f3;border:1px solid #ded7cb;border-radius:8px;padding:12px;font-size:12px;line-height:1.5;margin-top:12px}
-@media(max-width:720px){.v4724-pick-row{grid-template-columns:1fr}.v4724-driver-buttons{justify-content:flex-start}.v4724-doc-ride{grid-template-columns:65px minmax(0,1fr)}.v4724-doc-ride b{grid-column:2;text-align:left}}
+<style id="v4724ZeroCognitiveCss">
+.simple-driver-help{margin:10px 0;padding:11px 13px;border:1px solid #d9d2c4;border-radius:10px;background:#fffdf7;font-size:12px;line-height:1.45}.simple-driver-help strong{color:#171719}.ride-rec{margin-top:5px!important;padding:6px 8px!important;background:#f4f7f4!important;border-radius:7px!important;font-size:11px!important;line-height:1.35!important}.finalize-ride-row label{font-weight:900!important}.finalize-ride-row select{min-width:150px!important;border:2px solid #c8a84e!important;background:#fffef9!important}
+@media print{body.simple-workflow-print .simple-print-target.active-print{display:block!important;visibility:visible!important;position:static!important}body.simple-workflow-print .simple-print-target.active-print .week-grid{display:grid!important;visibility:visible!important}body.simple-workflow-print .simple-print-target.active-print .daybox{display:block!important;visibility:visible!important;break-inside:avoid!important}}
 </style>
-<script id="v4724ProductionFixJs">
+<script id="v4724ZeroCognitivePatch">
 (function(){
-  if(window.__apV4724)return;window.__apV4724=true;
-  const V='47.24';
-  function gymText(ev={},link=null){
-    return normalizeIdentityText([ev.title,ev.description,ev.source,ev.calendarId,ev.calendarRole,link&&link.label,link&&link.url].filter(Boolean).join(' '));
+  const $id=id=>document.getElementById(id);
+  // Make the weekly workflow self-explanatory: recommendation first, overrides only if needed.
+  const prelim=$id('simplePrelimPanel');
+  if(prelim){
+    const hero=prelim.querySelector('.simple-hero');
+    if(hero)hero.insertAdjacentHTML('beforeend','<div class="simple-driver-help"><strong>AutoPilot already chose the recommended driver.</strong> The printed draft shows DROP and PICKUP for every ride. If one is wrong, click <strong>CHANGE A RIDE</strong>; otherwise do nothing.</div>');
+    const bar=prelim.querySelector('.simple-actionbar');
+    if(bar&&!$id('simpleChangeRide')){const b=document.createElement('button');b.type='button';b.id='simpleChangeRide';b.textContent='CHANGE A RIDE';bar.appendChild(b);b.onclick=()=>{document.querySelector('[data-simple-step="finalize"]')?.click();setTimeout(()=>$id('simpleFinalizeHost')?.scrollIntoView({behavior:'smooth',block:'start'}),80)}}
   }
-  function isGym(ev={},link=null){return /gymnast/.test(gymText(ev,link));}
-  function eventLink(ev={}){try{return calendarLinkForEvent(ev)||null}catch{return null}}
-  // ABSOLUTE invariant: no saved/learned rule is ever allowed to report anyone except Whitney for gymnastics.
-  const priorLearned=learnedRuleFor;
-  learnedRuleFor=function(ev={}){
-    const prior=priorLearned?priorLearned(ev):null;
-    if(isGym(ev,eventLink(ev)))return {...(prior||{}),owner:'Youngest',lockedOwner:true,ownerReason:'Hard-coded family invariant: gymnastics = Whitney'};
-    return prior;
-  };
-  const priorResolve=resolveChildIdentity;
-  resolveChildIdentity=function(ev={},link=null){
-    if(isGym(ev,link||eventLink(ev)))return {role:'Youngest',confidence:'rule'};
-    return priorResolve(ev,link);
-  };
-  const priorRowToEvent=rowToCalendarEvent;
-  rowToCalendarEvent=function(row){
-    const ev=priorRowToEvent(row);
-    const link=eventLink(ev);
-    if(isGym(ev,link)){ev.child='Youngest';ev.childManual=true;}
-    return ev;
-  };
-  const priorActivityRow=activityRow;
-  activityRow=function(d={}){
-    const x={...d};
-    if(isGym(x,eventLink(x))){x.child='Youngest';x.childManual=true;x.childResolution='rule';}
-    return priorActivityRow(x);
-  };
-  function forceGymLinks(){
-    try{
-      const links=getSavedCalendarLinks();let changed=false;
-      links.forEach(l=>{if(isGym({},l)&&l.childRole!=='Youngest'){l.childRole='Youngest';changed=true;}});
-      if(changed)saveCalendarLinks(links);
-    }catch(e){console.warn('Gym calendar mapping hardening',e)}
+  const step=document.querySelector('[data-simple-step="finalize"]');if(step)step.innerHTML='<strong>3 · RIDE CHECK + SEND</strong>Change only exceptions';
+
+  function pDate(p){return p?.date instanceof Date?p.date:(p?.date?new Date(p.date+'T12:00:00'):new Date())}
+  function assignmentFor(p,a,kind){const key=typeof planActivityKey==='function'?planActivityKey(a):'';return (p.assignments||[]).find(x=>x.kind===kind&&(!key||planActivityKey(x.activity)===key))}
+  function buildPrintCalendar(targetId){
+    const host=$id(targetId);if(!host||typeof plans==='undefined'||!plans.length)return false;
+    const work=plans.filter(p=>!p.weekend).slice(0,10);
+    host.innerHTML=work.map(p=>{
+      const d=pDate(p),acts=(p.activities||[]).filter(a=>a.title);
+      const rides=acts.map(a=>{const drop=assignmentFor(p,a,'Drop'),pick=assignmentFor(p,a,'Pickup');return `<div style="margin-top:7px;padding-top:6px;border-top:1px solid #ddd6c8"><b>${esc(a.start?fmt(toMin(a.start)):'All day')} · ${esc(childLabel(a.child))} · ${esc(a.title)}</b>${a.location?`<div style="font-size:9px;color:#6f685b">${esc(a.location)}</div>`:''}<div style="font-size:10px;margin-top:3px"><b>DROP:</b> ${drop?esc(drop.primary):'—'} &nbsp; <b>PICKUP:</b> ${pick?esc(pick.primary):'—'}</div>${drop?.recommendationReason?`<div style="font-size:8.5px;color:#777064">${esc(drop.recommendationReason)}</div>`:''}${pick?.recommendationReason?`<div style="font-size:8.5px;color:#777064">${esc(pick.recommendationReason)}</div>`:''}</div>`}).join('');
+      return `<div class="daybox"><div style="font-size:13px;font-weight:950">${esc(dayName(d))} ${esc(shortDate(d))}</div><div style="font-size:10px;margin-top:4px"><b>Chris:</b> ${p.holiday?'Holiday':p.onsite?esc(p.site)+' · '+fmt(p.arrive)+'–'+fmt(p.leaveWork):'Remote'}<br><b>Kira:</b> ${esc(p.kiraOff?'Off':(p.kiraLocation||'—'))}</div>${rides||'<div style="font-size:10px;color:#777064;margin-top:10px">No family rides.</div>'}</div>`;
+    }).join('');return true;
   }
-  function forceGymRows(){
-    try{
-      forceGymLinks();
-      [...$('activityBody').children].forEach(row=>{
-        const ev=priorRowToEvent(row),link=eventLink(ev);if(!isGym(ev,link))return;
-        const sel=row.querySelector('.a-child');if(sel){sel.innerHTML=childOptions('Youngest');sel.value='Youngest';sel.disabled=true;sel.title='Hard-coded: gymnastics is Whitney';}
-        row.dataset.childManual='true';row.dataset.gymnasticsLocked='true';
-        saveLearnedRule({...ev,child:'Youngest'},{owner:'Youngest',lockedOwner:true},'series');
-        const b=row.querySelector('.identity-confidence');if(b){b.className='identity-confidence rule';b.textContent='LOCKED · Gymnastics = '+childLabel('Youngest');}
-      });
-    }catch(e){console.error('forceGymRows',e)}
-  }
-  const priorReResolve2=reResolveCurrentActivities;
-  reResolveCurrentActivities=function(){try{priorReResolve2&&priorReResolve2()}finally{forceGymRows();refreshChildLabels();}};
-  // Wrap calendar refresh/generation so the invariant is applied before and after every model rebuild.
-  if(typeof refreshAllCalendarsCore==='function'){
-    const priorRefresh=refreshAllCalendarsCore;
-    refreshAllCalendarsCore=async function(...args){forceGymLinks();const r=await priorRefresh.apply(this,args);forceGymRows();saveAllNow();return r;};
-  }
-  if(typeof generateCore==='function'){
-    const priorGenCore=generateCore;
-    generateCore=async function(...args){forceGymRows();const r=await priorGenCore.apply(this,args);forceGymRows();return r;};
-  }
-  function driverName(v){return v==='__NONE__'?'No ride':(v||'Recommendation');}
-  function pickupRows(){
-    const rows=[];(plans||[]).forEach((p,pi)=>{
-      if(p.weekend)return;
-      const acts=(p.activities||[]).filter(a=>(a.pick||'yes')==='yes');
-      acts.forEach(act=>{
-        const activityKey=planActivityKey(act);
-        const a=(p.assignments||[]).find(x=>x.kind==='Pickup'&&planActivityKey(x.activity)===activityKey)||null;
-        rows.push({p,pi,a,act,activityKey,key:a?assignmentOverrideKey(p.dateStr,a):''});
-      });
-    });return rows;
-  }
-  function pickupButton(label,value,row,cls=''){
-    const forced=row.key?(manualTransportOverrides[row.key]||''):'';const active=(value===''&&!forced&&!!row.a)||(value&&forced===value);
-    return `<button type="button" class="${cls} ${active?'active':''}" data-v4724-pick="${esc(value)}" data-plan="${row.pi}" data-activity="${esc(row.activityKey)}">${esc(label)}</button>`;
-  }
-  function renderPickupReview(){
-    const host=document.getElementById('v4724PickupReview');if(!host)return;
-    const rows=pickupRows();if(!rows.length){host.innerHTML='<h3>Quick pickup review</h3><div class="pickup-help">No pickup rides are required in the current 10-workday plan.</div>';return;}
-    const by={};rows.forEach(r=>(by[r.p.dateStr]??=[]).push(r));
-    host.innerHTML=`<h3>Quick pickup review</h3><div class="pickup-help">This is the fast final pass. Every event marked Pickup Needed is listed once. If AutoPilot is right, do nothing. To override, tap the actual pickup person — the change saves immediately.</div>`+Object.entries(by).map(([date,dayRows])=>{const d=dayRows[0].p.date;return `<div class="v4724-pickup-day"><div class="v4724-pickup-day-head">${dayName(d)} ${shortDate(d)}</div>${dayRows.map(r=>{const a=r.a,act=r.act||a?.activity||{},time=a?.time??(act.end?toMin(act.end):toMin(act.start||'00:00')),rec=a?`AutoPilot recommends ${esc(a.primary)}${a.recommendationReason?' · '+esc(a.recommendationReason):''}`:'⚠ AutoPilot has not produced a feasible pickup recommendation yet';return `<div class="v4724-pick-row"><div class="v4724-pick-copy"><strong>${fmt(time)} · ${esc(childLabel(act.child))} · ${esc(act.title||'Activity')}</strong><br><span class="muted">${rec}</span></div><div class="v4724-driver-buttons">${a?pickupButton('Recommendation · '+a.primary,'',r,'recommend'):''}${pickupButton('Chris','Chris',r)}${pickupButton('Kira','Kira',r)}${pickupButton(childLabel('Oldest'),childLabel('Oldest'),r)}${pickupButton('No ride','__NONE__',r,'no')}</div></div>`}).join('')}</div>`}).join('');
-  }
-  function installPickupSurface(){
-    const finalPanel=$('simpleFinalizePanel'),existing=$('v4724PickupReview');if(!finalPanel||existing)return;
-    const div=document.createElement('div');div.id='v4724PickupReview';const anchor=$('simpleFinalizeHost');finalPanel.insertBefore(div,anchor||finalPanel.firstChild);renderPickupReview();
-    div.addEventListener('click',async e=>{const b=e.target.closest('[data-v4724-pick]');if(!b)return;e.preventDefault();const pi=+b.dataset.plan,ak=b.dataset.activity,val=b.dataset.v4724Pick;b.disabled=true;try{await applySimpleRideRedline(pi,ak,'Pickup',val);renderPickupReview();buildFinalPreview();rebuildPhilEmail();}finally{b.disabled=false}});
-  }
-  function rebuildPhilEmail(){
-    const box=$('bossMessage');if(!box)return'';
-    const work=(plans||[]).filter(p=>!p.weekend);
-    const text='Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site||'Onsite'} — approx. arrival ${fmt(p.arrive)}; approx. departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n');
-    box.value=text;box.dispatchEvent(new Event('input',{bubbles:true}));return text;
-  }
-  function printableCss(){return `@page{size:landscape;margin:.35in}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#222;margin:0}h1{font-size:22px;margin:0 0 4px}.sub{font-size:11px;color:#666;margin-bottom:12px}.week-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:6px!important}.daybox{border:1px solid #bbb!important;border-radius:0!important;min-height:3.45in!important;height:auto!important;padding:8px!important;box-shadow:none!important;break-inside:avoid}.daybox *{font-size:10px!important}.daybox h3,.daybox strong{font-size:11px!important}button,.no-print{display:none!important}`;}
-  function openPrintDocument(kind){
-    try{if(typeof render==='function')render({skipCorrections:true});}catch(e){}
-    try{if(typeof refreshCalendars==='function')refreshCalendars();}catch(e){}
-    const src=$(kind==='preliminary'?'simplePrelimPrint':'simpleFinalPrint');
-    if(!src){alert('The schedule preview is not available yet. Build the plan first.');return;}
-    const title=kind==='preliminary'?'PRELIMINARY — Review with Kira':'FINAL — 10-workday schedule';
-    const old=$('v4724PrintFrame');if(old)old.remove();
-    const frame=document.createElement('iframe');frame.id='v4724PrintFrame';frame.setAttribute('aria-hidden','true');frame.style.position='fixed';frame.style.right='0';frame.style.bottom='0';frame.style.width='1px';frame.style.height='1px';frame.style.border='0';frame.style.opacity='0';document.body.appendChild(frame);
-    const d=frame.contentDocument||frame.contentWindow.document;d.open();d.write(`<!doctype html><html><head><title>${title}</title><style>${printableCss()}</style></head><body><h1>${title}</h1><div class="sub">AutoPilot ${V} · ${new Date().toLocaleString()}</div>${src.innerHTML}</body></html>`);d.close();
-    const launch=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(err){console.error('Print launch failed',err);alert('The browser could not open print preview. Use Ctrl+P while the schedule preview is visible.')}setTimeout(()=>frame.remove(),2500)};
-    if(d.readyState==='complete')setTimeout(launch,80);else frame.onload=()=>setTimeout(launch,80);
-  }
-  function replaceClick(id,fn){const old=$(id);if(!old)return null;const n=old.cloneNode(true);old.replaceWith(n);n.addEventListener('click',fn);return n;}
-  function finalPreviewHtml(){
-    const work=(plans||[]).filter(p=>!p.weekend);
-    return `<div class="v4724-doc-head"><div><h2>FINAL 10-WORKDAY SCHEDULE</h2><div class="muted">AutoPilot ${V} · Final logistics review</div></div><div class="muted">Planning window<br>${work.length?shortDate(work[0].date)+' – '+shortDate(work[work.length-1].date):'No plan'}</div></div>`+work.map(p=>{
-      const workLine=p.holiday?'Holiday / no work':p.onsite?`${esc(p.site||'Onsite')} · approx. arrive ${fmt(p.arrive)} · depart ${fmt(p.leaveWork)}`:'Remote';
-      const rides=(p.assignments||[]).map(a=>`<div class="v4724-doc-ride"><span>${esc(a.kind)} ${fmt(a.time)}</span><span>${esc(childLabel(a.activity?.child))} · ${esc(a.activity?.title||'Activity')}</span><b>${esc(a.primary)}</b></div>`).join('')||'<div class="muted" style="font-size:11px">No family rides.</div>';
-      return `<div class="v4724-doc-day"><div class="v4724-doc-date">${dayName(p.date)} ${shortDate(p.date)}</div><div class="v4724-doc-work">${workLine}</div>${rides}</div>`;
-    }).join('');
-  }
-  function buildFinalPreview(){
-    const wrap=$('v4724FinalPreviewWrap'),doc=$('v4724FinalPreview');if(!wrap||!doc)return;
-    const email=rebuildPhilEmail();doc.innerHTML=finalPreviewHtml()+`<div style="margin-top:14px;font-weight:900">Email to Phil</div><div class="v4724-email-preview">${esc(email)}</div>`;wrap.classList.add('ready');
-  }
-  function installFinalPreview(){
-    const pkg=$('simpleFinalPackage');if(!pkg||$('v4724FinalPreviewWrap'))return;
-    const wrap=document.createElement('div');wrap.id='v4724FinalPreviewWrap';wrap.innerHTML=`<h3 style="margin:0">Final preview</h3><div class="muted small">This is the exact final logistics view to inspect before printing/saving as PDF or sending Phil's FYI file.</div><div class="v4724-preview-actions"><button type="button" id="v4724OpenFinalPrint">PRINT / SAVE FINAL PDF</button><button type="button" id="v4724RefreshFinalPreview">REFRESH FINAL PREVIEW</button></div><div id="v4724FinalPreview"></div>`;pkg.insertBefore(wrap,$('simplePhilHost')||null);
-    $('v4724OpenFinalPrint').addEventListener('click',()=>openPrintDocument('final'));
-    $('v4724RefreshFinalPreview').addEventListener('click',()=>{buildFinalPreview();renderPickupReview()});
-  }
-  function hardenWorkflowButtons(){
-    replaceClick('simplePrintPrelim',()=>openPrintDocument('preliminary'));
-    replaceClick('simplePrintFinal',()=>openPrintDocument('final'));
-    const build=replaceClick('simpleBuildFinal',async()=>{
-      try{forceGymRows();saveAllNow();if(typeof render==='function')render();rebuildPhilEmail();if(typeof refreshCalendars==='function')refreshCalendars();buildFinalPreview();renderPickupReview();const pkg=$('simpleFinalPackage');pkg&&pkg.classList.add('ready');const st=$('simpleFinalizeStatus');if(st){st.textContent='Final package ready. Review the Final Preview below, then print/save PDF, copy the Phil email, and download the .ics.';st.classList.add('good')}const scope=$('philOutlookScope');if(scope)scope.value='all';scheduleNonzeroAgendaPublish();$('v4724FinalPreviewWrap')?.scrollIntoView({behavior:'smooth',block:'start'});}catch(err){console.error(err);alert('Final package could not be built: '+err.message)}
-    });
-  }
-  // Keep final and pickup views synchronized after any established render path.
-  const priorRender=render;
-  render=function(...args){const r=priorRender.apply(this,args);forceGymRows();rebuildPhilEmail();setTimeout(()=>{renderPickupReview();if($('v4724FinalPreviewWrap')?.classList.contains('ready'))buildFinalPreview();},0);return r;};
-  // Initialize after all legacy scripts have loaded and attached their handlers.
-  setTimeout(()=>{
-    forceGymRows();installPickupSurface();installFinalPreview();hardenWorkflowButtons();rebuildPhilEmail();renderPickupReview();
-    // Explicitly scrub any currently loaded gymnastics rule to Whitney and persist it.
-    forceGymRows();try{saveAllNow()}catch(e){}
-  },250);
-  setTimeout(()=>{forceGymRows();renderPickupReview();rebuildPhilEmail();},1200);
+  // Populate the actual print DOM directly from canonical plans before the old print handler runs.
+  ['simplePrintPrelim','simplePrintFinal'].forEach(id=>{const b=$id(id);if(b)b.addEventListener('click',()=>{buildPrintCalendar(id==='simplePrintPrelim'?'simplePrelimCalendar':'simpleFinalCalendar')},true)});
+  const toPre=$id('simpleToPrelim');if(toPre)toPre.addEventListener('click',()=>setTimeout(()=>buildPrintCalendar('simplePrelimCalendar'),0),true);
+  window.__apBuildKiraPrint=()=>buildPrintCalendar('simplePrelimCalendar');
 })();
 </script>
 
-<!-- AutoPilot v47.25: gymnastics identity invariant binds to configured child name Whitney, never ordinal role. -->
-<script id="v4725WhitneyIdentityInvariant">
-(function(){
-  if(window.__apV4725)return; window.__apV4725=true;
-  const norm=v=>String(v||'').toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
-  function configuredRoleForWhitney(){
-    const roles=[
-      ['Oldest','childOldest','childOldestAliases'],
-      ['Middle','childMiddle','childMiddleAliases'],
-      ['Youngest','childYoungest','childYoungestAliases']
-    ];
-    for(const [role,nameId,aliasId] of roles){
-      const name=norm(document.getElementById(nameId)?.value||'');
-      const aliases=String(document.getElementById(aliasId)?.value||'').split(/[,;\n]/).map(norm).filter(Boolean);
-      if(name==='whitney'||aliases.includes('whitney')) return role;
-    }
-    // If a configured name contains Whitney as part of a longer label, accept it.
-    for(const [role,nameId,aliasId] of roles){
-      const values=[document.getElementById(nameId)?.value||'',...(String(document.getElementById(aliasId)?.value||'').split(/[,;\n]/))].map(norm);
-      if(values.some(v=>/(^| )whitney( |$)/.test(v))) return role;
-    }
-    return null;
-  }
-  function whitneyRole(){
-    const r=configuredRoleForWhitney();
-    if(r) return r;
-    // Do not silently bind gymnastics to another named child when Whitney is not resolvable.
-    return 'Unassigned';
-  }
-  function gymText(ev={},link=null){
-    return norm([ev.title,ev.description,ev.source,ev.calendarId,ev.calendarRole,link?.label,link?.url].filter(Boolean).join(' '));
-  }
-  function eventLink(ev={}){try{return typeof calendarLinkForEvent==='function'?(calendarLinkForEvent(ev)||null):null}catch{return null}}
-  function isGym(ev={},link=null){return /gymnast/.test(gymText(ev,link));}
-  function forceWhitneyOnEvent(ev={}){
-    if(!isGym(ev,eventLink(ev)))return ev;
-    const role=whitneyRole();
-    return {...ev,child:role,childManual:role!=='Unassigned',childResolution:role==='Unassigned'?'verify':'rule'};
-  }
-
-  // Override every owner-resolution path after all previous hardening layers.
-  const prevLearned=window.learnedRuleFor;
-  window.learnedRuleFor=function(ev={}){
-    const prior=prevLearned?prevLearned(ev):null;
-    if(!isGym(ev,eventLink(ev)))return prior;
-    const role=whitneyRole();
-    if(role==='Unassigned')return {...(prior||{}),owner:undefined,lockedOwner:false,ownerReason:'Whitney is not mapped in Family settings'};
-    return {...(prior||{}),owner:role,lockedOwner:true,ownerReason:'Hard-coded family invariant: gymnastics = Whitney'};
-  };
-  const prevResolve=window.resolveChildIdentity;
-  window.resolveChildIdentity=function(ev={},link=null){
-    if(isGym(ev,link||eventLink(ev))){
-      const role=whitneyRole();
-      return role==='Unassigned'?{role:'Unassigned',confidence:'verify'}:{role,confidence:'rule'};
-    }
-    return prevResolve?prevResolve(ev,link):{role:'Unassigned',confidence:'verify'};
-  };
-  const prevRowToEvent=window.rowToCalendarEvent;
-  window.rowToCalendarEvent=function(row){return forceWhitneyOnEvent(prevRowToEvent(row));};
-  const prevActivityRow=window.activityRow;
-  window.activityRow=function(d={}){return prevActivityRow(forceWhitneyOnEvent({...d}));};
-
-  function scrubGymnasticsState(){
-    const role=whitneyRole();
-    try{
-      if(typeof getSavedCalendarLinks==='function'){
-        const links=getSavedCalendarLinks(); let changed=false;
-        for(const l of links){
-          if(isGym({},l) && role!=='Unassigned' && l.childRole!==role){l.childRole=role;changed=true;}
-        }
-        if(changed && typeof saveCalendarLinks==='function')saveCalendarLinks(links);
-      }
-    }catch(e){console.warn('v47.25 calendar scrub',e)}
-    try{
-      const body=document.getElementById('activityBody');
-      if(!body)return;
-      for(const row of [...body.children]){
-        const raw=prevRowToEvent(row),link=eventLink(raw);
-        if(!isGym(raw,link))continue;
-        const sel=row.querySelector('.a-child');
-        if(sel){
-          sel.innerHTML=typeof childOptions==='function'?childOptions(role):sel.innerHTML;
-          sel.value=role;
-          sel.disabled=role!=='Unassigned';
-          sel.title=role==='Unassigned'?'Set one child name or alias to Whitney in Family settings':'Hard-coded: gymnastics is Whitney';
-        }
-        row.dataset.childManual=role!=='Unassigned'?'true':'';
-        row.dataset.gymnasticsLocked=role!=='Unassigned'?'true':'';
-        const badge=row.querySelector('.identity-confidence');
-        if(badge){
-          badge.className='identity-confidence '+(role==='Unassigned'?'verify':'rule');
-          badge.textContent=role==='Unassigned'?'VERIFY · Map Whitney in Family settings':'LOCKED · Gymnastics = Whitney';
-        }
-        if(role!=='Unassigned' && typeof saveLearnedRule==='function'){
-          saveLearnedRule({...raw,child:role},{owner:role,lockedOwner:true,ownerName:'Whitney'},'series');
-        }
-      }
-    }catch(e){console.error('v47.25 row scrub',e)}
-  }
-
-  const prevReresolve=window.reResolveCurrentActivities;
-  window.reResolveCurrentActivities=function(){
-    try{if(prevReresolve)prevReresolve();}finally{scrubGymnasticsState(); if(typeof refreshChildLabels==='function')refreshChildLabels();}
-  };
-  if(typeof window.generateCore==='function'){
-    const prevGenerate=window.generateCore;
-    window.generateCore=async function(...args){scrubGymnasticsState();const r=await prevGenerate.apply(this,args);scrubGymnasticsState();return r;};
-  }
-  if(typeof window.render==='function'){
-    const prevRender=window.render;
-    window.render=function(...args){scrubGymnasticsState();const r=prevRender.apply(this,args);scrubGymnasticsState();return r;};
-  }
-
-  function bindFamilyIdentityRefresh(){
-    ['childOldest','childMiddle','childYoungest','childOldestAliases','childMiddleAliases','childYoungestAliases'].forEach(id=>{
-      const el=document.getElementById(id); if(!el||el.dataset.v4725Bound)return; el.dataset.v4725Bound='1';
-      el.addEventListener('change',()=>{scrubGymnasticsState();try{saveAllNow()}catch{};try{renderEyeball()}catch{}});
-    });
-  }
-  bindFamilyIdentityRefresh();
-  setTimeout(()=>{scrubGymnasticsState();try{saveAllNow()}catch{};try{renderEyeball()}catch{}},80);
-  setTimeout(()=>{scrubGymnasticsState();try{renderEyeball()}catch{}},600);
-  setTimeout(()=>{scrubGymnasticsState();},1800);
-})();
-</script>
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
