@@ -78,6 +78,7 @@ td input,td select{margin:0;padding:7px}
 .print-only{display:none}
 @media(max-width:1100px){.rules{grid-template-columns:repeat(3,1fr)}.output-grid{grid-template-columns:1fr}.week-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.app{padding:10px}.rules,.week-grid{grid-template-columns:1fr}}
+.ride-rec{margin-top:4px;font-size:10.5px;line-height:1.3;color:#5f574a}.ride-rec b{color:#24221d}
 @media print{
  @page{size:Letter landscape;margin:.20in}
  body{background:#fff;color:#111}
@@ -961,13 +962,14 @@ button.secondary,.btn.secondary{
 .finalize-item{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:7px;align-items:center;padding:6px 0;border-top:1px dotted #ece7dd}
 .finalize-item:first-of-type{border-top:0}.finalize-item-copy{font-size:12px;line-height:1.25;color:#343029;min-width:0}.finalize-item-copy strong{font-size:12.5px}.finalize-item-copy .muted{font-size:10.5px}
 .finalize-item select{font-size:12px;min-height:34px;padding:5px 6px;border-radius:7px;width:100%}
+.finalize-ride-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(120px,.8fr) minmax(120px,.8fr);gap:8px;align-items:end;padding:8px 0;border-top:1px dotted #ece7dd}.finalize-ride-row:first-of-type{border-top:0}.finalize-ride-row label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#665f53}.finalize-ride-row select{display:block;width:100%;margin-top:3px;font-size:12px;min-height:36px;padding:6px 7px;border-radius:7px}.finalize-ride-row.override-active{background:#fffaf0;border-radius:8px;padding-left:7px;padding-right:7px}
 .finalize-empty{font-size:11px;color:#817a6b;padding:2px 0}
 .finalize-tip{font-size:11px!important;line-height:1.4!important;margin-top:9px!important}
 .output-readonly-note{font-size:12px;color:#6f695d;margin:0 0 10px;padding:9px 11px;background:#f7f6f2;border-radius:9px}
 #commutePlan .override-row{display:none!important}
 #commutePlan .dayrec{padding:9px 10px}.output-grid .card h3{font-size:17px}
 @media(max-width:980px){.finalize-grid{grid-template-columns:1fr}}
-@media(max-width:620px){.finalize-work-row,.finalize-times{grid-template-columns:1fr}.finalize-item{grid-template-columns:1fr}.finalize-item select{max-width:none}.time-adjust-controls{grid-template-columns:42px 1fr 42px}}
+@media(max-width:620px){.finalize-work-row,.finalize-times{grid-template-columns:1fr}.finalize-item,.finalize-ride-row{grid-template-columns:1fr}.finalize-item select{max-width:none}.time-adjust-controls{grid-template-columns:42px 1fr 42px}}
 
 
 
@@ -1344,7 +1346,7 @@ private"></textarea>
 <textarea class="copybox" id="bossMessage" placeholder="Generate a plan to populate your two-week email to Phil." rows="18" style="margin-top:10px;min-height:520px;width:100%;resize:vertical;font-family:var(--ap-body-font);font-size:15px;line-height:1.55;padding:14px 16px;background:#fffefa;color:#24221d;border:1px solid #d7cfbf;border-radius:10px"></textarea>
 <div class="small muted" style="margin-top:8px">Full email draft shown below. Edit anything you want, then copy it directly into email.</div>
 <div class="phil-outlook-export">
-  <div class="phil-outlook-head"><strong>Phil Outlook FYI</strong><span>Creates free/available all-day FYI banners that sit at the top of Phil's Outlook calendar without blocking working time.</span></div>
+  <div class="phil-outlook-head"><strong>Phil Outlook FYI</strong><span>Creates simple free/available FYI banners with your approximate onsite arrival and departure times, without blocking Phil's working time.</span></div>
   <div class="phil-outlook-controls">
     <label class="small">Export window
       <select id="philOutlookScope"><option value="week1">Week 1</option><option value="week2">Week 2</option><option value="all">Full 2 weeks</option></select>
@@ -1352,7 +1354,7 @@ private"></textarea>
     <button id="downloadPhilOutlookBtn" type="button">Download Outlook FYI (.ics)</button>
     <button id="savePhilOutlookBtn" type="button" class="primary">Save to WVU Files</button>
   </div>
-  <div id="philOutlookStatus" class="small muted">Onsite days export as free/available all-day FYI banners using the finalized arrival/departure times from Review & Finalize. Remote days export as all-day FYIs.</div>
+  <div id="philOutlookStatus" class="small muted">Onsite days export as free/available FYIs showing your finalized approximate arrival/departure times. Remote days export as simple all-day FYIs.</div>
 </div>
 <div class="toolbar"><button id="copyBossBtn">Copy schedule</button></div>
 </div>
@@ -1926,7 +1928,7 @@ function childLabel(key){
   return key;
 }
 function childOptions(selected=''){
-  return ['Oldest','Middle','Youngest','Unassigned'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
+  return ['Chris','Kira','Oldest','Middle','Youngest','Unassigned'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
 }
 function refreshChildLabels(){
   [...$('activityBody').children].forEach(r=>{
@@ -3172,7 +3174,7 @@ function renderQuickPlanningReview(){
       const needs=reviewAttentionState(row,event),ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
       const drop=row.querySelector('.a-drop')?.value||'no',pick=row.querySelector('.a-pick')?.value||'no';
       return `<div class="activity-review-card ${needs?'attention':'handled'}" data-quick-row="${index}">
-        <div><div class="activity-review-title">${esc(event.start?displayTime12h(event.start)+' · ':'')}${esc(event.title)}</div><div class="activity-review-meta">${esc(source)}${event.end?` · ends ${esc(displayTime12h(event.end))}`:''}${needs?' · CHECK':''}</div><div class="activity-review-child"><label>Child<select data-review-child>${quickChildOptions(event.child)}</select></label></div></div>
+        <div><div class="activity-review-title">${esc(event.start?displayTime12h(event.start)+' · ':'')}${esc(event.title)}</div><div class="activity-review-meta">${esc(source)}${event.end?` · ends ${esc(displayTime12h(event.end))}`:''}${needs?' · CHECK':''}</div><div class="activity-review-child"><label>Who<select data-review-child>${quickChildOptions(event.child)}</select></label></div></div>
         <div class="activity-review-controls"><label>Drop-off<select data-review-drop class="${drop==='yes'?'leg-yes':'leg-no'}"><option value="no"${drop==='no'?' selected':''}>No</option><option value="yes"${drop==='yes'?' selected':''}>Yes</option></select></label><label>Pickup<select data-review-pick class="${pick==='yes'?'leg-yes':'leg-no'}"><option value="no"${pick==='no'?' selected':''}>No</option><option value="yes"${pick==='yes'?' selected':''}>Yes</option></select></label></div>
         <div class="activity-review-location"><label>Location / pickup point<input data-review-location value="${esc(event.location||'')}" placeholder="Venue, Central, or address"></label><div class="activity-review-status ${ls.cls}">${esc(ls.text)}</div></div>
       </div>`;
@@ -3270,33 +3272,45 @@ async function assignTransport(day){
   legs.sort((a,b)=>a.time-b.time);
   const assignments=[];
   const site=day.onsite?getSites().find(s=>s.name===day.site):null;
+  const buffer=+$('transportBuffer').value||20;
 
   for(const leg of legs){
     const opts=[];
+    const homeTravel=await homeToActivityMinutes(leg.activity);
 
-    if(await kiraCanCoverLeg(day,leg))opts.push({n:'Kira',s:6});
+    const kiraCan=await kiraCanCoverLeg(day,leg);
+    if(kiraCan){
+      const kiraScore=day.kiraOff?95:70;
+      const kiraReason=day.kiraOff
+        ? `Kira is off/local · ~${homeTravel} min home→event`
+        : `Kira home approx. ${fmt(day.kiraPickupAvailable)} · ~${homeTravel} min home→event`;
+      opts.push({n:'Kira',s:kiraScore,reason:kiraReason});
+    }
 
-    let chrisCan=false;
+    let chrisCan=false,chrisTravel=homeTravel,chrisReason='';
     if(!day.chrisUnavailable){
-      if(!day.onsite) chrisCan=true;
-      else if(site){
-        const travel=await workToActivityMinutes(site,leg.activity);
-        const requiredLeave=leg.time-(+$('transportBuffer').value||20)-travel;
+      if(!day.onsite){
+        chrisCan=true;
+        chrisReason=`Chris is remote/local · ~${homeTravel} min home→event`;
+      }else if(site){
+        chrisTravel=await workToActivityMinutes(site,leg.activity);
+        const requiredLeave=leg.time-buffer-chrisTravel;
         chrisCan=day.leaveWork!=null && day.leaveWork<=requiredLeave;
+        chrisReason=`Chris onsite at ${day.site} · ~${chrisTravel} min work→event · leave by ${fmt(requiredLeave)}`;
       }
     }
-    if(chrisCan)opts.push({n:'Chris',s:5});
+    if(chrisCan)opts.push({n:'Chris',s:day.onsite?68:90,reason:chrisReason});
 
     if($('oldestCanDrive').value==='yes' && leg.activity.child!=='Oldest'){
-      opts.push({n:childLabel('Oldest'),s:4});
+      opts.push({n:childLabel('Oldest'),s:50,reason:`${childLabel('Oldest')} is configured as an available driver`});
     }
 
-    opts.push({n:'Backup',s:1});
+    opts.push({n:'Backup',s:1,reason:'No configured household driver is feasible with the current timing'});
     opts.sort((a,b)=>b.s-a.s);
-    assignments.push({...leg,primary:opts[0].n,secondary:opts[1]?.n||'Backup'});
+    assignments.push({...leg,primary:opts[0].n,secondary:opts[1]?.n||'Backup',recommendationReason:opts[0].reason,alternatives:opts.slice(1,3).map(x=>x.n)});
   }
 
-  // Split overlapping transport legs when one person cannot realistically do both.
+  // Split competing rides when the same recommended person cannot realistically cover both.
   const threshold=20;
   for(let i=0;i<assignments.length;i++){
     for(let j=i+1;j<assignments.length;j++){
@@ -3304,8 +3318,10 @@ async function assignTransport(day){
       if(Math.abs(a.time-b.time)<=threshold && a.activity.child!==b.activity.child && a.primary===b.primary){
         const candidates=[b.secondary,'Backup'].filter(Boolean);
         const alt=candidates.find(x=>x!==a.primary);
+        const prior=b.primary;
         b.primary=alt||'Backup';
-        b.secondary=b.primary==='Backup'?'—':'Backup';
+        b.secondary=b.primary==='Backup'?'—':prior;
+        b.recommendationReason=`Competing ride within ${threshold} min · split coverage from ${prior}`;
       }
     }
   }
@@ -3586,6 +3602,36 @@ function driverOverrideOptions(a,p){
   const opts=['','Chris','Kira',childLabel('Oldest'),'Backup'];
   return opts.map(v=>`<option value="${esc(v)}"${v===forced?' selected':''}>${v?esc(v):'Auto'}</option>`).join('');
 }
+
+function simpleRideOptions(a,p){
+  if(!a)return `<option value="__NONE__" selected>No ride needed</option><option value="">Use recommendation</option><option value="Chris">Chris</option><option value="Kira">Kira</option><option value="${esc(childLabel('Oldest'))}">${esc(childLabel('Oldest'))}</option><option value="Backup">Backup</option>`;
+  const key=assignmentOverrideKey(p.dateStr,a),forced=manualTransportOverrides[key]||'';
+  const opts=['','Chris','Kira',childLabel('Oldest'),'Backup','__NONE__'];
+  return opts.map(v=>`<option value="${esc(v)}"${v===forced?' selected':''}>${v==='__NONE__'?'No ride needed':(v?esc(v):`Use recommendation · ${esc(a.primary)}`)}</option>`).join('');
+}
+function planActivityKey(a){return activityLegOverrideKey({date:a?.date||'',start:a?.start||'',title:a?.title||'',source:a?.source||''})}
+function findActivityRowByKey(key){return [...$('activityBody').children].find(r=>activityLegOverrideKey(rowToCalendarEvent(r))===key)||null}
+async function applySimpleRideRedline(planIndex,activityKey,kind,value){
+  const p=plans[planIndex];if(!p)return;
+  const row=findActivityRowByKey(activityKey);
+  const activity=(p.activities||[]).find(a=>planActivityKey(a)===activityKey)||(row?rowToCalendarEvent(row):null);if(!activity)return;
+  const legField=kind==='Drop'?'drop':'pick';
+  const oldAssignment=(p.assignments||[]).find(a=>a.kind===kind&&planActivityKey(a.activity)===activityKey);
+  if(oldAssignment)delete manualTransportOverrides[assignmentOverrideKey(p.dateStr,oldAssignment)];
+  if(row){
+    const sel=row.querySelector(kind==='Drop'?'.a-drop':'.a-pick');
+    if(sel)sel.value=value==='__NONE__'?'no':'yes';
+    syncLegClassification(row);
+  }else{
+    const remembered=manualLegOverrides[activityKey]||{drop:activity.drop||'yes',pick:activity.pick||'yes'};
+    remembered[legField]=value==='__NONE__'?'no':'yes';manualLegOverrides[activityKey]=remembered;
+    activity[legField]=remembered[legField];
+  }
+  await recalcReviewPlanDay(p.dateStr);
+  const updated=(plans[planIndex]?.assignments||[]).find(a=>a.kind===kind&&planActivityKey(a.activity)===activityKey);
+  if(value!=='__NONE__'&&value&&updated){manualTransportOverrides[assignmentOverrideKey(p.dateStr,updated)]=value;await recalcReviewPlanDay(p.dateStr)}
+  saveAllNow();markChanged();render({skipCorrections:true});renderPlanCorrections();
+}
 async function recalcPlanDayWithManuals(index){
   const p=plans[index]; if(!p||p.weekend)return;
   if(p.onsite){
@@ -3704,7 +3750,7 @@ function correctionActivityKey(row){
   return [row.querySelector('.a-date')?.value||'',row.querySelector('.a-start')?.value||'',row.querySelector('.a-title')?.value||'',row.dataset.source||''].join('|');
 }
 function quickChildOptions(selected=''){
-  return ['Oldest','Middle','Youngest','Unassigned'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
+  return ['Chris','Kira','Oldest','Middle','Youngest','Unassigned'].map(k=>`<option value="${k}"${k===selected?' selected':''}>${esc(childLabel(k))}</option>`).join('');
 }
 async function applyQuickChildOverride(rowKey,value){
   const row=[...$('activityBody').children].find(r=>correctionActivityKey(r)===rowKey); if(!row)return;
@@ -3738,31 +3784,25 @@ function renderPlanCorrections(){
       const ev=rowToCalendarEvent(r),key=correctionActivityKey(r),needs=ev.child==='Unassigned';
       return `<div class="finalize-item${needs?' override-active':''}"><div class="finalize-item-copy"><strong>${esc(ev.start?fmt(toMin(ev.start)):'All day')} · ${esc(ev.title)}</strong><br><span class="muted">${esc(ev.source||'Manual')}${needs?' · NEEDS CHILD':''}</span></div><select class="quick-child-override finalization-control" data-row-key="${esc(key)}">${quickChildOptions(ev.child)}</select></div>`;
     }).join('');
-    const legs=(p.assignments||[]).map(a=>{
-      const key=assignmentOverrideKey(p.dateStr,a),active=manualTransportOverrides[key]?' override-active':'';
-      return `<div class="finalize-item${active}"><div class="finalize-item-copy"><strong>${esc(a.kind)} ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}</strong><br><span class="muted">${esc(a.activity.title)}</span></div><select class="quick-driver-override finalization-control" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
+    const rideSource=[];
+    activityRows.forEach(r=>{const a=rowToCalendarEvent(r);if(a.start||a.end)rideSource.push(a)});
+    (p.activities||[]).forEach(a=>{if((a.start||a.end)&&!rideSource.some(x=>planActivityKey(x)===planActivityKey(a)))rideSource.push(a)});
+    const rideActivities=rideSource.map(a=>{
+      const ak=planActivityKey(a),drop=(p.assignments||[]).find(x=>x.kind==='Drop'&&planActivityKey(x.activity)===ak),pick=(p.assignments||[]).find(x=>x.kind==='Pickup'&&planActivityKey(x.activity)===ak);
+      const active=(drop&&manualTransportOverrides[assignmentOverrideKey(p.dateStr,drop)])||(pick&&manualTransportOverrides[assignmentOverrideKey(p.dateStr,pick)])||manualLegOverrides[ak];
+      return `<div class="finalize-ride-row${active?' override-active':''}"><div class="finalize-item-copy"><strong>${esc(a.start?fmt(toMin(a.start)):'All day')} · ${esc(childLabel(a.child))}</strong><br><span class="muted">${esc(a.title)}</span>${drop?`<div class="ride-rec"><b>Recommended drop-off: ${esc(drop.primary)}</b> · ${esc(drop.recommendationReason||'best fit from current schedule')}</div>`:''}${pick?`<div class="ride-rec"><b>Recommended pickup: ${esc(pick.primary)}</b> · ${esc(pick.recommendationReason||'best fit from current schedule')}</div>`:''}</div><label>Drop-off<select class="simple-ride-override finalization-control" data-plan-index="${idx}" data-activity-key="${esc(ak)}" data-kind="Drop">${simpleRideOptions(drop,p)}</select></label><label>Pickup<select class="simple-ride-override finalization-control" data-plan-index="${idx}" data-activity-key="${esc(ak)}" data-kind="Pickup">${simpleRideOptions(pick,p)}</select></label></div>`;
     }).join('');
     const hasManual=dayHasManualFinalization(p);
     const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto · ${label}</button>`:'<div style="height:22px"></div>'}</div>`:'<div></div>';
-    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'} · ${dayChallengeLabel(p)}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div><div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:11px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
+    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'} · ${dayChallengeLabel(p)}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div><div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:11px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}<div class="finalize-section"><div class="finalize-section-title">Events / who</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Rides — change only your redlines</div>${rideActivities||'<div class="finalize-empty">No rides needed.</div>'}</div></div>`;
   }).join('')}</div>`;
   host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;await recalcDayForOverride(idx,sel.value);markChanged();renderQuickPlanningReview();});
   host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{await applyQuickChildOverride(sel.dataset.rowKey,sel.value);renderQuickPlanningReview();});
-  host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{
-    const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;
-    const card=sel.closest('.finalize-day'),item=sel.closest('.finalize-item');
+  host.querySelectorAll('.simple-ride-override').forEach(sel=>sel.onchange=async()=>{
     sel.disabled=true;
-    try{
-      if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];
-      await recalcPlanDayWithManuals(idx);
-      saveAllNow();markChanged();
-      item?.classList.toggle('override-active',!!sel.value);
-      if(card){card.classList.toggle('manual',dayHasManualFinalization(plans[idx]));const st=card.querySelector('.finalize-status');if(st)st.textContent=dayHasManualFinalization(plans[idx])?'MANUAL EDIT':'AUTO DRAFT'}
-      render({skipCorrections:true});
-    }catch(err){
-      console.error('Driver override failed',err);saveAllNow();markChanged();
-      const status=$('saveStatus');if(status)status.textContent='Driver change saved; output refresh failed. Review remains available.';
-    }finally{sel.disabled=false}
+    try{await applySimpleRideRedline(+sel.dataset.planIndex,sel.dataset.activityKey,sel.dataset.kind,sel.value)}
+    catch(err){console.error('Ride redline failed',err);const status=$('saveStatus');if(status)status.textContent='Ride change could not be applied. Your other redlines remain saved.'}
+    finally{sel.disabled=false}
   });
   host.querySelectorAll('.time-nudge').forEach(btn=>btn.onclick=async()=>{
     const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;
@@ -4585,7 +4625,7 @@ function buildPhilOutlookIcs(scope='week1'){
       const arrive=Number.isFinite(+p.arrive)?+p.arrive:(Number.isFinite(+p.departHome)?+p.departHome:8*60);
       let depart=Number.isFinite(+p.leaveWork)?+p.leaveWork:arrive+8*60; if(depart<=arrive)depart=Math.min(1439,arrive+60);
       const site=p.site||'Onsite';
-      lines.push(`DTSTART;VALUE=DATE:${philYmd(key)}`,`DTEND;VALUE=DATE:${philYmd(philNextDateKey(key))}`,'SUMMARY:'+philIcsEscape(`FYI - Chris arrive ${fmt(arrive)}, depart ${fmt(depart)}`),'LOCATION:'+philIcsEscape(site),'DESCRIPTION:'+philIcsEscape(`AutoPilot FYI for Phil. Planned site: ${site}. Tentative arrival: ${fmt(arrive)}. Tentative departure: ${fmt(depart)}. All-day banner only; shown as Free/Available and does not block working time.`));
+      lines.push(`DTSTART;VALUE=DATE:${philYmd(key)}`,`DTEND;VALUE=DATE:${philYmd(philNextDateKey(key))}`,'SUMMARY:'+philIcsEscape(`FYI - Chris approx. arrive ${fmt(arrive)}, depart ${fmt(depart)}`),'LOCATION:'+philIcsEscape(site),'DESCRIPTION:'+philIcsEscape(`AutoPilot FYI for Phil. Planned site: ${site}. Approx. arrival: ${fmt(arrive)}. Approx. departure: ${fmt(depart)}. All-day banner only; shown as Free/Available and does not block working time.`));
     }else{
       lines.push(`DTSTART;VALUE=DATE:${philYmd(key)}`,`DTEND;VALUE=DATE:${philYmd(philNextDateKey(key))}`,'SUMMARY:'+philIcsEscape('FYI - Chris remote'),'DESCRIPTION:'+philIcsEscape('AutoPilot FYI for Phil. Planned remote work day. All-day banner only; shown as Free/Available and does not block working time.'));
     }
@@ -4837,6 +4877,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
   setTimeout(()=>{renderEyeball();if((typeof plans!=='undefined'&&plans.length))refreshCalendars()},50);
 })();
 </script>
+<!-- AutoPilot v47.18: explicit recommended ride assignments with routing rationale; Chris/Kira event ownership; Phil approx-arrival/departure FYI ICS. -->
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
