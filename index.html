@@ -4996,6 +4996,130 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 })();
 </script>
 <!-- AutoPilot v47.21: durable UID-based learned rules, exception-only validation, route-feasible whole-day ride solver, one-step final ride overrides, immutable Final snapshots. -->
+<style id="v4722EditFixCss">
+.eye-personal-panel{grid-column:1/-1;border-top:1px solid #ece7df;margin-top:8px;padding-top:9px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:end}.eye-personal-panel label{font-size:11px;font-weight:850;color:#645d54;display:grid;gap:4px}.eye-personal-panel select,.eye-personal-panel input{min-height:38px;border:1px solid #d7d0c5;border-radius:8px;padding:6px 8px;background:#fff;color:#282520}.gymnastics-lock{font-size:10.5px;font-weight:900;color:#2e6538;margin-top:4px}
+</style>
+<script id="v4722EditFixJs">
+(function(){
+  function isGymnasticsEvent(event,link){
+    event=event||{};
+    const t=normalizeIdentityText(event.title||'');
+    const s=normalizeIdentityText([event.source,event.calendarId,link&&link.label,link&&link.url].filter(Boolean).join(' '));
+    return /gymnast/.test(t)||/gymnast/.test(s);
+  }
+  const previousResolve=resolveChildIdentity;
+  resolveChildIdentity=function(event,link){
+    if(isGymnasticsEvent(event,link))return {role:'Youngest',confidence:'rule'};
+    return previousResolve(event,link);
+  };
+  reResolveCurrentActivities=function(){
+    const links=getSavedCalendarLinks();
+    [...$('activityBody').children].forEach(r=>{
+      const ev=rowToCalendarEvent(r);
+      const link=links.find(l=>sourceLabelFor(l)===r.dataset.source||r.dataset.source?.includes(l.label||'__none__'));
+      const gym=isGymnasticsEvent(ev,link);
+      const rule=learnedRuleFor(ev);
+      if(gym){
+        const sel=r.querySelector('.a-child');
+        if(sel){sel.innerHTML=childOptions('Youngest');sel.value='Youngest';}
+        r.dataset.childManual='true';
+        r.dataset.gymnasticsLocked='true';
+        saveLearnedRule(ev,{owner:'Youngest'},'series');
+      }else if(rule&&rule.owner){
+        r.querySelector('.a-child').value=rule.owner;
+        r.dataset.childManual='true';
+      }else if(r.dataset.childManual!=='true'){
+        const x=resolveChildIdentity(ev,link),sel=r.querySelector('.a-child');
+        sel.innerHTML=childOptions(x.role);sel.value=x.role;
+        const b=r.querySelector('.identity-confidence');
+        if(b){b.className='identity-confidence '+x.confidence;b.textContent=identityConfidenceLabel(x.confidence);}
+      }
+      const now=rowToCalendarEvent(r),leg=legDefaultsForEvent(now,now.child);
+      if(rule&&(rule.drop!=null||rule.pick!=null)){
+        r.querySelector('.a-drop').value=leg.drop;r.querySelector('.a-pick').value=leg.pick;
+        r.dataset.transportClass=(leg.drop==='yes'||leg.pick==='yes')?'required':'info';
+        r.dataset.transportReason='Learned event rule';r.dataset.transportManual='true';
+      }
+      const badge=r.querySelector('.identity-confidence');
+      if(gym&&badge){badge.className='identity-confidence rule';badge.textContent='Family rule · Gymnastics = '+childLabel('Youngest');}
+      const verify=r.querySelector('.verify-child');if(verify)verify.style.display=r.querySelector('.a-child').value==='Unassigned'?'':'none';
+    });
+    refreshChildLabels();
+  };
+
+  const openKeys=new Set();
+  function activityKey(row){return stableOccurrenceKey(rowToCalendarEvent(row));}
+  function adhocKey(row){return ['adhoc',row.querySelector('.h-date')?.value||'',row.querySelector('.h-start')?.value||'',row.querySelector('.h-type')?.value||'',row.querySelector('.h-who')?.value||''].join('|');}
+  function activityByKey(key){return [...$('activityBody').children].find(r=>activityKey(r)===key)||null;}
+  function adhocByKey(key){return [...$('adhocBody').children].find(r=>adhocKey(r)===key)||null;}
+  function ownerButtons(selected,key,gym){
+    return ['Chris','Kira','Oldest','Middle','Youngest'].map(k=>{
+      const disabled=gym&&k!=='Youngest'?' disabled':'';
+      return `<button type="button" class="eye-choice ${k===selected?'active':''}" data-v4722-action="owner" data-event-key="${esc(key)}" data-value="${k}"${disabled}>${esc(childLabel(k))}</button>`;
+    }).join('');
+  }
+  window.renderEyeball=function(){
+    const host=$('simpleEyeballList'),sum=$('simpleEyeballSummary');if(!host||!sum)return;
+    const start=parseDate($('startDate').value),end=addDays(start,13),links=getSavedCalendarLinks();
+    const acts=[...$('activityBody').children].map(row=>{
+      const ev=rowToCalendarEvent(row),link=links.find(l=>sourceLabelFor(l)===row.dataset.source||row.dataset.source?.includes(l.label||'__none__'));
+      return {...ev,_kind:'activity',_key:activityKey(row),_row:row,_gym:isGymnasticsEvent(ev,link)};
+    }).filter(a=>a.date&&parseDate(a.date)>=start&&parseDate(a.date)<=end);
+    let adh=[];
+    try{adh=[...$('adhocBody').children].map(row=>{const a={date:row.querySelector('.h-date').value,who:row.querySelector('.h-who').value,type:row.querySelector('.h-type').value,start:row.querySelector('.h-start').value,end:row.querySelector('.h-end').value,location:row.querySelector('.h-location').value,impact:row.querySelector('.h-impact').value};return {...a,title:a.type,child:a.who,_kind:'adhoc',_key:adhocKey(row),_row:row};}).filter(a=>a.date&&parseDate(a.date)>=start&&parseDate(a.date)<=end);}catch(e){}
+    const all=[...acts,...adh].sort((a,b)=>(a.date+(a.start||'')).localeCompare(b.date+(b.start||'')));
+    const needs=acts.filter(a=>a.child==='Unassigned'||(a.transportClass==='required'&&!locationLooksUseful(a.location)));
+    sum.innerHTML=`<span class="simple-chip">${all.length} events found</span><span class="simple-chip good">✓ ${all.length-needs.length} resolved</span>${needs.length?`<span class="simple-chip attention">⚠ ${needs.length} need attention</span>`:'<span class="simple-chip good">No exceptions</span>'}<span class="simple-chip">Correct rows = zero clicks</span>`;
+    const groups={};all.forEach(a=>(groups[a.date]??=[]).push(a));
+    host.innerHTML=Object.entries(groups).map(([date,items])=>{
+      const d=parseDate(date);
+      const rows=items.map(a=>{
+        const key=a._key,expanded=openKeys.has(key);
+        if(a._kind==='adhoc'){
+          return `<div class="simple-event"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(childLabel(a.who)||a.who)} · ${esc(a.type||'Commitment')}</div><div class="simple-event-meta">${[a.location,'Manual/personal'].filter(Boolean).map(esc).join(' · ')}</div><div class="eye-assumptions"><span class="eye-pill on">${esc(childLabel(a.who)||a.who)}</span><button type="button" class="eye-edit-btn" data-v4722-action="toggle" data-event-key="${esc(key)}">${expanded?'Done':'Change'}</button></div></div>${expanded?`<div class="eye-personal-panel"><label>Who<select data-v4722-adhoc="who" data-event-key="${esc(key)}"><option>Chris</option><option>Kira</option><option>Oldest</option><option>Middle</option><option>Youngest</option><option>Family</option></select></label><label>Type<select data-v4722-adhoc="type" data-event-key="${esc(key)}"><option>Dinner/social</option><option>Appointment</option><option>Work event</option><option>School</option><option>Practice</option><option>Game</option><option>Transport</option><option>Other</option></select></label><label>Location<input data-v4722-adhoc="location" data-event-key="${esc(key)}" value="${esc(a.location||'')}"></label></div>`:''}</div>`;
+        }
+        const bad=a.child==='Unassigned'||(a.transportClass==='required'&&!locationLooksUseful(a.location));
+        const show=bad||expanded,scope=a._row.dataset.ruleScope||'series';
+        return `<div class="simple-event ${bad?'verify-needed':''}"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(a.title)}</div><div class="simple-event-meta">${[a.location,a.source].filter(Boolean).map(esc).join(' · ')}</div><div class="eye-assumptions"><span class="eye-pill ${a.child==='Unassigned'?'verify':'on'}">${a.child==='Unassigned'?'⚠ ':''}${esc(childLabel(a.child))}</span><span class="eye-pill ${a.drop==='yes'?'on':'off'}">Drop-off ${a.drop==='yes'?'✓':'—'}</span><span class="eye-pill ${a.pick==='yes'?'on':'off'}">Pickup ${a.pick==='yes'?'✓':'—'}</span><button type="button" class="eye-edit-btn" data-v4722-action="toggle" data-event-key="${esc(key)}">${show&&!bad?'Done':'Change'}</button></div>${a._gym?`<div class="gymnastics-lock">Locked family rule: Gymnastics = ${esc(childLabel('Youngest'))}</div>`:''}</div>${show?`<div class="eye-exception-panel"><div class="eye-rulebar"><span class="eye-choice-label">Apply correction</span><button type="button" class="eye-choice eye-scope ${scope==='series'?'active':''}" data-v4722-action="scope" data-event-key="${esc(key)}" data-value="series">Always for this event</button><button type="button" class="eye-choice eye-scope ${scope==='occurrence'?'active':''}" data-v4722-action="scope" data-event-key="${esc(key)}" data-value="occurrence">This date only</button></div><div class="eye-choice-group"><span class="eye-choice-label">Who</span>${ownerButtons(a.child,key,a._gym)}</div><div class="eye-choice-group"><span class="eye-choice-label">Drop-off</span><button type="button" class="eye-choice yes ${a.drop==='yes'?'active':''}" data-v4722-action="drop" data-event-key="${esc(key)}" data-value="yes">Needed</button><button type="button" class="eye-choice no ${a.drop==='no'?'active':''}" data-v4722-action="drop" data-event-key="${esc(key)}" data-value="no">Not needed</button></div><div class="eye-choice-group"><span class="eye-choice-label">Pickup</span><button type="button" class="eye-choice yes ${a.pick==='yes'?'active':''}" data-v4722-action="pick" data-event-key="${esc(key)}" data-value="yes">Needed</button><button type="button" class="eye-choice no ${a.pick==='no'?'active':''}" data-v4722-action="pick" data-event-key="${esc(key)}" data-value="no">Not needed</button></div></div>`:''}</div>`;
+      }).join('');
+      return `<div class="simple-day-scan"><div class="simple-day-scan-head"><strong>${dayName(d)} ${shortDate(d)}</strong><span>${items.length} event${items.length===1?'':'s'}</span></div>${rows}</div>`;
+    }).join('')||'<div class="simple-empty">No events loaded.</div>';
+    host.querySelectorAll('[data-v4722-adhoc="who"]').forEach(el=>{const r=adhocByKey(el.dataset.eventKey);if(r)el.value=r.querySelector('.h-who').value;});
+    host.querySelectorAll('[data-v4722-adhoc="type"]').forEach(el=>{const r=adhocByKey(el.dataset.eventKey);if(r)el.value=r.querySelector('.h-type').value;});
+  };
+  const host=$('simpleEyeballList');
+  if(host&&!host.dataset.v4722Bound){
+    host.dataset.v4722Bound='true';
+    host.addEventListener('click',async e=>{
+      const btn=e.target.closest('[data-v4722-action]');if(!btn||!host.contains(btn))return;
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const key=btn.dataset.eventKey,action=btn.dataset.v4722Action,row=activityByKey(key)||adhocByKey(key);if(!row)return;
+      if(action==='toggle'){openKeys.has(key)?openKeys.delete(key):openKeys.add(key);renderEyeball();return;}
+      if(row.closest('#adhocBody'))return;
+      if(action==='scope'){row.dataset.ruleScope=btn.dataset.value;renderEyeball();return;}
+      setLastReviewChange(row);
+      const ev=rowToCalendarEvent(row),gym=isGymnasticsEvent(ev,calendarLinkForEvent(ev));
+      if(action==='owner'){
+        const val=gym?'Youngest':btn.dataset.value;
+        row.querySelector('.a-child').value=val;row.dataset.childManual='true';saveLearnedRule(ev,{owner:val},gym?'series':(row.dataset.ruleScope==='occurrence'?'occurrence':'series'));
+      }
+      if(action==='drop'||action==='pick'){
+        row.querySelector(action==='drop'?'.a-drop':'.a-pick').value=btn.dataset.value;syncLegClassification(row);saveLearnedRule(rowToCalendarEvent(row),{[action]:btn.dataset.value},row.dataset.ruleScope==='occurrence'?'occurrence':'series');
+      }
+      openKeys.add(key);saveAllNow();await refreshPlanAfterReviewEdit(row);renderEyeball();
+    },true);
+    host.addEventListener('change',async e=>{
+      const ctl=e.target.closest('[data-v4722-adhoc]');if(!ctl)return;
+      const row=adhocByKey(ctl.dataset.eventKey);if(!row)return;
+      const map={who:'.h-who',type:'.h-type',location:'.h-location'},target=row.querySelector(map[ctl.dataset.v4722Adhoc]);if(!target)return;
+      target.value=ctl.value;saveAllNow();markChanged();if(plans?.length)await generateCore();renderEyeball();
+    },true);
+  }
+  setTimeout(()=>{try{reResolveCurrentActivities();renderEyeball();}catch(err){console.error('v47.22 initialization failed',err);}},160);
+})();
+</script>
+<!-- AutoPilot v47.22: stable Eyeball edit keys, editable personal/ad-hoc events, absolute Gymnastics→Whitney precedence. -->
+
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
