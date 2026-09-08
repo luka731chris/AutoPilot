@@ -4781,9 +4781,11 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 #simpleSetupPanel .autopilot-tab-panel{display:block!important}#simpleSetupPanel #tab-calendars,#simpleSetupPanel #tab-settings{display:block!important}#simpleSetupPanel #tab-settings{margin-top:16px}
 .simple-setup-note{font-size:12px;color:#6f685b;margin-bottom:8px}
 @media(max-width:760px){.simple-steps{grid-template-columns:1fr 1fr;position:static}.simple-step.setup{min-width:0}.simple-event{grid-template-columns:62px 1fr}}
+.simple-event.verify-needed{border-left:4px solid #b3261e;padding-left:10px}.simple-event-corrections{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:7px}.simple-event-corrections label{font-size:11px;font-weight:850;color:#6f685b;display:flex;flex-direction:column;gap:3px}.simple-event-corrections select{min-width:128px;padding:7px 9px;border:1px solid #cfc7b7;border-radius:8px;background:#fff;font-size:13px}.simple-verify-flag{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#fde8e7;color:#8c1d18;font-size:10px;font-weight:900;letter-spacing:.04em}.simple-save-note{font-size:11px;color:#4d6b43;font-weight:800;margin-top:4px}
 @media print{
  body.simple-workflow-print *{visibility:hidden!important}
  body.simple-workflow-print .simple-print-target.active-print,body.simple-workflow-print .simple-print-target.active-print *{visibility:visible!important}
+ body.simple-workflow-print .simple-panel.print-active{display:block!important}
  body.simple-workflow-print .simple-print-target.active-print{position:absolute;left:0;top:0;width:100%;margin:0!important;padding:0!important}
  body.simple-workflow-print .simple-actionbar,body.simple-workflow-print .simple-print-note{display:none!important}
  body.simple-workflow-print .simple-print-target .week-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:4px!important}
@@ -4846,13 +4848,39 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
   function rangeBounds(){const start=parseDate(document.getElementById('startDate').value);const end=addDays(start,13);return{start,end}}
   function renderEyeball(){
     const host=document.getElementById('simpleEyeballList'),sum=document.getElementById('simpleEyeballSummary');if(!host||!sum)return;
-    let acts=[];try{acts=getActivities()}catch{}let adh=[];try{adh=getAdhoc()}catch{}
-    const {start,end}=rangeBounds();const all=[...acts.map(a=>({...a,_kind:'activity'})),...adh.map(a=>({...a,title:a.type||'Commitment',child:a.who||'',_kind:'adhoc'}))].filter(a=>{if(!a.date)return false;const d=parseDate(a.date);return d>=start&&d<=end}).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
-    const unassigned=all.filter(a=>String(a.child||'').toLowerCase().includes('unassigned')).length,missingLoc=all.filter(a=>a._kind==='activity'&&!String(a.location||'').trim()).length;
-    sum.innerHTML=`<span class="simple-chip">${all.length} events</span><span class="simple-chip">${new Set(all.map(a=>a.date)).size} active days</span>${unassigned?`<span class="simple-chip warn">${unassigned} child to verify</span>`:''}${missingLoc?`<span class="simple-chip warn">${missingLoc} missing location</span>`:''}`;
+    const {start,end}=rangeBounds();
+    const activityRows=[...document.querySelectorAll('#activityBody tr')];
+    const acts=activityRows.map((row,rowIndex)=>{
+      const a=rowToCalendarEvent(row);return {...a,_kind:'activity',_rowIndex:rowIndex,_row:row};
+    }).filter(a=>a.date&&(()=>{const d=parseDate(a.date);return d>=start&&d<=end})());
+    let adh=[];try{adh=getAdhoc().map(a=>({...a,title:a.type||'Commitment',child:a.who||'',_kind:'adhoc'}))}catch{}
+    adh=adh.filter(a=>{if(!a.date)return false;const d=parseDate(a.date);return d>=start&&d<=end});
+    const all=[...acts,...adh].sort((a,b)=>(a.date+(a.start||'')).localeCompare(b.date+(b.start||'')));
+    const unassigned=acts.filter(a=>a.child==='Unassigned').length,missingLoc=acts.filter(a=>!String(a.location||'').trim()).length;
+    sum.innerHTML=`<span class="simple-chip">${all.length} events</span><span class="simple-chip">${new Set(all.map(a=>a.date)).size} active days</span>${unassigned?`<span class="simple-chip warn">${unassigned} owner${unassigned===1?'':'s'} to verify</span>`:''}${missingLoc?`<span class="simple-chip warn">${missingLoc} missing location</span>`:''}`;
     const groups={};all.forEach(a=>(groups[a.date]??=[]).push(a));
-    const days=[];for(let i=0;i<14;i++){const d=addDays(start,i),key=iso(d),rows=groups[key]||[];if(!rows.length)continue;days.push(`<div class="simple-day-scan"><div class="simple-day-scan-head"><strong>${dayName(d)} ${shortDate(d)}</strong><span>${rows.length} event${rows.length===1?'':'s'}</span></div>${rows.map(a=>`<div class="simple-event"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(childLabel(a.child||''))}${a.child?' · ':''}${esc(a.title||'Commitment')}</div><div class="simple-event-meta">${[a.location,a.source].filter(Boolean).map(esc).join(' · ')}</div></div></div>`).join('')}</div>`)}
+    const days=[];
+    for(let i=0;i<14;i++){
+      const d=addDays(start,i),key=iso(d),rows=groups[key]||[];if(!rows.length)continue;
+      days.push(`<div class="simple-day-scan"><div class="simple-day-scan-head"><strong>${dayName(d)} ${shortDate(d)}</strong><span>${rows.length} event${rows.length===1?'':'s'}</span></div>${rows.map(a=>{
+        const verify=a._kind==='activity'&&a.child==='Unassigned';
+        const corrections=a._kind==='activity'?`<div class="simple-event-corrections" data-eyeball-row="${a._rowIndex}">
+          <label>Who?<select data-eye-child>${quickChildOptions(a.child)}</select></label>
+          <label>Drop-off needed?<select data-eye-drop><option value="yes"${a.drop==='yes'?' selected':''}>Yes</option><option value="no"${a.drop==='no'?' selected':''}>No</option></select></label>
+          <label>Pickup needed?<select data-eye-pick><option value="yes"${a.pick==='yes'?' selected':''}>Yes</option><option value="no"${a.pick==='no'?' selected':''}>No</option></select></label>
+          <div class="simple-save-note">Changes save immediately and feed the recommendation engine.</div>
+        </div>`:'';
+        return `<div class="simple-event ${verify?'verify-needed':''}"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(childLabel(a.child||''))}${verify?'<span class="simple-verify-flag">VERIFY</span>':''}${a.child?' · ':''}${esc(a.title||'Commitment')}</div><div class="simple-event-meta">${[a.location,a.source].filter(Boolean).map(esc).join(' · ')}</div></div>${corrections}</div>`;
+      }).join('')}</div>`)
+    }
     host.innerHTML=days.length?days.join(''):'<div class="card"><div class="simple-empty">No events are currently loaded in this window. Refresh calendars before proceeding.</div></div>';
+    host.querySelectorAll('[data-eyeball-row]').forEach(box=>{
+      const row=activityRows[+box.dataset.eyeballRow];if(!row)return;
+      const child=box.querySelector('[data-eye-child]');
+      child.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-child');main.value=child.value;row.dataset.childManual='true';await refreshPlanAfterReviewEdit(row);renderEyeball()};
+      const bind=(sel,mainSel)=>{const ctl=box.querySelector(sel);ctl.onchange=async()=>{setLastReviewChange(row);row.querySelector(mainSel).value=ctl.value;syncLegClassification(row);await refreshPlanAfterReviewEdit(row);renderEyeball()}};
+      bind('[data-eye-drop]','.a-drop');bind('[data-eye-pick]','.a-pick');
+    });
   }
   function refreshCalendars(){
     if(typeof render==='function'&&(typeof plans!=='undefined'&&plans.length)){render();}
@@ -4864,7 +4892,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
     try{await generate();saveAllNow();scheduleNonzeroAgendaPublish();renderEyeball();refreshCalendars();st.textContent='Plan built. Scan the events, then print the preliminary.';st.classList.add('good');}
     catch(e){st.textContent='Could not build plan: '+e.message;}
   }
-  function printTarget(id,kind){document.querySelectorAll('.simple-print-target').forEach(x=>x.classList.remove('active-print'));const t=document.getElementById(id);if(!t)return;t.classList.add('active-print');document.body.classList.add('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{if(!x.classList.contains('active-print'))x.style.display='none'});window.print();setTimeout(()=>{document.body.classList.remove('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{x.style.display='';x.classList.remove('active-print')})},250)}
+  function printTarget(id,kind){document.querySelectorAll('.simple-print-target').forEach(x=>x.classList.remove('active-print'));document.querySelectorAll('#simpleWorkflow .simple-panel').forEach(x=>x.classList.remove('print-active'));const t=document.getElementById(id);if(!t)return;const panel=t.closest('.simple-panel');if(panel)panel.classList.add('print-active');t.classList.add('active-print');document.body.classList.add('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{if(!x.classList.contains('active-print'))x.style.display='none'});requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));setTimeout(()=>{document.body.classList.remove('simple-workflow-print');document.querySelectorAll('#simpleWorkflow .simple-panel').forEach(x=>x.classList.remove('print-active'));document.querySelectorAll('.simple-print-target').forEach(x=>{x.style.display='';x.classList.remove('active-print')})},750)}
   document.getElementById('simpleRefreshGenerate').addEventListener('click',refreshAndGenerate);
   document.getElementById('simpleAddMissing').addEventListener('click',()=>{switchStep('setup');setTimeout(()=>{document.getElementById('addActivityBtn')?.scrollIntoView({behavior:'smooth',block:'center'})},100)});
   document.getElementById('simpleToPrelim').addEventListener('click',()=>{if(!(typeof plans!=='undefined'&&plans.length)){refreshAndGenerate();return}refreshCalendars();switchStep('prelim')});
@@ -4873,11 +4901,11 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
   document.getElementById('simpleBuildFinal').addEventListener('click',()=>{saveAllNow();if(typeof render==='function')render();refreshCalendars();const p=document.getElementById('simpleFinalPackage');p.classList.add('ready');const st=document.getElementById('simpleFinalizeStatus');st.textContent='Final package ready. Print, copy Phil email, and download the .ics.';st.classList.add('good');if(scope)scope.value='all';scheduleNonzeroAgendaPublish();p.scrollIntoView({behavior:'smooth',block:'start'})});
   document.getElementById('simplePrintFinal').addEventListener('click',()=>{refreshCalendars();printTarget('simpleFinalPrint','final')});
   document.getElementById('simpleDownloadIcs').addEventListener('click',()=>{if(scope)scope.value='all';downloadPhilOutlookIcs()});
-  window.addEventListener('afterprint',()=>{document.body.classList.remove('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{x.style.display='';x.classList.remove('active-print')})});
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('simple-workflow-print');document.querySelectorAll('#simpleWorkflow .simple-panel').forEach(x=>x.classList.remove('print-active'));document.querySelectorAll('.simple-print-target').forEach(x=>{x.style.display='';x.classList.remove('active-print')})});
   setTimeout(()=>{renderEyeball();if((typeof plans!=='undefined'&&plans.length))refreshCalendars()},50);
 })();
 </script>
-<!-- AutoPilot v47.18: explicit recommended ride assignments with routing rationale; Chris/Kira event ownership; Phil approx-arrival/departure FYI ICS. -->
+<!-- AutoPilot v47.19: explicit recommended ride assignments with routing rationale; Chris/Kira event ownership; Phil approx-arrival/departure FYI ICS. -->
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
