@@ -998,16 +998,6 @@ button.secondary,.btn.secondary{
 .settings-sync-actions button{min-height:40px}
 .settings-sync-status{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f3f6fa;font-size:12px;color:#475569;line-height:1.4}
 @media(max-width:760px){.settings-sync-actions{display:grid;grid-template-columns:1fr}.settings-sync-actions button{width:100%}}
-
-/* v47.15 restored 14-day finalization */
-#tab-review #planCorrections .finalize-grid{grid-template-columns:1fr!important;gap:12px}
-#tab-review #planCorrections .finalize-day{padding:14px 16px}
-#tab-review #planCorrections .finalize-date{font-size:18px}
-#tab-review #planCorrections .finalize-section-title{font-size:13px}
-#tab-review #planCorrections .finalize-item-copy strong{font-size:14px}
-#tab-review #planCorrections .finalize-item select{font-size:15px;min-height:40px}
-#tab-review #planCorrections .time-nudge{min-width:52px;font-size:13px}
-#tab-review #planCorrections .time-adjust-value{font-size:16px;font-weight:850}
 </style>
 </head>
 <body>
@@ -1282,12 +1272,12 @@ private"></textarea>
   </div>
 
   <div class="unified-review-section">
-    <div class="unified-review-section-head"><strong>1. Final 14-day plan</strong><span>Edit work times, child assignments, and drop-off/pickup drivers directly on each day.</span></div>
+    <div class="unified-review-section-head"><strong>1. Work schedule</strong><span>Only change what was marked up after the first draft.</span></div>
     <div id="planCorrections" class="plan-corrections"></div>
   </div>
 
   <div class="unified-review-section">
-    <div class="unified-review-section-head"><strong>2. Activity audit</strong><span>Secondary audit view for filtering all activities, handled items, and decisions needing attention.</span></div>
+    <div class="unified-review-section-head"><strong>2. Activities &amp; transportation</strong><span>Every commitment stays visible and editable, including items AutoPilot already handled.</span></div>
     <div class="quick-review-actions review-filter-bar" role="group" aria-label="Activity review filter">
       <button id="quickReviewFilterAll" type="button" class="active">All Activities</button>
       <button id="quickReviewFilterAttention" type="button">Needs Decision</button>
@@ -1474,6 +1464,19 @@ private"></textarea>
 
 
 
+<div class="card settings-sync-card" id="nonzeroIntegrationCard">
+<div class="section-head"><div><h2>7. NONZERO Wall integration</h2><p class="muted small">Publish a privacy-safe daily family logistics summary into the same canonical cloud state used by the NONZERO Roku Wall. AutoPilot never replaces workout, timer, pairing, or Wall-mode state.</p></div></div>
+<div class="grid2">
+  <div><label>NONZERO Cloudflare Worker URL</label><input id="nonzeroCloudEndpoint" type="url" placeholder="https://nonzero-sync.example.workers.dev"></div>
+  <div><label>NONZERO private sync key</label><input id="nonzeroSyncKey" type="password" autocomplete="off" placeholder="Paste the same private sync key used by NONZERO"></div>
+</div>
+<label class="small" style="display:flex;align-items:center;gap:10px;margin-top:12px"><input id="nonzeroAutoPublish" type="checkbox" checked style="width:auto"> Auto-publish after plan generation and saved plan changes</label>
+<div class="settings-sync-actions">
+  <button id="testNonzeroIntegrationBtn" type="button">Test NONZERO connection</button>
+  <button id="publishNonzeroNowBtn" type="button" class="primary">Publish today to NONZERO</button>
+</div>
+<div class="settings-sync-status" id="nonzeroIntegrationStatus"><strong>Read-only dashboard contract:</strong> AutoPilot merges only <code>autopilotAgenda</code> into NONZERO cloud state using revision-safe writes. The Wall shows LIVE when today’s summary is fresh and STALE when it ages out.</div>
+</div>
 <div class="lukalab-legal-footer">A LukaLab AI Creative product | Pittsburgh, PA | All Rights Reserved</div>
 </section>
 <section class="print-only">
@@ -3726,9 +3729,9 @@ function dayHasManualFinalization(p){
 
 function renderPlanCorrections(){
   const host=$('planCorrections'); if(!host)return;
-  if(!plans.length){host.innerHTML='<div class="muted" style="font-size:14px;padding:10px 0">Generate the first-draft plan to unlock the 14-day final review here.</div>';return}
-  const days=plans;
-  host.innerHTML=`<div class="finalize-grid">${days.map(p=>{
+  const work=plans.filter(p=>!p.weekend);
+  if(!work.length){host.innerHTML='<div class="muted" style="font-size:13px;padding:8px 0">Generate the first-draft plan to unlock final corrections here.</div>';return}
+  host.innerHTML=`<div class="finalize-grid">${work.map(p=>{
     const idx=plans.indexOf(p);
     const activityRows=correctionActivityRows(p.dateStr);
     const childEdits=activityRows.map(r=>{
@@ -3740,36 +3743,50 @@ function renderPlanCorrections(){
       return `<div class="finalize-item${active}"><div class="finalize-item-copy"><strong>${esc(a.kind)} ${fmt(a.time)} · ${esc(childLabel(a.activity.child))}</strong><br><span class="muted">${esc(a.activity.title)}</span></div><select class="quick-driver-override finalization-control" data-plan-index="${idx}" data-override-key="${esc(key)}">${driverOverrideOptions(a,p)}</select></div>`;
     }).join('');
     const hasManual=dayHasManualFinalization(p);
-    const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−15</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+15</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto</button>`:'<div style="height:22px"></div>'}</div>`:'';
-    const workControl=!p.weekend?`<div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:12px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}`:`<div class="muted" style="font-size:12px;margin-bottom:8px">Weekend · family logistics only</div>`;
-    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.weekend?'Weekend':p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'}${!p.weekend?' · '+dayChallengeLabel(p):''}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div>${workControl}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drop-off / pickup drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
+    const timeAdjust=(kind,label,value,manual)=>p.onsite?`<div class="time-adjust${manual?' override-active':''}"><div class="time-adjust-label">${label}</div><div class="time-adjust-controls"><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="-15" aria-label="${label} 15 minutes earlier">−</button><div class="time-adjust-value">${fmt(value)}</div><button type="button" class="time-nudge" data-plan-index="${idx}" data-time-kind="${kind}" data-delta="15" aria-label="${label} 15 minutes later">+</button></div>${manual?`<button type="button" class="time-auto" data-plan-index="${idx}" data-time-kind="${kind}">Auto · ${label}</button>`:'<div style="height:22px"></div>'}</div>`:'<div></div>';
+    return `<div class="finalize-day${hasManual?' manual':''}"><div class="finalize-day-head"><div class="finalize-date">${dayName(p.date)} ${shortDate(p.date)}<small>${p.holiday?'Holiday':p.onsite?esc(p.site):'Remote'} · ${dayChallengeLabel(p)}</small></div><div class="finalize-status">${hasManual?'MANUAL EDIT':'AUTO DRAFT'}</div></div><div class="finalize-work-row"><label>Work plan<select class="quick-work-override finalization-control" data-plan-index="${idx}">${workLocationOptions(p)}</select></label><div class="muted" style="font-size:11px;line-height:1.35">${p.holiday?'No work':p.onsite?`Leave home ${fmt(p.departHome)}`:'Remote day'}</div></div>${p.onsite?`<div class="finalize-times">${timeAdjust('arrival','Arrive',p.arrive,manualArrivalOverrides[p.dateStr]!=null)}${timeAdjust('departure','Depart',p.leaveWork,manualDepartureOverrides[p.dateStr]!=null)}</div>`:''}<div class="finalize-section"><div class="finalize-section-title">Activities / child</div>${childEdits||'<div class="finalize-empty">No activities.</div>'}</div><div class="finalize-section"><div class="finalize-section-title">Drivers</div>${legs||'<div class="finalize-empty">No transport legs.</div>'}</div></div>`;
   }).join('')}</div>`;
-  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;await recalcDayForOverride(idx,sel.value);saveAllNow();markChanged();renderPlanCorrections();renderQuickPlanningReview();render({skipCorrections:true});});
-  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{await applyQuickChildOverride(sel.dataset.rowKey,sel.value);saveAllNow();markChanged();renderPlanCorrections();renderQuickPlanningReview();render({skipCorrections:true});});
+  host.querySelectorAll('.quick-work-override').forEach(sel=>sel.onchange=async()=>{const idx=+sel.dataset.planIndex;await recalcDayForOverride(idx,sel.value);markChanged();renderQuickPlanningReview();});
+  host.querySelectorAll('.quick-child-override').forEach(sel=>sel.onchange=async()=>{await applyQuickChildOverride(sel.dataset.rowKey,sel.value);renderQuickPlanningReview();});
   host.querySelectorAll('.quick-driver-override').forEach(sel=>sel.onchange=async()=>{
-    const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey,card=sel.closest('.finalize-day'),item=sel.closest('.finalize-item');
+    const idx=+sel.dataset.planIndex,key=sel.dataset.overrideKey;
+    const card=sel.closest('.finalize-day'),item=sel.closest('.finalize-item');
     sel.disabled=true;
     try{
       if(sel.value)manualTransportOverrides[key]=sel.value;else delete manualTransportOverrides[key];
-      await recalcPlanDayWithManuals(idx); saveAllNow(); markChanged();
+      await recalcPlanDayWithManuals(idx);
+      saveAllNow();markChanged();
       item?.classList.toggle('override-active',!!sel.value);
       if(card){card.classList.toggle('manual',dayHasManualFinalization(plans[idx]));const st=card.querySelector('.finalize-status');if(st)st.textContent=dayHasManualFinalization(plans[idx])?'MANUAL EDIT':'AUTO DRAFT'}
-      renderQuickPlanningReview(); render({skipCorrections:true});
-    }catch(err){console.error('Driver override failed',err);saveAllNow();markChanged();const status=$('saveStatus');if(status)status.textContent='Driver change saved; downstream refresh failed.'}
-    finally{sel.disabled=false}
+      render({skipCorrections:true});
+    }catch(err){
+      console.error('Driver override failed',err);saveAllNow();markChanged();
+      const status=$('saveStatus');if(status)status.textContent='Driver change saved; output refresh failed. Review remains available.';
+    }finally{sel.disabled=false}
   });
   host.querySelectorAll('.time-nudge').forEach(btn=>btn.onclick=async()=>{
-    const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;const delta=+btn.dataset.delta||0,kind=btn.dataset.timeKind,box=btn.closest('.time-adjust');btn.disabled=true;
+    const idx=+btn.dataset.planIndex,p=plans[idx];if(!p||!p.onsite)return;
+    const delta=+btn.dataset.delta||0,kind=btn.dataset.timeKind,box=btn.closest('.time-adjust');
+    btn.disabled=true;
     try{
       if(kind==='arrival'){const base=manualArrivalOverrides[p.dateStr]!=null?Number(manualArrivalOverrides[p.dateStr]):Number(p.arrive);manualArrivalOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}
       else{const base=manualDepartureOverrides[p.dateStr]!=null?Number(manualDepartureOverrides[p.dateStr]):Number(p.leaveWork);manualDepartureOverrides[p.dateStr]=Math.max(0,Math.min(1439,base+delta));}
       await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();
-      const value=box?.querySelector('.time-adjust-value');if(value)value.textContent=fmt(kind==='arrival'?p.arrive:p.leaveWork);box?.classList.add('override-active');
+      const value=box?.querySelector('.time-adjust-value');if(value)value.textContent=fmt(kind==='arrival'?p.arrive:p.leaveWork);
+      box?.classList.add('override-active');
       const card=btn.closest('.finalize-day');if(card){card.classList.add('manual');const st=card.querySelector('.finalize-status');if(st)st.textContent='MANUAL EDIT'}
-      renderQuickPlanningReview();render({skipCorrections:true});
+      render({skipCorrections:true});
     }finally{btn.disabled=false}
   });
-  host.querySelectorAll('.time-auto').forEach(btn=>btn.onclick=async()=>{const idx=+btn.dataset.planIndex,p=plans[idx];if(!p)return;btn.disabled=true;try{if(btn.dataset.timeKind==='arrival')delete manualArrivalOverrides[p.dateStr];else delete manualDepartureOverrides[p.dateStr];await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();renderPlanCorrections();renderQuickPlanningReview();render({skipCorrections:true});}finally{btn.disabled=false}});
+  host.querySelectorAll('.time-auto').forEach(btn=>btn.onclick=async()=>{
+    const idx=+btn.dataset.planIndex,p=plans[idx];if(!p)return;btn.disabled=true;
+    try{
+      if(btn.dataset.timeKind==='arrival')delete manualArrivalOverrides[p.dateStr];else delete manualDepartureOverrides[p.dateStr];
+      await recalcPlanDayWithManuals(idx);saveAllNow();markChanged();
+      // Auto reset changes control structure (Auto button may disappear), so safely rebuild Review only after this explicit reset.
+      renderPlanCorrections();render({skipCorrections:true});
+    }finally{btn.disabled=false}
+  });
 }
 function minToTimeValue(m){if(m==null||isNaN(m))return'';return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 
@@ -3789,7 +3806,7 @@ function render(options={}){
       <div class="kira-line">Kira: ${esc(p.kiraLocation||'—')} · transport feasibility includes work → home → activity travel</div>
     </div>`;
   }).join('');
-  $('bossMessage').value='Hey Phil, here is my planned schedule for the next two weeks. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmt(p.arrive)}; planned departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n');
+  $('bossMessage').value='Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmt(p.arrive)}; planned departure ${fmt(p.leaveWork)}.`:'Remote.'}`).join('\n');
   const watch=[];
   for(const p of work){
     const backups=p.assignments.filter(a=>a.primary==='Backup');
@@ -3975,6 +3992,7 @@ function cleanImportedCalendarEvents(events){
 }
 
 const STORAGE_LAST_BACKUP='familyOptimizerV23.lastBackup';
+const STORAGE_NONZERO_SECRET='familyOptimizerV23.nonzeroSecret';
 const STORAGE_LAST_CHANGE='familyOptimizerV23.lastChange';
 let autosaveTimer=null;
 let isApplying=false;
@@ -4000,7 +4018,9 @@ function permanentSettings(){
       liveRouting:$('liveRouting').value,
       oldestCanDrive:$('oldestCanDrive').value,
       remoteAllowed:$('remoteAllowed').value,
-      kiraCommute:$('kiraCommute').value
+      kiraCommute:$('kiraCommute').value,
+      nonzeroCloudEndpoint:$('nonzeroCloudEndpoint')?.value||'',
+      nonzeroAutoPublish:$('nonzeroAutoPublish')?.checked!==false?'yes':'no'
     },
     sites:getSites(),
     kiraSites:getKiraSites(),
@@ -4057,6 +4077,7 @@ function updateBackupStatus(){
 
 function savePermanent(){
   storageSet(STORAGE_SETTINGS,JSON.stringify(permanentSettings()));
+  if($('nonzeroSyncKey'))storageSet(STORAGE_NONZERO_SECRET,$('nonzeroSyncKey').value||'');
 }
 function saveCycle(){
   storageSet(STORAGE_CYCLE,JSON.stringify(rollingCycle()));
@@ -4066,6 +4087,7 @@ function saveAllNow(){
   try{
     savePermanent();saveCycle();
     setSaveStatus(__persistentStorageAvailable?'Saved locally':'Temporary session only — changes will not persist after closing');
+    scheduleNonzeroAgendaPublish();
   }catch(err){
     setSaveStatus('Autosave failed');
   }
@@ -4095,7 +4117,8 @@ function applyPermanent(data){
     if($('kiraMapEarlyNorth'))$('kiraMapEarlyNorth').value=maps.earlyNorth||$('kiraMapEarlyNorth').value;
     if($('kiraMapStar'))$('kiraMapStar').value=maps.star||$('kiraMapStar').value;
     if($('kiraMapLateMain'))$('kiraMapLateMain').value=maps.lateMain||$('kiraMapLateMain').value;
-    Object.entries(data.rules||{}).forEach(([k,v])=>{if(!$(k))return;$(k).value=v});
+    if($('nonzeroAutoPublish') && data.rules && data.rules.nonzeroAutoPublish!=null) $('nonzeroAutoPublish').checked=data.rules.nonzeroAutoPublish!=='no';
+    Object.entries(data.rules||{}).forEach(([k,v])=>{if(!$(k)||k==='nonzeroAutoPublish')return;$(k).value=v});
     refreshPreferredSite();
     if($('savedActivityLocationBody')){
       $('savedActivityLocationBody').innerHTML='';
@@ -4137,6 +4160,7 @@ function loadFromStorage(){
     const c=storageGet(STORAGE_CYCLE);
     if(s){applyPermanent(JSON.parse(s));loaded=true}
     if(c){applyCycle(JSON.parse(c));loaded=true}
+    if($('nonzeroSyncKey'))$('nonzeroSyncKey').value=storageGet(STORAGE_NONZERO_SECRET)||'';
     setSaveStatus(__persistentStorageAvailable?(loaded?'Loaded saved data':'Autosave ready'):'Temporary session only — browser storage unavailable');
   }catch(err){
     setSaveStatus('Could not load saved data');
@@ -4241,7 +4265,111 @@ $('mobilePrevBtn').onclick=()=>moveMobilePlan(-1);
 $('mobileNextBtn').onclick=()=>moveMobilePlan(1);
 $('mobileTodayBtn').onclick=()=>{const t=planDateOnly(new Date()),first=plans.length?planDateOnly(plans[0].date):t,last=plans.length?planDateOnly(plans[plans.length-1].date):t;mobilePlanDate=(t>=first&&t<=last)?t:first;renderMobilePlan()};
 
-$('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
+
+// AutoPilot v47.15: revision-safe NONZERO daily agenda publisher.
+let __nonzeroPublishTimer=null;
+let __nonzeroPublishing=false;
+function normalizeNonzeroEndpoint(v){return String(v||'').trim().replace(/\/+$/,'')}
+function nonzeroIntegrationConfig(){
+  return {
+    endpoint:normalizeNonzeroEndpoint($('nonzeroCloudEndpoint')?.value),
+    key:String($('nonzeroSyncKey')?.value||'').trim(),
+    auto:$('nonzeroAutoPublish')?.checked!==false
+  };
+}
+function nonzeroStatus(text,kind=''){
+  const el=$('nonzeroIntegrationStatus');if(!el)return;
+  el.className='settings-sync-status'+(kind?' '+kind:'');el.innerHTML=text;
+}
+function displayTimeForNonzero(v){
+  if(v==null||v==='')return'';
+  if(typeof v==='number')return fmt(v);
+  const m=String(v).match(/^(\d{1,2}):(\d{2})/);return m?fmt((+m[1])*60+(+m[2])):String(v);
+}
+function todayIsoLocal(){const d=new Date(),o=d.getTimezoneOffset();return new Date(d.getTime()-o*60000).toISOString().slice(0,10)}
+function buildNonzeroAgenda(){
+  const date=todayIsoLocal();
+  const p=plans.find(x=>x.dateStr===date);
+  if(!p)return {schema:1,date,updatedAt:Date.now(),status:'READY',items:[],summary:{eventCount:0,conflictCount:0},source:'autopilot'};
+  const grouped=new Map();
+  for(const a of (p.assignments||[])){
+    const act=a.activity||{};
+    const key=[act.child||'',act.title||'',act.start||'',act.end||''].join('|');
+    if(!grouped.has(key))grouped.set(key,{activity:act,legs:[]});
+    grouped.get(key).legs.push(a);
+  }
+  // Include visible activities that do not require a transport assignment only when they are part of today's plan.
+  for(const act of (p.activities||[])){
+    const key=[act.child||'',act.title||'',act.start||'',act.end||''].join('|');
+    if(!grouped.has(key))grouped.set(key,{activity:act,legs:[]});
+  }
+  const items=[...grouped.values()].sort((a,b)=>toMin(a.activity.start||'23:59')-toMin(b.activity.start||'23:59')).map(x=>{
+    const act=x.activity||{};
+    const legs=x.legs||[];
+    const legText=legs.map(l=>`${l.kind}: ${l.primary}${l.primary==='Backup'?' ⚠':''}`).join(' · ');
+    const place=String(act.location||'').trim();
+    const child=childLabel(act.child||'');
+    return {
+      time:displayTimeForNonzero(act.start),
+      title:`${child} · ${act.title||'Family commitment'}`,
+      meta:[legText,place].filter(Boolean).join(' · '),
+      location:place,
+      child,
+      source:act.source||'AutoPilot'
+    };
+  });
+  const conflicts=(p.assignments||[]).filter(a=>a.primary==='Backup').length+(p.status==='bad'?1:0);
+  let status='READY'; if(conflicts>0)status='ATTENTION'; else if(items.length)status='LIVE';
+  const next=items.find(i=>i.time)||items[0]||null;
+  return {schema:1,date,updatedAt:Date.now(),status,items,summary:{eventCount:items.length,conflictCount:conflicts},nextCriticalAction:next?{time:next.time,text:next.title}:null,source:'autopilot-v47.15'};
+}
+async function nonzeroCloudRequest(path,opts={}){
+  const cfg=nonzeroIntegrationConfig();
+  if(!/^https:\/\//i.test(cfg.endpoint))throw new Error('Enter the NONZERO Worker HTTPS URL.');
+  if(cfg.key.length<16)throw new Error('Enter the NONZERO private sync key.');
+  const headers=Object.assign({'Accept':'application/json','X-NONZERO-Key':cfg.key},opts.headers||{});
+  if(opts.body)headers['Content-Type']='application/json';
+  const res=await fetch(cfg.endpoint+path,{...opts,headers,cache:'no-store'});
+  let body={};try{body=await res.json()}catch{}
+  if(!res.ok){const e=new Error(body.error||`NONZERO cloud returned HTTP ${res.status}`);e.status=res.status;e.body=body;throw e}
+  return body;
+}
+async function testNonzeroIntegration(){
+  nonzeroStatus('<strong>Testing…</strong> Reading canonical NONZERO state.');
+  try{
+    const body=await nonzeroCloudRequest('/state');
+    const rev=Number(body.revision||body.state?._meta?.revision||0);
+    nonzeroStatus(`<strong>Connected.</strong> Canonical NONZERO state is reachable${rev?` · revision ${rev}`:''}. AutoPilot can publish without replacing workout state.`,'good');
+    return true;
+  }catch(e){nonzeroStatus(`<strong>Connection failed:</strong> ${esc(e.message)}`,'warn');return false}
+}
+async function publishNonzeroAgenda({silent=false}={}){
+  if(__nonzeroPublishing)return false;
+  const cfg=nonzeroIntegrationConfig();
+  if(!/^https:\/\//i.test(cfg.endpoint)||cfg.key.length<16){if(!silent)nonzeroStatus('<strong>Not configured.</strong> Add the NONZERO Worker URL and private sync key first.','warn');return false}
+  __nonzeroPublishing=true;
+  try{
+    const agenda=buildNonzeroAgenda();
+    for(let attempt=0;attempt<3;attempt++){
+      const current=await nonzeroCloudRequest('/state');
+      const state=(current.state&&typeof current.state==='object')?current.state:{};
+      if(!Array.isArray(state.sessions))state.sessions=[];
+      const baseRevision=Number(current.revision||state._meta?.revision||0);
+      const nextState={...state,autopilotAgenda:agenda};
+      try{
+        const written=await nonzeroCloudRequest('/state',{method:'PUT',body:JSON.stringify({state:nextState,baseRevision})});
+        if(!silent)nonzeroStatus(`<strong>Published.</strong> ${agenda.date} · ${agenda.items.length} agenda item${agenda.items.length===1?'':'s'} · NONZERO revision ${written.revision||'updated'}.`,'good');
+        return true;
+      }catch(e){if(e.status!==409||attempt===2)throw e}
+    }
+  }catch(e){if(!silent)nonzeroStatus(`<strong>Publish failed:</strong> ${esc(e.message)}. Existing NONZERO state was left intact.`,'warn');return false}
+  finally{__nonzeroPublishing=false}
+}
+function scheduleNonzeroAgendaPublish(){
+  const cfg=nonzeroIntegrationConfig(); if(!cfg.auto||!plans.length)return;
+  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),1200);
+}
+$('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();scheduleNonzeroAgendaPublish();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
 $('exportBackupBtn').onclick=exportBackup;
 $('importBackupBtn').onclick=()=>$('backupFile').click();
@@ -4467,7 +4595,7 @@ function buildPhilOutlookIcs(scope='week1'){
 }
 function philOutlookFilename(scope='week1'){
   const rows=philOutlookPlans(scope), first=rows.length?philDateKey(rows[0]):($('startDate')?.value||'current');
-  const suffix=scope==='all'?'Two-Week':scope==='week2'?'Week-2':'Week-1';
+  const suffix=scope==='all'?'10-Workday-Final':scope==='week2'?'Week-2':'Week-1';
   return `Chris-Luka-WVU-Schedule-${first}-${suffix}.ics`;
 }
 function setPhilOutlookStatus(message,good=false){ const el=$('philOutlookStatus'); if(el){el.textContent=message;el.style.color=good?'#176b3a':'';} }
@@ -4521,6 +4649,9 @@ updateBackupStatus();
 window.addEventListener('load',()=>setTimeout(()=>refreshCalendarsOnAppOpen(),150));
 
 
+if($('testNonzeroIntegrationBtn'))$('testNonzeroIntegrationBtn').onclick=()=>{saveAllNow();testNonzeroIntegration()};
+if($('publishNonzeroNowBtn'))$('publishNonzeroNowBtn').onclick=()=>{saveAllNow();publishNonzeroAgenda()};
+if($('nonzeroAutoPublish'))$('nonzeroAutoPublish').onchange=saveAllNow;
 if($('quickReviewRefreshBtn'))$('quickReviewRefreshBtn').onclick=renderQuickPlanningReview;
 if($('quickReviewFilterAll'))$('quickReviewFilterAll').onclick=()=>{quickReviewFilter='all';renderQuickPlanningReview()};
 if($('quickReviewFilterAttention'))$('quickReviewFilterAttention').onclick=()=>{quickReviewFilter='attention';renderQuickPlanningReview()};
@@ -4585,7 +4716,129 @@ if($('siteBody'))$('siteBody').addEventListener('input',e=>{
 
 if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewChange)restoreReviewState(__lastReviewChange)};
 </script>
-</div></body>
+</div><style id="v4716SimpleWorkflowStyles">
+/* v47.16 — deliberately simple weekly operating workflow */
+#autopilotTabs,.autopilot-tab-panel{display:none!important}
+.simple-workflow{margin:12px 0 0}
+.simple-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px;margin:12px 0 14px;position:sticky;top:6px;z-index:30;background:#f5f7fa;padding:6px 0}
+.simple-step{min-height:54px;border:1px solid #d8d1c2;background:#fff;border-radius:11px;padding:8px 11px!important;text-align:left;color:#4e493f;font-size:12px!important}
+.simple-step strong{display:block;font-size:15px;color:#28251f}.simple-step.active{background:#171719!important;color:#fff!important;border-color:#171719!important}.simple-step.active strong{color:#fff7dd}
+.simple-step.setup{min-width:88px;text-align:center;background:#eeeae1}.simple-panel{display:none}.simple-panel.active{display:block}
+.simple-hero{border:1px solid #ddd5c5;border-left:5px solid #d6a800;border-radius:12px;background:#fffdf8;padding:14px 16px;margin-bottom:12px}.simple-hero h2{font-size:22px}.simple-hero p{margin:5px 0 0;font-size:13px;line-height:1.45;color:#70695c}
+.simple-actionbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.simple-actionbar button{min-height:42px}.simple-actionbar .primary{font-size:15px;padding:10px 16px}
+.simple-status{font-size:12px;color:#6e675b}.simple-status.good{color:#176b3a;font-weight:800}
+.simple-eyeball-summary{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}.simple-chip{padding:5px 8px;border-radius:999px;background:#ece9e1;font-size:11px;font-weight:850}.simple-chip.warn{background:#fff0c8;color:#7b5600}
+.simple-day-list{display:grid;gap:8px}.simple-day-scan{border:1px solid #dfd9ce;border-radius:10px;background:#fff;padding:9px 11px}.simple-day-scan-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding-bottom:6px;border-bottom:1px solid #eee9e0}.simple-day-scan-head strong{font-size:14px}.simple-day-scan-head span{font-size:10px;color:#776f62}.simple-event{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;padding:6px 0;border-bottom:1px dotted #e8e2d8}.simple-event:last-child{border-bottom:0}.simple-event-time{font-size:11px;font-weight:850;color:#806b36}.simple-event-title{font-size:12px;font-weight:800}.simple-event-meta{font-size:10px;color:#777064;margin-top:2px}.simple-empty{font-size:11px;color:#8a8376;padding:7px 0}
+.simple-prelim-label,.simple-final-label{display:inline-flex;padding:5px 8px;border-radius:7px;font-size:10px;font-weight:950;letter-spacing:.08em}.simple-prelim-label{background:#fff0c8;color:#785500}.simple-final-label{background:#e8f5eb;color:#176b3a}
+#simplePrelimCalendar,#simpleFinalCalendar{margin-top:10px}.simple-print-note{font-size:12px;color:#6f685b;margin:6px 0 0}
+#simpleFinalizeHost .quick-review-actions.review-filter-bar,#simpleFinalizeHost .quick-review-progress,#simpleFinalizeHost .quick-note.finalize-tip{display:none!important}
+#simpleFinalizeHost .unified-review-section-head span{font-size:11px}
+#simpleFinalizeHost .review-finalize-intro{display:none!important}
+#simpleFinalizeHost .quick-review-card{border:0!important;box-shadow:none!important;padding:0!important;background:transparent!important}
+#simpleFinalizeHost .unified-review-section{border:1px solid #dfd9ce;border-radius:11px;padding:11px;margin:9px 0;background:#fff}
+#simpleFinalPackage{display:none;margin-top:14px;border-top:3px solid #171719;padding-top:12px}#simpleFinalPackage.ready{display:block}
+#simpleFinalPackage #bossEmailCard{margin-top:12px!important}#simpleFinalPackage #bossMessage{min-height:320px!important}
+#simpleSetupPanel .autopilot-tab-panel{display:block!important}#simpleSetupPanel #tab-calendars,#simpleSetupPanel #tab-settings{display:block!important}#simpleSetupPanel #tab-settings{margin-top:16px}
+.simple-setup-note{font-size:12px;color:#6f685b;margin-bottom:8px}
+@media(max-width:760px){.simple-steps{grid-template-columns:1fr 1fr;position:static}.simple-step.setup{min-width:0}.simple-event{grid-template-columns:62px 1fr}}
+@media print{
+ body.simple-workflow-print *{visibility:hidden!important}
+ body.simple-workflow-print .simple-print-target.active-print,body.simple-workflow-print .simple-print-target.active-print *{visibility:visible!important}
+ body.simple-workflow-print .simple-print-target.active-print{position:absolute;left:0;top:0;width:100%;margin:0!important;padding:0!important}
+ body.simple-workflow-print .simple-actionbar,body.simple-workflow-print .simple-print-note{display:none!important}
+ body.simple-workflow-print .simple-print-target .week-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:4px!important}
+ body.simple-workflow-print .simple-print-target .daybox{height:3.5in!important;min-height:3.5in!important;box-shadow:none!important}
+}
+</style>
+<script id="v4716SimpleWorkflowScript">
+(function(){
+  if(window.__apSimpleWorkflowInit)return;window.__apSimpleWorkflowInit=true;
+  const oldNav=document.getElementById('autopilotTabs');if(!oldNav)return;
+  const shell=document.createElement('section');shell.className='simple-workflow';shell.id='simpleWorkflow';
+  shell.innerHTML=`
+    <div class="simple-steps" role="navigation" aria-label="AutoPilot weekly workflow">
+      <button type="button" class="simple-step active" data-simple-step="eyeball"><strong>1 · EYEBALL</strong>Are all events here?</button>
+      <button type="button" class="simple-step" data-simple-step="prelim"><strong>2 · PRELIMINARY</strong>Print for Kira</button>
+      <button type="button" class="simple-step" data-simple-step="finalize"><strong>3 · FINALIZE</strong>Enter redlines + send</button>
+      <button type="button" class="simple-step setup" data-simple-step="setup"><strong>SETUP</strong>Calendars & rules</button>
+    </div>
+    <div class="simple-panel active" id="simpleEyeballPanel">
+      <div class="simple-hero"><h2>Five-minute event check</h2><p>Refresh the calendars, then scan the next two-week window. Do not make transportation decisions here — just make sure the events are present.</p></div>
+      <div class="simple-actionbar"><button type="button" class="primary" id="simpleRefreshGenerate">REFRESH + BUILD PLAN</button><button type="button" id="simpleAddMissing">+ Add missing event</button><span id="simpleEyeballStatus" class="simple-status">Ready to refresh.</span></div>
+      <div id="simpleEyeballSummary" class="simple-eyeball-summary"></div><div id="simpleEyeballList" class="simple-day-list"></div>
+      <div class="simple-actionbar"><button type="button" class="primary" id="simpleToPrelim">EVENTS LOOK COMPLETE → PRELIMINARY</button></div>
+    </div>
+    <div class="simple-panel" id="simplePrelimPanel">
+      <div class="simple-hero"><span class="simple-prelim-label">PRELIMINARY</span><h2 style="margin-top:7px">Print this and review it with Kira</h2><p>This is AutoPilot's recommended 10-workday plan. Redline the paper. Do not edit the tool while you are reviewing together.</p></div>
+      <div class="simple-actionbar"><button type="button" class="primary" id="simplePrintPrelim">PRINT PRELIMINARY</button><button type="button" id="simpleToFinalize">I HAVE REDLINES → FINALIZE</button></div>
+      <div id="simplePrelimPrint" class="simple-print-target"><div class="simple-prelim-label">PRELIMINARY — REVIEW WITH KIRA</div><div class="simple-print-note">Recommended draft. Mark changes directly on this copy.</div><div class="week-grid" id="simplePrelimCalendar"></div></div>
+    </div>
+    <div class="simple-panel" id="simpleFinalizePanel">
+      <div class="simple-hero"><h2>Enter only the redlines</h2><p>Go day by day from the marked-up paper. Change only what you and Kira changed: work location/times, dropoff, pickup, or no-ride exceptions. Everything else stays as recommended.</p></div>
+      <div id="simpleFinalizeHost"></div>
+      <div class="simple-actionbar"><button type="button" class="primary" id="simpleBuildFinal">FINALIZE REDLINES + BUILD FINAL PACKAGE</button><span id="simpleFinalizeStatus" class="simple-status"></span></div>
+      <div id="simpleFinalPackage">
+        <div class="simple-final-label">FINAL</div><h2 style="margin:8px 0 2px">Final 10-workday schedule</h2><div class="simple-print-note">This reflects your saved redlines.</div>
+        <div id="simpleFinalPrint" class="simple-print-target"><div class="simple-final-label">FINAL SCHEDULE</div><div class="week-grid" id="simpleFinalCalendar"></div></div>
+        <div class="simple-actionbar"><button type="button" id="simplePrintFinal">PRINT FINAL</button><button type="button" id="simpleDownloadIcs">DOWNLOAD PHIL .ICS</button></div>
+        <div id="simplePhilHost"></div>
+      </div>
+    </div>
+    <div class="simple-panel" id="simpleSetupPanel"><div class="simple-hero"><h2>Setup</h2><p>Only come here when something permanent changes: calendar connections, saved locations, work sites, recurring practices, or standing rules.</p></div><div class="simple-setup-note">This section is intentionally outside the normal weekly workflow.</div></div>`;
+  oldNav.parentNode.insertBefore(shell,oldNav);
+
+  const finalizeHost=document.getElementById('simpleFinalizeHost');const review=document.getElementById('quickPlanningReview');if(review)finalizeHost.appendChild(review);
+  const philHost=document.getElementById('simplePhilHost');const boss=document.getElementById('bossEmailCard');if(boss)philHost.appendChild(boss);
+  const setup=document.getElementById('simpleSetupPanel');const cal=document.getElementById('tab-calendars'),settings=document.getElementById('tab-settings');if(cal)setup.appendChild(cal);if(settings)setup.appendChild(settings);
+  const scope=document.getElementById('philOutlookScope');if(scope)scope.value='all';
+  if(boss){const h=boss.querySelector('h3');if(h)h.textContent='Email to Phil — final 10-workday schedule';const help=boss.querySelector('.small.muted');if(help)help.textContent='Final email draft. Copy it into Outlook and attach the .ics file.'}
+  const dl=document.getElementById('downloadPhilOutlookBtn');if(dl)dl.textContent='Download final 10-day .ics';
+
+  function switchStep(step){
+    document.querySelectorAll('#simpleWorkflow .simple-step').forEach(b=>b.classList.toggle('active',b.dataset.simpleStep===step));
+    const map={eyeball:'simpleEyeballPanel',prelim:'simplePrelimPanel',finalize:'simpleFinalizePanel',setup:'simpleSetupPanel'};
+    document.querySelectorAll('#simpleWorkflow .simple-panel').forEach(p=>p.classList.remove('active'));document.getElementById(map[step])?.classList.add('active');
+    if(step==='eyeball')renderEyeball();if(step==='prelim')refreshCalendars();if(step==='finalize'&&typeof renderQuickPlanningReview==='function')renderQuickPlanningReview();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  document.querySelectorAll('#simpleWorkflow .simple-step').forEach(b=>b.addEventListener('click',()=>switchStep(b.dataset.simpleStep)));
+
+  function rangeBounds(){const start=parseDate(document.getElementById('startDate').value);const end=addDays(start,13);return{start,end}}
+  function renderEyeball(){
+    const host=document.getElementById('simpleEyeballList'),sum=document.getElementById('simpleEyeballSummary');if(!host||!sum)return;
+    let acts=[];try{acts=getActivities()}catch{}let adh=[];try{adh=getAdhoc()}catch{}
+    const {start,end}=rangeBounds();const all=[...acts.map(a=>({...a,_kind:'activity'})),...adh.map(a=>({...a,title:a.type||'Commitment',child:a.who||'',_kind:'adhoc'}))].filter(a=>{if(!a.date)return false;const d=parseDate(a.date);return d>=start&&d<=end}).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+    const unassigned=all.filter(a=>String(a.child||'').toLowerCase().includes('unassigned')).length,missingLoc=all.filter(a=>a._kind==='activity'&&!String(a.location||'').trim()).length;
+    sum.innerHTML=`<span class="simple-chip">${all.length} events</span><span class="simple-chip">${new Set(all.map(a=>a.date)).size} active days</span>${unassigned?`<span class="simple-chip warn">${unassigned} child to verify</span>`:''}${missingLoc?`<span class="simple-chip warn">${missingLoc} missing location</span>`:''}`;
+    const groups={};all.forEach(a=>(groups[a.date]??=[]).push(a));
+    const days=[];for(let i=0;i<14;i++){const d=addDays(start,i),key=iso(d),rows=groups[key]||[];if(!rows.length)continue;days.push(`<div class="simple-day-scan"><div class="simple-day-scan-head"><strong>${dayName(d)} ${shortDate(d)}</strong><span>${rows.length} event${rows.length===1?'':'s'}</span></div>${rows.map(a=>`<div class="simple-event"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(childLabel(a.child||''))}${a.child?' · ':''}${esc(a.title||'Commitment')}</div><div class="simple-event-meta">${[a.location,a.source].filter(Boolean).map(esc).join(' · ')}</div></div></div>`).join('')}</div>`)}
+    host.innerHTML=days.length?days.join(''):'<div class="card"><div class="simple-empty">No events are currently loaded in this window. Refresh calendars before proceeding.</div></div>';
+  }
+  function refreshCalendars(){
+    if(typeof render==='function'&&(typeof plans!=='undefined'&&plans.length)){render();}
+    const src=document.getElementById('calendarPreview');if(src){document.getElementById('simplePrelimCalendar').innerHTML=src.innerHTML;document.getElementById('simpleFinalCalendar').innerHTML=src.innerHTML;}
+  }
+  async function refreshAndGenerate(){
+    const st=document.getElementById('simpleEyeballStatus');st.textContent='Refreshing calendars…';st.classList.remove('good');
+    try{if(typeof refreshAllCalendarsCore==='function')await refreshAllCalendarsCore({quiet:true,reason:'simple-weekly-workflow'});}catch(e){console.warn('Calendar refresh warning',e)}
+    try{await generate();saveAllNow();scheduleNonzeroAgendaPublish();renderEyeball();refreshCalendars();st.textContent='Plan built. Scan the events, then print the preliminary.';st.classList.add('good');}
+    catch(e){st.textContent='Could not build plan: '+e.message;}
+  }
+  function printTarget(id,kind){document.querySelectorAll('.simple-print-target').forEach(x=>x.classList.remove('active-print'));const t=document.getElementById(id);if(!t)return;t.classList.add('active-print');document.body.classList.add('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{if(!x.classList.contains('active-print'))x.style.display='none'});window.print();setTimeout(()=>{document.body.classList.remove('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{x.style.display='';x.classList.remove('active-print')})},250)}
+  document.getElementById('simpleRefreshGenerate').addEventListener('click',refreshAndGenerate);
+  document.getElementById('simpleAddMissing').addEventListener('click',()=>{switchStep('setup');setTimeout(()=>{document.getElementById('addActivityBtn')?.scrollIntoView({behavior:'smooth',block:'center'})},100)});
+  document.getElementById('simpleToPrelim').addEventListener('click',()=>{if(!(typeof plans!=='undefined'&&plans.length)){refreshAndGenerate();return}refreshCalendars();switchStep('prelim')});
+  document.getElementById('simplePrintPrelim').addEventListener('click',()=>{refreshCalendars();printTarget('simplePrelimPrint','preliminary')});
+  document.getElementById('simpleToFinalize').addEventListener('click',()=>switchStep('finalize'));
+  document.getElementById('simpleBuildFinal').addEventListener('click',()=>{saveAllNow();if(typeof render==='function')render();refreshCalendars();const p=document.getElementById('simpleFinalPackage');p.classList.add('ready');const st=document.getElementById('simpleFinalizeStatus');st.textContent='Final package ready. Print, copy Phil email, and download the .ics.';st.classList.add('good');if(scope)scope.value='all';scheduleNonzeroAgendaPublish();p.scrollIntoView({behavior:'smooth',block:'start'})});
+  document.getElementById('simplePrintFinal').addEventListener('click',()=>{refreshCalendars();printTarget('simpleFinalPrint','final')});
+  document.getElementById('simpleDownloadIcs').addEventListener('click',()=>{if(scope)scope.value='all';downloadPhilOutlookIcs()});
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('simple-workflow-print');document.querySelectorAll('.simple-print-target').forEach(x=>{x.style.display='';x.classList.remove('active-print')})});
+  setTimeout(()=>{renderEyeball();if((typeof plans!=='undefined'&&plans.length))refreshCalendars()},50);
+})();
+</script>
+</body>
 </html>
+<!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
 <!-- AutoPilot v47.8: complete activity review + independent dropoff/pickup decisions + Sam away soccer pickup-only default -->
