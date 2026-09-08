@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
-<!-- AutoPilot v47.10: unified review workspace + resilient saved activity locations -->
+<!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
 <title>AutoPilot — Family Logistics Planner</title>
 <style>
 :root{
@@ -1872,12 +1872,13 @@ function aliasesForChild(role){
   return [childLabel(role),...String($(id)?.value||'').split(/[,;\n]/)].map(normalizeIdentityText).filter(x=>x&&!['oldest','middle','youngest'].includes(x));
 }
 function resolveChildIdentity(event={},link=null){
+  const learned=learnedRuleFor(event);
+  if(learned?.owner)return {role:learned.owner,confidence:'explicit'};
+  const titleText=normalizeIdentityText(event.title||'');
+  const sourceText=normalizeIdentityText([event.source,event.calendarId,link?.label,link?.url].filter(Boolean).join(' '));
+  if(/gymnast/.test(titleText)||/gymnast/.test(sourceText))return {role:'Youngest',confidence:'rule'};
   if(link?.childRole)return {role:link.childRole,confidence:'calendar'};
   const role=normalizeCalendarRole(link?.role||event.calendarRole||'',link?.kind||'');
-  const titleText=normalizeIdentityText(event.title||'');
-  // Standing family rule: gymnastics coming from Kira's Primary Family Calendar belongs to Whitney.
-  // Individual manual child selections remain authoritative because activity rows marked childManual are not re-resolved.
-  if(role==='primaryFamily' && /(^|\s)gymnastics?(\s|$)/.test(' '+titleText+' '))return {role:'Youngest',confidence:'rule'};
   const hay=' '+normalizeIdentityText([event.title,event.description,event.location,event.source].filter(Boolean).join(' '))+' ';
   const hits=[];
   for(const role of ['Oldest','Middle','Youngest'])for(const alias of aliasesForChild(role))if(hay.includes(' '+alias+' ')){hits.push(role);break}
@@ -1941,7 +1942,8 @@ function refreshChildLabels(){
 ['childOldest','childMiddle','childYoungest','childOldestAliases','childMiddleAliases','childYoungestAliases'].forEach(id=>$(id).oninput=()=>{refreshChildLabels();reResolveCurrentActivities();scheduleAutosave()});
 ['transportPositiveKeywords','transportNegativeKeywords'].forEach(id=>{if($(id))$(id).oninput=()=>{reclassifyCurrentActivities();scheduleAutosave()}});
 function activityLegOverrideKey(event={}){
-  return [event.date||'',event.start||'',event.title||'',event.source||''].join('|').toLowerCase();
+  const uid=String(event.uid||'').trim();
+  return uid?`${stableOccurrenceKey(event)}|start:${event.start||''}`:[event.date||'',event.start||'',normalizeIdentityText(event.title||''),normalizeIdentityText(event.source||'')].join('|').toLowerCase();
 }
 function isSamAwaySoccerEvent(event={},childKey=''){
   const who=String(childLabel(childKey)||'').trim().toLowerCase();
@@ -1949,8 +1951,11 @@ function isSamAwaySoccerEvent(event={},childKey=''){
   return who==='sam' && /\baway\b/.test(text) && /\bsoccer\b/.test(text);
 }
 function legDefaultsForEvent(event={},childKey=''){
+  const rule=learnedRuleFor(event);
+  if(rule && (rule.drop!=null||rule.pick!=null))return {drop:rule.drop||'no',pick:rule.pick||'no',reason:'Learned event rule'};
   const remembered=(manualLegOverrides&&manualLegOverrides[activityLegOverrideKey(event)])||null;
   if(remembered)return {drop:remembered.drop||'no',pick:remembered.pick||'no',reason:'Manual leg override'};
+  if(childKey==='Chris'||childKey==='Kira')return {drop:'no',pick:'no',reason:'Adult-owned event: no family ride by default'};
   if(isSamAwaySoccerEvent(event,childKey))return {drop:'no',pick:'yes',reason:'Sam away soccer: pickup only'};
   return {drop:event.drop||'yes',pick:event.pick||'yes',reason:''};
 }
@@ -1960,10 +1965,15 @@ function activityRow(d={}){
   tr.dataset.source=d.source||'Manual';
   tr.dataset.calendarRole=d.calendarRole||roleForSourceName(d.source||'');
   tr.dataset.calendarId=d.calendarId||'';
+  tr.dataset.uid=d.uid||'';
   tr.dataset.description=d.description||'';
   tr.dataset.locationOrigin=d.locationOrigin||(locationLooksUseful(d.location)?'feed':'missing');
-  const inferredChild=d.child||guessChild(d.title,d.source);
-  const legDefaults=legDefaultsForEvent({...d,source:tr.dataset.source,description:tr.dataset.description},inferredChild);
+  const identityInput={...d,source:tr.dataset.source,calendarId:tr.dataset.calendarId,calendarRole:tr.dataset.calendarRole,uid:tr.dataset.uid,description:tr.dataset.description};
+  const learned=learnedRuleFor(identityInput);
+  const resolvedIdentity=resolveChildIdentity(identityInput,calendarLinkForEvent(identityInput));
+  const inferredChild=learned?.owner||(d.childManual===true?d.child:(resolvedIdentity.role!=='Unassigned'?resolvedIdentity.role:(d.child||'Unassigned')));
+  const legDefaults=legDefaultsForEvent(identityInput,inferredChild);
+  if(d.childManual===true||learned?.owner)tr.dataset.childManual='true';
   const tx=d.transportClass?{class:d.transportClass,reason:d.transportReason||''}:transportClassification({...d,child:inferredChild,source:tr.dataset.source,calendarRole:tr.dataset.calendarRole},calendarLinkForEvent({...d,source:tr.dataset.source}));
   tr.dataset.transportClass=tx.class;
   tr.dataset.transportReason=tx.reason;
@@ -3204,7 +3214,7 @@ function confirmAllTeamCalendarTransport(){
 
 function getKira(){return [...$('kiraBody').children].map(r=>{const shift=r.querySelector('.k-shift').value,info=kiraShiftInfo(shift);return{date:r.dataset.date,shift,manual:r.dataset.manualShift==='true',conflict:r.dataset.scheduleConflict==='true',...info,pickupAvailable:kiraPickupAvailableAt(shift)}})}
 function getActivities(){
-  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',calendarId:r.dataset.calendarId||'',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',reviewDecisionAt:r.dataset.reviewDecisionAt||'',reviewDecisionSource:r.dataset.reviewDecisionSource||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
+  const explicit=[...$('activityBody').children].map(r=>({date:r.querySelector('.a-date').value,child:r.querySelector('.a-child').value,title:r.querySelector('.a-title').value,start:r.querySelector('.a-start').value,end:r.querySelector('.a-end').value,location:r.querySelector('.a-loc').value,homeDrive:+r.querySelector('.a-home-drive').value||20,drop:r.querySelector('.a-drop').value,pick:r.querySelector('.a-pick').value,source:r.dataset.source||'Manual',calendarId:r.dataset.calendarId||'',calendarRole:r.dataset.calendarRole||roleForSourceName(r.dataset.source||''),uid:r.dataset.uid||'',description:r.dataset.description||'',childManual:r.dataset.childManual==='true',transportClass:r.dataset.transportClass||'info',transportOverride:r.dataset.transportOverride||'',reviewDecisionAt:r.dataset.reviewDecisionAt||'',reviewDecisionSource:r.dataset.reviewDecisionSource||'',locationOrigin:r.dataset.locationOrigin||'missing'})).filter(x=>x.date&&x.title);
   const recurring=recurringActivitiesForWindow();
   const keys=new Set(explicit.map(a=>[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase()));
   for(const a of recurring){
@@ -3565,9 +3575,25 @@ let manualTransportOverrides={};
 let manualLegOverrides={};
 let manualArrivalOverrides={};
 let manualDepartureOverrides={};
+let eventRules={series:{},occurrence:{}};
+let finalSnapshot=null;
+function stableSeriesKey(event={}){
+  const uid=String(event.uid||'').trim();
+  const source=normalizeIdentityText(event.calendarId||event.source||'manual');
+  if(uid)return `${source}|uid:${uid}`.toLowerCase();
+  return `${source}|title:${normalizeIdentityText(event.title||'untitled')}`;
+}
+function stableOccurrenceKey(event={}){return `${stableSeriesKey(event)}|date:${event.date||''}`;}
+function learnedRuleFor(event={}){return eventRules.occurrence?.[stableOccurrenceKey(event)]||eventRules.series?.[stableSeriesKey(event)]||null;}
+function saveLearnedRule(event={},patch={},scope='series'){
+  const bucket=scope==='occurrence'?'occurrence':'series',key=scope==='occurrence'?stableOccurrenceKey(event):stableSeriesKey(event);
+  eventRules[bucket]??={}; eventRules[bucket][key]={...(eventRules[bucket][key]||{}),...patch,updatedAt:new Date().toISOString()};
+}
+
 
 function assignmentOverrideKey(dateStr,a){
-  return [dateStr,a.kind,a.activity.child,a.activity.title,a.time].join('|');
+  const ev={...(a.activity||{}),date:(a.activity?.date||dateStr)};
+  return `${activityLegOverrideKey(ev)}|${a.kind}|${a.time}`;
 }
 function applyTransportOverridesToPlan(p){
   for(const a of (p.assignments||[])){
@@ -3616,20 +3642,21 @@ async function applySimpleRideRedline(planIndex,activityKey,kind,value){
   const row=findActivityRowByKey(activityKey);
   const activity=(p.activities||[]).find(a=>planActivityKey(a)===activityKey)||(row?rowToCalendarEvent(row):null);if(!activity)return;
   const legField=kind==='Drop'?'drop':'pick';
-  const oldAssignment=(p.assignments||[]).find(a=>a.kind===kind&&planActivityKey(a.activity)===activityKey);
-  if(oldAssignment)delete manualTransportOverrides[assignmentOverrideKey(p.dateStr,oldAssignment)];
+  // Remove every prior override for this exact activity occurrence + leg before recalculating.
+  Object.keys(manualTransportOverrides).forEach(k=>{if(k.startsWith(activityKey+'|')&&k.includes('|'+kind+'|'))delete manualTransportOverrides[k]});
   if(row){
-    const sel=row.querySelector(kind==='Drop'?'.a-drop':'.a-pick');
-    if(sel)sel.value=value==='__NONE__'?'no':'yes';
-    syncLegClassification(row);
+    const sel=row.querySelector(kind==='Drop'?'.a-drop':'.a-pick');if(sel)sel.value=value==='__NONE__'?'no':'yes';syncLegClassification(row);
   }else{
-    const remembered=manualLegOverrides[activityKey]||{drop:activity.drop||'yes',pick:activity.pick||'yes'};
-    remembered[legField]=value==='__NONE__'?'no':'yes';manualLegOverrides[activityKey]=remembered;
-    activity[legField]=remembered[legField];
+    const remembered=manualLegOverrides[activityKey]||{drop:activity.drop||'yes',pick:activity.pick||'yes'};remembered[legField]=value==='__NONE__'?'no':'yes';manualLegOverrides[activityKey]=remembered;activity[legField]=remembered[legField];
   }
   await recalcReviewPlanDay(p.dateStr);
-  const updated=(plans[planIndex]?.assignments||[]).find(a=>a.kind===kind&&planActivityKey(a.activity)===activityKey);
-  if(value!=='__NONE__'&&value&&updated){manualTransportOverrides[assignmentOverrideKey(p.dateStr,updated)]=value;await recalcReviewPlanDay(p.dateStr)}
+  if(value!=='__NONE__'&&value){
+    const updated=(plans[planIndex]?.assignments||[]).find(a=>a.kind===kind&&planActivityKey(a.activity)===activityKey);
+    if(updated){
+      manualTransportOverrides[assignmentOverrideKey(p.dateStr,updated)]=value;
+      applyTransportOverridesToPlan(plans[planIndex]);
+    }
+  }
   saveAllNow();markChanged();render({skipCorrections:true});renderPlanCorrections();
 }
 async function recalcPlanDayWithManuals(index){
@@ -3992,7 +4019,7 @@ function dedupeCalendarEvents(events,cfg=loadCalendarHygiene()){
 }
 
 function rowToCalendarEvent(row){
-  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarId:row.dataset.calendarId||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),description:row.dataset.description||'',transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',locationOrigin:row.dataset.locationOrigin||'missing'};
+  return {date:row.querySelector('.a-date')?.value||'',start:row.querySelector('.a-start')?.value||'',end:row.querySelector('.a-end')?.value||'',title:row.querySelector('.a-title')?.value||'',location:row.querySelector('.a-loc')?.value||'',child:row.querySelector('.a-child')?.value||'Unassigned',source:row.dataset.source||'',calendarId:row.dataset.calendarId||'',calendarRole:row.dataset.calendarRole||roleForSourceName(row.dataset.source||''),uid:row.dataset.uid||'',description:row.dataset.description||'',transportClass:row.dataset.transportClass||'info',transportOverride:row.dataset.transportOverride||'',locationOrigin:row.dataset.locationOrigin||'missing',childManual:row.dataset.childManual==='true'};
 }
 function calendarEventsLikelyDuplicate(a,b,cfg=loadCalendarHygiene()){
   if(eventDateValue(a)!==eventDateValue(b))return false;
@@ -4066,7 +4093,8 @@ function permanentSettings(){
     kiraSites:getKiraSites(),
     kiraSiteMappings:getKiraSiteMappings(),
     savedActivityLocations:getSavedActivityLocations(),
-    practices:getPractices()
+    practices:getPractices(),
+    eventRules:eventRules
   };
 }
 function rollingCycle(){
@@ -4083,7 +4111,8 @@ function rollingCycle(){
     transportOverrides:manualTransportOverrides,
     legOverrides:manualLegOverrides,
     arrivalOverrides:manualArrivalOverrides,
-    departureOverrides:manualDepartureOverrides
+    departureOverrides:manualDepartureOverrides,
+    finalSnapshot:finalSnapshot
   };
 }
 function setSaveStatus(text){
@@ -4164,6 +4193,7 @@ function applyPermanent(data){
       $('savedActivityLocationBody').innerHTML='';
       (data.savedActivityLocations||[]).forEach(savedActivityLocationRow);
     }
+    eventRules=(data.eventRules&&typeof data.eventRules==='object')?{series:data.eventRules.series||{},occurrence:data.eventRules.occurrence||{}}:{series:{},occurrence:{}};
     $('practiceBody').innerHTML='';
     (data.practices||[]).forEach(practiceRow);
     refreshChildLabels();
@@ -4191,6 +4221,7 @@ function applyCycle(data){
     manualTransportOverrides=(data.transportOverrides&&typeof data.transportOverrides==='object')?data.transportOverrides:{};
     manualArrivalOverrides=(data.arrivalOverrides&&typeof data.arrivalOverrides==='object')?data.arrivalOverrides:{};
     manualDepartureOverrides=(data.departureOverrides&&typeof data.departureOverrides==='object')?data.departureOverrides:{};
+    finalSnapshot=(data.finalSnapshot&&typeof data.finalSnapshot==='object')?data.finalSnapshot:null;
   }finally{isApplying=false}
 }
 function loadFromStorage(){
@@ -4805,7 +4836,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
       <button type="button" class="simple-step setup" data-simple-step="setup"><strong>SETUP</strong>Calendars & rules</button>
     </div>
     <div class="simple-panel active" id="simpleEyeballPanel">
-      <div class="simple-hero"><h2>Five-minute event check</h2><p>Refresh the calendars, then scan the next two-week window. Do not make transportation decisions here — just make sure the events are present.</p></div>
+      <div class="simple-hero"><h2>Five-minute event check</h2><p>Refresh the calendars, then scan the assumptions. Correct rows need zero clicks. Only touch an exception: wrong person, no drop-off, or no pickup.</p></div>
       <div class="simple-actionbar"><button type="button" class="primary" id="simpleRefreshGenerate">REFRESH + BUILD PLAN</button><button type="button" id="simpleAddMissing">+ Add missing event</button><span id="simpleEyeballStatus" class="simple-status">Ready to refresh.</span></div>
       <div id="simpleEyeballSummary" class="simple-eyeball-summary"></div><div id="simpleEyeballList" class="simple-day-list"></div>
       <div class="simple-actionbar"><button type="button" class="primary" id="simpleToPrelim">EVENTS LOOK COMPLETE → PRELIMINARY</button></div>
@@ -4816,7 +4847,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
       <div id="simplePrelimPrint" class="simple-print-target"><div class="simple-prelim-label">PRELIMINARY — REVIEW WITH KIRA</div><div class="simple-print-note">Recommended draft. Mark changes directly on this copy.</div><div class="week-grid" id="simplePrelimCalendar"></div></div>
     </div>
     <div class="simple-panel" id="simpleFinalizePanel">
-      <div class="simple-hero"><h2>Enter only the redlines</h2><p>Go day by day from the marked-up paper. Change only what you and Kira changed: work location/times, dropoff, pickup, or no-ride exceptions. Everything else stays as recommended.</p></div>
+      <div class="simple-hero"><h2>Finalize the actual rides</h2><p>Use the marked-up paper from Kira. This is where you choose the actual drop-off and pickup person for each ride. Everything you do not change stays on AutoPilot’s recommendation.</p></div>
       <div id="simpleFinalizeHost"></div>
       <div class="simple-actionbar"><button type="button" class="primary" id="simpleBuildFinal">FINALIZE REDLINES + BUILD FINAL PACKAGE</button><span id="simpleFinalizeStatus" class="simple-status"></span></div>
       <div id="simpleFinalPackage">
@@ -4906,6 +4937,65 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 })();
 </script>
 <!-- AutoPilot v47.19: explicit recommended ride assignments with routing rationale; Chris/Kira event ownership; Phil approx-arrival/departure FYI ICS. -->
+<style id="v4720SimpleValidationCss">
+#simpleEyeballList .simple-event{grid-template-columns:76px minmax(0,1fr)!important;gap:10px!important;align-items:start!important}
+.eye-assumptions{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;align-items:center}.eye-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8d2c8;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;background:#fff;color:#292722;min-height:32px}.eye-pill.on{background:#eef8ef;border-color:#b9d9bd}.eye-pill.off{background:#f5f3ef;color:#777}.eye-pill.verify{background:#fff1d8;border-color:#e4b65b;color:#6b4b0d}
+.eye-edit-btn{border:0!important;background:transparent!important;text-decoration:underline;padding:4px 6px!important;min-height:32px!important;font-size:12px!important;color:#6b6257!important}.eye-exception-panel{grid-column:1/-1;border-top:1px solid #ece7df;margin-top:8px;padding-top:9px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.eye-choice-group{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.eye-choice-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#746c62;margin-right:2px}.eye-choice{border:1px solid #d5cfc5!important;background:#fff!important;color:#333!important;border-radius:999px!important;padding:6px 9px!important;min-height:34px!important;font-size:12px!important;font-weight:800!important}.eye-choice.active{background:#222!important;color:#fff!important;border-color:#222!important}.eye-choice.yes.active{background:#2e6d3f!important;border-color:#2e6d3f!important}.eye-choice.no.active{background:#7b4b3b!important;border-color:#7b4b3b!important}
+#simpleFinalizeHost .unified-review-section:nth-of-type(2){display:none!important}#simpleFinalizeHost .unified-review-section:first-of-type>.unified-review-section-head strong::after{content:" — ACTUAL DROPOFF / PICKUP IS FINALIZED HERE";color:#9a6a16;font-size:11px;margin-left:5px}#simpleFinalizeHost .finalize-ride-row{border-top:1px solid #e8e2d9;padding:10px 0!important;align-items:center!important}#simpleFinalizeHost .finalize-ride-row label{font-weight:900!important}
+</style>
+<script id="v4720SimpleValidationJs">
+(function(){
+  const openRows=new Set();
+  function ownerButtons(selected,rowIndex){return ['Chris','Kira','Oldest','Middle','Youngest'].map(k=>`<button type="button" class="eye-choice ${k===selected?'active':''}" data-eye-action="owner" data-row-index="${rowIndex}" data-value="${k}">${esc(childLabel(k))}</button>`).join('')}
+  window.renderEyeball=function(){
+    const host=document.getElementById('simpleEyeballList'),sum=document.getElementById('simpleEyeballSummary');if(!host||!sum)return;
+    const start=parseDate(document.getElementById('startDate').value),end=addDays(start,13),activityRows=[...document.querySelectorAll('#activityBody tr')];
+    const acts=activityRows.map((row,rowIndex)=>{const a=rowToCalendarEvent(row);return {...a,_kind:'activity',_rowIndex:rowIndex,_row:row}}).filter(a=>a.date&&(()=>{const d=parseDate(a.date);return d>=start&&d<=end})());
+    let adh=[];try{adh=getAdhoc().map(a=>({...a,title:a.type||'Commitment',child:a.who||'',_kind:'adhoc'}))}catch{}
+    adh=adh.filter(a=>{if(!a.date)return false;const d=parseDate(a.date);return d>=start&&d<=end});
+    const all=[...acts,...adh].sort((a,b)=>(a.date+(a.start||'')).localeCompare(b.date+(b.start||''))),unassigned=acts.filter(a=>a.child==='Unassigned').length,missingLoc=acts.filter(a=>!String(a.location||'').trim()).length;
+    sum.innerHTML=`<span class="simple-chip">${all.length} events</span><span class="simple-chip">${new Set(all.map(a=>a.date)).size} active days</span>${unassigned?`<span class="simple-chip warn">${unassigned} owner${unassigned===1?'':'s'} to fix</span>`:''}${missingLoc?`<span class="simple-chip warn">${missingLoc} missing location</span>`:''}<span class="simple-chip good">Correct rows = zero clicks</span>`;
+    const groups={};all.forEach(a=>(groups[a.date]??=[]).push(a));const days=[];
+    for(let i=0;i<14;i++){const d=addDays(start,i),key=iso(d),rows=groups[key]||[];if(!rows.length)continue;days.push(`<div class="simple-day-scan"><div class="simple-day-scan-head"><strong>${dayName(d)} ${shortDate(d)}</strong><span>${rows.length} event${rows.length===1?'':'s'}</span></div>${rows.map(a=>{const isAct=a._kind==='activity',verify=isAct&&a.child==='Unassigned',expanded=isAct&&(verify||openRows.has(a._rowIndex)),person=a.child?childLabel(a.child):'Unassigned';const assumptions=isAct?`<div class="eye-assumptions"><span class="eye-pill ${verify?'verify':'on'}">${verify?'⚠ ':''}${esc(person)}</span><span class="eye-pill ${a.drop==='yes'?'on':'off'}">Drop-off ${a.drop==='yes'?'✓':'—'}</span><span class="eye-pill ${a.pick==='yes'?'on':'off'}">Pickup ${a.pick==='yes'?'✓':'—'}</span><button type="button" class="eye-edit-btn" data-eye-action="toggle" data-row-index="${a._rowIndex}">${expanded&&!verify?'Done':'Change'}</button></div>`:'';const panel=expanded?`<div class="eye-exception-panel"><div class="eye-choice-group"><span class="eye-choice-label">Who</span>${ownerButtons(a.child,a._rowIndex)}</div><div class="eye-choice-group"><span class="eye-choice-label">Drop-off</span><button type="button" class="eye-choice yes ${a.drop==='yes'?'active':''}" data-eye-action="drop" data-row-index="${a._rowIndex}" data-value="yes">Needed</button><button type="button" class="eye-choice no ${a.drop==='no'?'active':''}" data-eye-action="drop" data-row-index="${a._rowIndex}" data-value="no">Not needed</button></div><div class="eye-choice-group"><span class="eye-choice-label">Pickup</span><button type="button" class="eye-choice yes ${a.pick==='yes'?'active':''}" data-eye-action="pick" data-row-index="${a._rowIndex}" data-value="yes">Needed</button><button type="button" class="eye-choice no ${a.pick==='no'?'active':''}" data-eye-action="pick" data-row-index="${a._rowIndex}" data-value="no">Not needed</button></div></div>`:'';return `<div class="simple-event ${verify?'verify-needed':''}"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(a.title||'Commitment')}</div><div class="simple-event-meta">${[a.location,a.source].filter(Boolean).map(esc).join(' · ')}</div>${assumptions}</div>${panel}</div>`}).join('')}</div>`)}
+    host.innerHTML=days.length?days.join(''):'<div class="card"><div class="simple-empty">No events are currently loaded in this window. Refresh calendars before proceeding.</div></div>';
+  };
+  const host=document.getElementById('simpleEyeballList');if(host&&!host.dataset.v4720Bound){host.dataset.v4720Bound='true';host.addEventListener('click',async e=>{const btn=e.target.closest('[data-eye-action]');if(!btn||!host.contains(btn))return;const idx=+btn.dataset.rowIndex,rows=[...document.querySelectorAll('#activityBody tr')],row=rows[idx];if(!row)return;const action=btn.dataset.eyeAction;if(action==='toggle'){openRows.has(idx)?openRows.delete(idx):openRows.add(idx);renderEyeball();return}btn.disabled=true;try{setLastReviewChange(row);if(action==='owner'){row.querySelector('.a-child').value=btn.dataset.value;row.dataset.childManual='true';openRows.add(idx)}else if(action==='drop'||action==='pick'){row.querySelector(action==='drop'?'.a-drop':'.a-pick').value=btn.dataset.value;syncLegClassification(row);openRows.add(idx)}await refreshPlanAfterReviewEdit(row);renderEyeball()}catch(err){console.error('Eyeball validation change failed',err)}finally{btn.disabled=false}})}
+  setTimeout(()=>{try{reResolveCurrentActivities();renderEyeball()}catch(e){console.warn(e)}},80);
+})();
+</script>
+<!-- AutoPilot v47.20: zero-click eyeball validation, global gymnastics→Whitney rule, delegated one-click exception controls, explicit final ride assignment surface. -->
+<style id="v4721HardeningCss">
+#simpleEyeballSummary{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.simple-chip.attention{background:#fff0dc;border-color:#e2b768;color:#6c4b13}.eye-rulebar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;width:100%;padding-top:3px}.eye-scope.active{background:#3b362f!important;color:#fff!important;border-color:#3b362f!important}.eye-confidence{font-size:11px;margin-top:4px;color:#6d655b}.eye-confidence.bad{color:#9a3e31;font-weight:800}.finalize-inline-rides{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.8fr) 150px;gap:9px;align-items:center;padding:9px 0;border-top:1px solid #e9e3da}.finalize-inline-rides .ride-title{font-size:12px;font-weight:850}.finalize-inline-rides .ride-reason{font-size:10.5px;color:#71695f;margin-top:3px}.finalize-inline-rides select{width:100%;min-height:38px}.final-version-badge{display:inline-flex;margin-left:8px;padding:4px 8px;border-radius:999px;background:#eef8ef;border:1px solid #bbd9bf;color:#2e6538;font-size:11px;font-weight:900}.hard-driver-select{display:none!important}.hard-driver-buttons{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}.hard-driver-btn{border:1px solid #d4cec4!important;background:#fff!important;color:#312f2b!important;border-radius:999px!important;padding:6px 9px!important;min-height:34px!important;font-size:11px!important;font-weight:850!important}.hard-driver-btn.active{background:#26231f!important;color:#fff!important;border-color:#26231f!important}.hard-driver-btn.no-ride.active{background:#7b4b3b!important;border-color:#7b4b3b!important}.hard-driver-btn.recommend.active{background:#2e6d3f!important;border-color:#2e6d3f!important}@media(max-width:650px){.finalize-inline-rides{grid-template-columns:1fr}}
+</style>
+<script id="v4721HardeningJs">
+(function(){
+  reResolveCurrentActivities=function(){const links=getSavedCalendarLinks();[...$('activityBody').children].forEach(r=>{const ev=rowToCalendarEvent(r),rule=learnedRuleFor(ev),link=links.find(l=>sourceLabelFor(l)===r.dataset.source||r.dataset.source?.includes(l.label||'__none__'));if(rule?.owner){r.querySelector('.a-child').value=rule.owner;r.dataset.childManual='true'}else if(r.dataset.childManual!=='true'){const x=resolveChildIdentity(ev,link),sel=r.querySelector('.a-child');sel.innerHTML=childOptions(x.role);sel.value=x.role;const b=r.querySelector('.identity-confidence');if(b){b.className='identity-confidence '+x.confidence;b.textContent=identityConfidenceLabel(x.confidence)}}const now=rowToCalendarEvent(r),leg=legDefaultsForEvent(now,now.child);if(rule&&(rule.drop!=null||rule.pick!=null)){r.querySelector('.a-drop').value=leg.drop;r.querySelector('.a-pick').value=leg.pick;r.dataset.transportClass=(leg.drop==='yes'||leg.pick==='yes')?'required':'info';r.dataset.transportReason='Learned event rule';r.dataset.transportManual='true'}r.querySelector('.verify-child').style.display=r.querySelector('.a-child').value==='Unassigned'?'':'none'});refreshChildLabels()};
+  async function candidateFor(day,leg,person,state){const buffer=+$('transportBuffer').value||20,home=$('homeAddress').value.trim(),dest=String(leg.activity?.location||'').trim(),fallback=Number(leg.activity.homeDrive)||20;if(person==='Chris'&&day.chrisUnavailable)return null;if(person==='Kira'&&day.kiraUnavailable)return null;let origin=home,available=0,reason='local';if(person==='Chris'&&day.onsite){const site=getSites().find(s=>s.name===day.site),work=site?.address||day.chrisWorkAddress||'';if(day.departHome!=null&&leg.time<day.departHome){origin=home;available=0;reason='before onsite departure'}else if(day.leaveWork!=null&&leg.time>=day.leaveWork){origin=work;available=day.leaveWork;reason='after planned work departure'}else return null}else if(person==='Chris'){reason='remote/local'}if(person==='Kira'&&!day.kiraOff){if(day.kiraStart!=null&&leg.time<day.kiraStart){origin=home;available=0;reason='before Kira shift'}else if(day.kiraEnd!=null&&leg.time>=day.kiraEnd){origin=day.kiraAddress||home;available=day.kiraEnd;reason='after Kira shift'}else return null}else if(person==='Kira'){reason='off/local'}const last=state[person];if(last&&last.time>available){const gap=leg.time-last.time;if(gap<=90){origin=last.address||home;available=last.time;reason='after prior family ride'}else{const back=await routeMinutes(last.address||home,home,fallback);origin=home;available=last.time+back;reason='after prior ride and return home'}}const travel=await routeMinutes(origin,dest,fallback),arrival=available+travel+buffer;if(arrival>leg.time)return null;const tentative=!locationLooksUseful(dest)||!locationLooksUseful(origin)||$('liveRouting').value!=='yes';let score=person==='Kira'?(day.kiraOff?96:76):(day.onsite?72:92);score-=Math.min(25,travel/2);if(tentative)score-=7;return {n:person,s:score,tentative,reason:`${reason} · ~${travel} min to event${tentative?' · routing estimate':''}`}}
+  assignTransport=async function(day){const legs=[];for(const a of day.activities){if(a.drop==='yes'&&a.start)legs.push({activity:a,kind:'Drop',time:toMin(a.start)});if(a.pick==='yes'&&a.end)legs.push({activity:a,kind:'Pickup',time:toMin(a.end)})}legs.sort((a,b)=>a.time-b.time);const assignments=[],state={Chris:null,Kira:null};for(const leg of legs){const opts=[];for(const who of ['Chris','Kira']){const c=await candidateFor(day,leg,who,state);if(c)opts.push(c)}if($('oldestCanDrive').value==='yes'&&leg.activity.child!=='Oldest')opts.push({n:childLabel('Oldest'),s:48,tentative:true,reason:`${childLabel('Oldest')} configured as driver · route not verified`});opts.push({n:'Backup',s:1,tentative:true,reason:'No household driver is route-feasible with current timing'});opts.sort((a,b)=>b.s-a.s);const best=opts[0],a={...leg,primary:best.n,secondary:opts[1]?.n||'Backup',recommendationReason:best.reason,alternatives:opts.slice(1,3).map(x=>x.n),recommendationTentative:!!best.tentative};assignments.push(a);if(best.n==='Chris'||best.n==='Kira')state[best.n]={time:leg.time+5,address:String(leg.activity.location||'').trim()||$('homeAddress').value.trim()}}return assignments};
+  const openRows=new Set();function scope(row){return row?.dataset.ruleScope==='occurrence'?'occurrence':'series'}function learn(row,patch){saveLearnedRule(rowToCalendarEvent(row),patch,scope(row));saveAllNow()}function ownerButtons(selected,i){return ['Chris','Kira','Oldest','Middle','Youngest'].map(k=>`<button type="button" class="eye-choice ${k===selected?'active':''}" data-hard-action="owner" data-row-index="${i}" data-value="${k}">${esc(childLabel(k))}</button>`).join('')}
+  window.renderEyeball=function(){const host=$('simpleEyeballList'),sum=$('simpleEyeballSummary');if(!host||!sum)return;const start=parseDate($('startDate').value),end=addDays(start,13),acts=[...$('activityBody').children].map((row,i)=>({...rowToCalendarEvent(row),_row:row,_rowIndex:i})).filter(a=>a.date&&parseDate(a.date)>=start&&parseDate(a.date)<=end).sort((a,b)=>(a.date+(a.start||'')).localeCompare(b.date+(b.start||'')));const needs=acts.filter(a=>a.child==='Unassigned'||(a.transportClass==='required'&&!locationLooksUseful(a.location)));sum.innerHTML=`<span class="simple-chip">${acts.length} events found</span><span class="simple-chip good">✓ ${acts.length-needs.length} confidently resolved</span>${needs.length?`<span class="simple-chip attention">⚠ ${needs.length} need attention</span>`:'<span class="simple-chip good">No exceptions</span>'}<span class="simple-chip">Correct rows = zero clicks</span>`;const groups={};acts.forEach(a=>(groups[a.date]??=[]).push(a));host.innerHTML=Object.entries(groups).map(([date,items])=>{const d=parseDate(date);return `<div class="simple-day-scan"><div class="simple-day-scan-head"><strong>${dayName(d)} ${shortDate(d)}</strong><span>${items.length} event${items.length===1?'':'s'}</span></div>${items.map(a=>{const bad=a.child==='Unassigned'||(a.transportClass==='required'&&!locationLooksUseful(a.location)),expanded=bad||openRows.has(a._rowIndex),sc=a._row.dataset.ruleScope||'series';return `<div class="simple-event ${bad?'verify-needed':''}"><div class="simple-event-time">${a.start?fmt(toMin(a.start)):'All day'}</div><div><div class="simple-event-title">${esc(a.title)}</div><div class="simple-event-meta">${[a.location,a.source].filter(Boolean).map(esc).join(' · ')}</div><div class="eye-assumptions"><span class="eye-pill ${a.child==='Unassigned'?'verify':'on'}">${a.child==='Unassigned'?'⚠ ':''}${esc(childLabel(a.child))}</span><span class="eye-pill ${a.drop==='yes'?'on':'off'}">Drop-off ${a.drop==='yes'?'✓':'—'}</span><span class="eye-pill ${a.pick==='yes'?'on':'off'}">Pickup ${a.pick==='yes'?'✓':'—'}</span><button type="button" class="eye-edit-btn" data-hard-action="toggle" data-row-index="${a._rowIndex}">${expanded&&!bad?'Done':'Change'}</button></div>${bad?`<div class="eye-confidence bad">${a.child==='Unassigned'?'Owner needs verification. ':''}${!locationLooksUseful(a.location)&&a.transportClass==='required'?'Location needed for a confident ride recommendation.':''}</div>`:''}</div>${expanded?`<div class="eye-exception-panel"><div class="eye-rulebar"><span class="eye-choice-label">Apply correction</span><button type="button" class="eye-choice eye-scope ${sc==='series'?'active':''}" data-hard-action="scope" data-row-index="${a._rowIndex}" data-value="series">Always for this event</button><button type="button" class="eye-choice eye-scope ${sc==='occurrence'?'active':''}" data-hard-action="scope" data-row-index="${a._rowIndex}" data-value="occurrence">This date only</button></div><div class="eye-choice-group"><span class="eye-choice-label">Who</span>${ownerButtons(a.child,a._rowIndex)}</div><div class="eye-choice-group"><span class="eye-choice-label">Drop-off</span><button type="button" class="eye-choice yes ${a.drop==='yes'?'active':''}" data-hard-action="drop" data-row-index="${a._rowIndex}" data-value="yes">Needed</button><button type="button" class="eye-choice no ${a.drop==='no'?'active':''}" data-hard-action="drop" data-row-index="${a._rowIndex}" data-value="no">Not needed</button></div><div class="eye-choice-group"><span class="eye-choice-label">Pickup</span><button type="button" class="eye-choice yes ${a.pick==='yes'?'active':''}" data-hard-action="pick" data-row-index="${a._rowIndex}" data-value="yes">Needed</button><button type="button" class="eye-choice no ${a.pick==='no'?'active':''}" data-hard-action="pick" data-row-index="${a._rowIndex}" data-value="no">Not needed</button></div></div>`:''}</div>`}).join('')}</div>`}).join('')||'<div class="simple-empty">No events loaded.</div>'};
+  const eye=$('simpleEyeballList');if(eye)eye.addEventListener('click',async e=>{const btn=e.target.closest('[data-hard-action]');if(!btn)return;const i=+btn.dataset.rowIndex,row=[...$('activityBody').children][i];if(!row)return;const a=btn.dataset.hardAction;if(a==='toggle'){openRows.has(i)?openRows.delete(i):openRows.add(i);renderEyeball();return}if(a==='scope'){row.dataset.ruleScope=btn.dataset.value;renderEyeball();return}setLastReviewChange(row);if(a==='owner'){row.querySelector('.a-child').value=btn.dataset.value;row.dataset.childManual='true';learn(row,{owner:btn.dataset.value})}if(a==='drop'||a==='pick'){row.querySelector(a==='drop'?'.a-drop':'.a-pick').value=btn.dataset.value;syncLegClassification(row);learn(row,{[a]:btn.dataset.value})}openRows.add(i);await refreshPlanAfterReviewEdit(row);renderEyeball()});
+  // Finalize uses the hardened existing planCorrections surface so the hidden activity data store remains intact.
+  const baseRenderPlanCorrections=renderPlanCorrections;
+  function enhanceFinalRideButtons(){
+    const host=$('simpleFinalizeHost');if(!host)return;
+    host.querySelectorAll('select.simple-ride-override').forEach(sel=>{
+      sel.classList.add('hard-driver-select');
+      let group=sel.parentElement.querySelector('.hard-driver-buttons');if(group)group.remove();group=document.createElement('div');group.className='hard-driver-buttons';
+      const rec=sel.options[0]?.textContent?.replace(/^Use recommendation · /,'')||'AutoPilot';
+      const choices=[['',`Recommendation · ${rec}`,'recommend'],['Chris','Chris',''],['Kira','Kira',''],[childLabel('Oldest'),childLabel('Oldest'),''],['__NONE__','No ride','no-ride']];
+      for(const [value,label,cls] of choices){if(![...sel.options].some(o=>o.value===value))continue;const b=document.createElement('button');b.type='button';b.className=`hard-driver-btn ${cls} ${sel.value===value?'active':''}`;b.textContent=label;b.onclick=()=>{if(sel.disabled)return;sel.value=value;group.querySelectorAll('.hard-driver-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');sel.dispatchEvent(new Event('change',{bubbles:true}))};group.appendChild(b)}
+      sel.parentElement.appendChild(group);
+    });
+  }
+  renderPlanCorrections=function(){baseRenderPlanCorrections();enhanceFinalRideButtons()};
+  if(plans?.length){renderPlanCorrections()}
+  const build=$('simpleBuildFinal');if(build)build.addEventListener('click',()=>{const v=(finalSnapshot?.version||0)+1;finalSnapshot={version:v,createdAt:new Date().toISOString(),plans:JSON.parse(JSON.stringify(plans||[])),transportOverrides:JSON.parse(JSON.stringify(manualTransportOverrides||{})),legOverrides:JSON.parse(JSON.stringify(manualLegOverrides||{}))};saveAllNow();setTimeout(()=>{const st=$('simpleFinalizeStatus');if(st)st.innerHTML=`Final v${v} frozen · Phil email + 10-day FYI .ics regenerated. <span class="final-version-badge">FINAL v${v}</span>`},0)},true);
+  const pre=$('simpleToPrelim');if(pre)pre.addEventListener('click',e=>{const unresolved=[...$('activityBody').children].map(rowToCalendarEvent).filter(a=>a.child==='Unassigned'||(a.transportClass==='required'&&!locationLooksUseful(a.location)));if(unresolved.length&&!confirm(`${unresolved.length} event${unresolved.length===1?'':'s'} still need verification or a location. Print Preliminary anyway?`)){e.preventDefault();e.stopImmediatePropagation()}},true);
+  setTimeout(()=>{try{reResolveCurrentActivities();renderEyeball();if(plans?.length)renderPlanCorrections()}catch(err){console.error('v47.21 initialization failed',err)}},120);
+})();
+</script>
+<!-- AutoPilot v47.21: durable UID-based learned rules, exception-only validation, route-feasible whole-day ride solver, one-step final ride overrides, immutable Final snapshots. -->
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
