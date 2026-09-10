@@ -5768,6 +5768,82 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
   setTimeout(()=>{const days=$('v4727Days');if(days)new MutationObserver(()=>decorateNotes()).observe(days,{childList:true})},700);
 })();
 </script>
+
+<!-- AutoPilot v47.32: staged review edits; one deliberate recalc; durable pending changes; stable master review. -->
+<style id="v4732StagedReviewStyle">
+#v4732FlowBar{border:1px solid #d7cfbf;border-left:6px solid #d6a800;border-radius:13px;background:#fffaf0;padding:11px 13px;margin:0 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#v4732FlowBar .v4732-copy{min-width:220px;flex:1}.v4732-title{font-size:14px;font-weight:950}.v4732-sub{font-size:10.5px;color:#6e675c;margin-top:2px;line-height:1.4}.v4732-pending{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#eee9df;font-size:11px;font-weight:900}.v4732-pending.hot{background:#fff0c8;color:#7c5700}
+#v4732Recalc{min-height:44px;font-weight:950!important}.v4732-staged{outline:2px solid #d6a800!important;outline-offset:1px}.v4732-pending-note{font-size:9px;font-weight:900;color:#8a5c00;margin-top:3px}.v4732-work-pending{box-shadow:0 0 0 2px #d6a800 inset!important}
+#v4727PrintFinal{display:none!important}
+@media(max-width:760px){#v4732FlowBar{align-items:stretch}#v4732Recalc{width:100%}}
+</style>
+<script id="v4732StagedReviewScript">
+(function(){
+  if(window.__apV4732)return; window.__apV4732=true;
+  const KEY='familyOptimizerV23.v4732PendingEdits';
+  const $=id=>document.getElementById(id);
+  const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
+  const blank=()=>({work:{},owner:{},ride:{},quickText:[]});
+  function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');return v&&typeof v==='object'?{...blank(),...v,work:v.work||{},owner:v.owner||{},ride:v.ride||{},quickText:Array.isArray(v.quickText)?v.quickText:[]}:blank()}catch{return blank()}}
+  function save(v){try{localStorage.setItem(KEY,JSON.stringify(v||blank()))}catch{} updatePendingUi()}
+  function clear(){try{localStorage.removeItem(KEY)}catch{} updatePendingUi()}
+  function count(v=load()){return Object.keys(v.work||{}).length+Object.keys(v.owner||{}).length+Object.keys(v.ride||{}).length+(v.quickText||[]).length}
+  function stageDateForPlanIndex(pi){const p=(plans||[])[Number(pi)];return p?.dateStr||''}
+  function rowDate(row){const pi=Number(row?.dataset?.v4727Plan);return stageDateForPlanIndex(pi)}
+  function addRowPendingNote(row,text){if(!row)return;let n=row.querySelector('.v4732-pending-note');if(!n){n=document.createElement('div');n.className='v4732-pending-note';const meta=row.querySelector('.v4727-meta')||row.children?.[1];meta?.appendChild(n)}if(n)n.textContent=text}
+  function markPills(row,selector,value){row?.querySelectorAll(selector).forEach(b=>{const on=(b.dataset.value||'')===String(value||'');b.classList.toggle('active',on);b.classList.toggle('v4732-staged',on)})}
+  function applyVisualPending(){
+    const v=load(),root=$('v4727Master');if(!root)return;
+    root.querySelectorAll('.v4732-pending-note').forEach(n=>n.remove());
+    root.querySelectorAll('.v4732-staged').forEach(n=>n.classList.remove('v4732-staged'));
+    root.querySelectorAll('.v4728-work-select').forEach(sel=>{sel.classList.remove('v4732-work-pending');const date=stageDateForPlanIndex(sel.dataset.planIndex);if(date&&Object.prototype.hasOwnProperty.call(v.work,date)){sel.value=v.work[date];sel.classList.add('v4732-work-pending');const day=sel.closest('.v4727-day');const detail=day?.querySelector('.v4728-workdetail');if(detail&&!detail.textContent.includes('PENDING'))detail.textContent+=' · PENDING'}});
+    root.querySelectorAll('.v4727-event').forEach(row=>{const ak=row.dataset.v4727Ak||'',date=rowDate(row);const owner=v.owner[date+'|'+ak];if(owner!==undefined){markPills(row,'.v4730-owner-pill',owner);addRowPendingNote(row,'Pending owner change — not recalculated yet.')}for(const kind of ['Drop','Pickup']){const r=v.ride[date+'|'+ak+'|'+kind];if(r!==undefined){markPills(row,'.v4730-driver-pill[data-kind="'+kind+'"]',r);addRowPendingNote(row,'Pending ride change — not recalculated yet.')}}});
+  }
+  function updatePendingUi(){const n=count(),b=$('v4732Pending');if(b){b.textContent=n?`${n} pending change${n===1?'':'s'}`:'No pending changes';b.classList.toggle('hot',!!n)}const f=$('v4727Finalize');if(f)f.textContent='FINALIZE + BUILD PHIL PACKAGE';const r=$('v4732Recalc');if(r)r.textContent=n?`RECALCULATE 10-DAY PLAN (${n})`:'RECALCULATE 10-DAY PLAN';setTimeout(applyVisualPending,0)}
+  function installUi(){const root=$('v4727Master');if(!root)return setTimeout(installUi,120);if($('v4732FlowBar'))return;
+    const actions=root.querySelector('.v4727-actions');if(!actions)return setTimeout(installUi,120);
+    const flow=document.createElement('div');flow.id='v4732FlowBar';flow.innerHTML='<div class="v4732-copy"><div class="v4732-title">Review first. Recalculate once.</div><div class="v4732-sub">Tap any owner, drop-off, pickup, or work-location change and/or dump free-text edits below. Nothing rebuilds while you are reviewing. When finished, recalculate everything together.</div></div><span id="v4732Pending" class="v4732-pending">No pending changes</span><button type="button" class="primary" id="v4732Recalc">RECALCULATE 10-DAY PLAN</button>';
+    actions.insertAdjacentElement('afterend',flow);
+    const refresh=$('v4727Refresh');if(refresh)refresh.textContent='REFRESH SOURCE EVENTS';const pk=$('v4727PrintKira');if(pk)pk.textContent='PRINT / SAVE REVIEW PDF';const fin=$('v4727Finalize');if(fin)fin.textContent='FINALIZE + BUILD PHIL PACKAGE';
+    $('v4732Recalc').addEventListener('click',()=>applyPending(false));
+    updatePendingUi();
+  }
+  function stageWork(sel){const date=stageDateForPlanIndex(sel.dataset.planIndex);if(!date)return;const v=load();v.work[date]=sel.value;save(v);const st=$('v4727Status');if(st){st.textContent='Work-location change staged. Keep reviewing, then recalculate once.';st.className='v4727-status warn'}}
+  function stageOwner(btn){const row=btn.closest('.v4727-event'),date=rowDate(row),ak=btn.dataset.activity||row?.dataset.v4727Ak;if(!date||!ak)return;const v=load();v.owner[date+'|'+ak]=btn.dataset.value||'';save(v);markPills(row,'.v4730-owner-pill',btn.dataset.value||'');addRowPendingNote(row,'Pending owner change — not recalculated yet.');const st=$('v4727Status');if(st){st.textContent='Event-owner change staged. Keep reviewing.';st.className='v4727-status warn'}}
+  function stageRide(btn){const row=btn.closest('.v4727-event'),date=rowDate(row),ak=btn.dataset.activity||row?.dataset.v4727Ak,kind=btn.dataset.kind;if(!date||!ak||!kind)return;const v=load();v.ride[date+'|'+ak+'|'+kind]=btn.dataset.value||'';save(v);markPills(row,'.v4730-driver-pill[data-kind="'+kind+'"]',btn.dataset.value||'');addRowPendingNote(row,'Pending ride change — not recalculated yet.');const st=$('v4727Status');if(st){st.textContent=(kind==='Drop'?'Drop-off':'Pickup')+' change staged. Keep reviewing.';st.className='v4727-status warn'}}
+  function stageQuick(){const box=$('v4731Input'),receipt=$('v4731Receipt');if(!box)return;const lines=box.value.split(/\n|;/).map(x=>x.trim()).filter(Boolean);if(!lines.length){if(receipt){receipt.className='v4731-receipt show warn';receipt.textContent='Type one or more changes first.'}return}const v=load();for(const line of lines)if(!v.quickText.includes(line))v.quickText.push(line);save(v);if(receipt){receipt.className='v4731-receipt show good';receipt.innerHTML=lines.map(x=>'✓ Staged: '+String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))).join('<br>')+'<br><strong>Nothing has recalculated yet.</strong>'}box.value='';const st=$('v4727Status');if(st){st.textContent='Free-text edits staged. Make any other changes, then recalculate once.';st.className='v4727-status warn'}}
+  async function safeWork(date,value){const p=(plans||[]).find(x=>x.dateStr===date);if(!p||p.weekend)return;if(value==='__REMOTE__'){p.onsite=false;p.holiday=false;p.site='';p.departHome=null;p.arrive=null;p.leaveWork=null;p.status='remote'}else if(value==='__HOLIDAY__'){p.onsite=false;p.holiday=true;p.site='';p.departHome=null;p.arrive=null;p.leaveWork=null;p.status='remote'}else{const site=(typeof getSites==='function'?getSites():[]).find(s=>norm(s.name)===norm(value));if(!site)throw new Error('Unknown work site: '+value);p.holiday=false;p.onsite=true;const best=await evaluateSite(p,site);p.site=site.name;p.chrisWorkAddress=site.address||'';p.chrisCommuteMinutes=best.commute;p.departHome=best.departHome;p.arrive=best.arrive;p.leaveWork=best.leave;p.status=best.ok?(best.usable>=420?'good':'warn'):'bad'}p.manualOverride=true}
+  function parseStageKey(k){const first=k.indexOf('|');return first<0?['',k]:[k.slice(0,first),k.slice(first+1)]}
+  async function runLegacyQuick(lines){if(!lines?.length)return;const box=$('v4731Input'),btn=$('v4731Apply');if(!box||!btn)return;box.value=lines.join('\n');window.__apV4732Bypass=true;btn.click();window.__apV4732Bypass=false;const started=Date.now();while(btn.disabled&&Date.now()-started<30000)await new Promise(r=>setTimeout(r,80));if(btn.disabled)throw new Error('Quick Edit recalculation timed out.')}
+  async function applyPending(finalizeAfter){
+    if(window.__apV4732Applying)return;window.__apV4732Applying=true;const st=$('v4727Status'),v=load();
+    try{
+      if(!count(v)){if(finalizeAfter)return runFinalize();if(st){st.textContent='No pending changes. The current 10-day plan is already up to date.';st.className='v4727-status good'}return}
+      if(st){st.textContent='Applying all pending changes and recalculating the 10-day plan…';st.className='v4727-status warn'}
+      if(v.quickText.length)await runLegacyQuick(v.quickText);
+      const affected=new Set();
+      for(const [date,value] of Object.entries(v.work)){await safeWork(date,value);affected.add(date)}
+      for(const [k,value] of Object.entries(v.owner)){const [date,ak]=parseStageKey(k),row=findActivityRowByKey(ak);if(row){const sel=row.querySelector('.a-child');if(sel){sel.value=value;row.dataset.childManual='true';try{saveLearnedRule({...rowToCalendarEvent(row),child:value},{owner:value,lockedOwner:false},'occurrence')}catch{};affected.add(date)}}}
+      const rideEntries=[];
+      for(const [k,value] of Object.entries(v.ride)){const parts=k.split('|'),kind=parts.pop(),date=parts.shift(),ak=parts.join('|');rideEntries.push({date,ak,kind,value});const row=findActivityRowByKey(ak);const p=(plans||[]).find(x=>x.dateStr===date);const act=(p?.activities||[]).find(a=>planActivityKey(a)===ak)||(row?rowToCalendarEvent(row):null);if(row){const sel=row.querySelector(kind==='Drop'?'.a-drop':'.a-pick');if(sel)sel.value=value==='__NONE__'?'no':'yes';syncLegClassification(row)}else if(act){const leg=kind==='Drop'?'drop':'pick';const m=manualLegOverrides[ak]||{drop:act.drop||'yes',pick:act.pick||'yes'};m[leg]=value==='__NONE__'?'no':'yes';manualLegOverrides[ak]=m;act[leg]=m[leg]}Object.keys(manualTransportOverrides).forEach(ok=>{if(ok.startsWith(ak+'|')&&ok.includes('|'+kind+'|'))delete manualTransportOverrides[ok]});affected.add(date)}
+      for(const date of affected)await recalcReviewPlanDay(date);
+      for(const r of rideEntries){if(r.value&&r.value!=='__NONE__'){const p=(plans||[]).find(x=>x.dateStr===r.date);const a=(p?.assignments||[]).find(x=>x.kind===r.kind&&planActivityKey(x.activity)===r.ak);if(a)manualTransportOverrides[assignmentOverrideKey(r.date,a)]=r.value}const p=(plans||[]).find(x=>x.dateStr===r.date);if(p)applyTransportOverridesToPlan(p)}
+      try{saveCycle();markChanged();saveAllNow()}catch{}
+      clear();window.__apV4731EnforceWhitney?.();window.__apV4731RenderMaster?.();window.__apV4731SyncPhil?.();
+      if(st){st.textContent='10-day plan recalculated. Review the updated recommendations electronically or print/save the review PDF.';st.className='v4727-status good'}
+      if(finalizeAfter)await runFinalize();
+    }catch(err){console.error('v47.32 recalculation failed',err);if(st){st.textContent='Recalculation stopped safely: '+err.message+' Pending changes were preserved.';st.className='v4727-status warn'}save(v)}finally{window.__apV4732Applying=false;updatePendingUi()}
+  }
+  function runFinalize(){const btn=$('v4727Finalize');if(!btn)return;window.__apV4732Bypass=true;btn.click();window.__apV4732Bypass=false;setTimeout(()=>{const st=$('v4727Status');if(st){st.textContent=(st.textContent||'Final plan saved.')+' Phil email and 10-day ICS are ready below.';st.className='v4727-status good'}},50)}
+  function installCapture(){const root=$('v4727Master');if(!root)return setTimeout(installCapture,120);if(root.dataset.v4732Capture)return;root.dataset.v4732Capture='1';
+    root.addEventListener('change',e=>{if(window.__apV4732Bypass||window.__apV4732Applying)return;const work=e.target.closest('.v4728-work-select');if(work){e.stopImmediatePropagation();stageWork(work)}},true);
+    root.addEventListener('click',e=>{if(window.__apV4732Bypass||window.__apV4732Applying)return;const owner=e.target.closest('.v4730-owner-pill');if(owner){e.preventDefault();e.stopImmediatePropagation();stageOwner(owner);return}const drv=e.target.closest('.v4730-driver-pill');if(drv){e.preventDefault();e.stopImmediatePropagation();stageRide(drv);return}if(e.target.closest('#v4731Apply')){e.preventDefault();e.stopImmediatePropagation();stageQuick();return}if(e.target.closest('#v4727Finalize')){e.preventDefault();e.stopImmediatePropagation();applyPending(true);return}if(e.target.closest('#v4727PrintKira')&&count()){e.preventDefault();e.stopImmediatePropagation();const st=$('v4727Status');if(st){st.textContent='You have pending changes. Recalculate the 10-day plan before printing so the PDF matches your decisions.';st.className='v4727-status warn'}return}},true);
+  }
+  installUi();installCapture();
+  const obs=new MutationObserver(()=>{installUi();installCapture();applyVisualPending();updatePendingUi()});setTimeout(()=>{const d=$('v4727Days');if(d)obs.observe(d,{childList:true,subtree:false})},500);
+  window.__apV4732ApplyPending=applyPending;
+})();
+</script>
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
