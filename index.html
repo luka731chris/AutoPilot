@@ -6107,6 +6107,166 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 })();
 </script>
 </body>
+
+<style id="v480SimpleWeeklyPlannerStyle">
+/* v48: one obvious weekly workflow; legacy engine remains underneath */
+#autopilotTabs [data-tab="review"],#autopilotTabs [data-tab="outputs"]{display:none!important}
+#autopilotTabs [data-tab="plan"]{font-size:0}
+#autopilotTabs [data-tab="plan"]::after{content:"PLANNER";font-size:13px}
+#autopilotTabs [data-tab="calendars"]{font-size:0}
+#autopilotTabs [data-tab="calendars"]::after{content:"CALENDAR CONNECTIONS";font-size:13px}
+#autopilotTabs [data-tab="settings"]{font-size:0}
+#autopilotTabs [data-tab="settings"]::after{content:"SETTINGS";font-size:13px}
+
+/* Hide the old planning controls from the normal weekly workflow. */
+#tab-plan > .tab-intro,#tab-plan > .toolbar,#tab-plan > .card,#tab-plan > .grid,
+#tab-plan > .table-wrap,#tab-plan > h2,#tab-plan > h3{display:none!important}
+#v4742PlanWindow{display:none!important}
+#v4735Review{display:none!important}
+
+/* Main simple planner */
+#v480Planner{max-width:1180px;margin:0 auto;padding:4px 0 24px}
+.v480-hero{border:1px solid #d8d1c5;border-radius:16px;background:#fff;padding:18px;margin-bottom:14px}
+.v480-title{font-size:25px;font-weight:950;line-height:1.05;color:#211f1b}
+.v480-sub{margin-top:6px;font-size:13px;color:#6a6257;line-height:1.45}
+.v480-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:15px}
+.v480-step{padding:9px 10px;border-radius:10px;background:#f2efe9;font-size:11px;font-weight:900;color:#6a6257}
+.v480-step.active{background:#211f1b;color:#fff}.v480-step.done{background:#f5e8b3;color:#514000}
+.v480-card{border:1px solid #d8d1c5;border-radius:15px;background:#fff;padding:16px;margin:0 0 12px}
+.v480-cardhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.v480-num{width:31px;height:31px;border-radius:50%;background:#211f1b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:950;flex:0 0 auto}
+.v480-cardhead strong{font-size:17px;display:block}.v480-help{font-size:11px;color:#71695e;margin-top:2px;line-height:1.4}
+.v480-row{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
+.v480-field{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:950;text-transform:uppercase;color:#625b51}
+#v480Start{height:46px;min-width:190px;border:2px solid #92897c;border-radius:9px;padding:6px 9px;font-size:16px;font-weight:900;background:#fff}
+.v480-btn{min-height:46px;border:1.5px solid #aaa296;border-radius:9px;background:#fff;padding:8px 13px;font-size:12px;font-weight:950;cursor:pointer;color:#29251f}
+.v480-btn:hover{background:#f4f0e9}.v480-btn.primary{background:#211f1b;color:#fff;border-color:#211f1b}.v480-btn.gold{background:#d6a800;color:#211f1b;border-color:#b58e00}
+.v480-btn:disabled{opacity:.45;cursor:not-allowed}
+#v480Status{margin-left:auto;align-self:center;font-size:11px;font-weight:800;color:#6c6459;max-width:360px}
+.v480-reviewtop{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.v480-toggle{display:flex;border:1px solid #bcb3a7;border-radius:10px;overflow:hidden}.v480-toggle button{border:0;border-right:1px solid #c9c1b6;background:#fff;padding:9px 13px;font-size:11px;font-weight:950;cursor:pointer}.v480-toggle button:last-child{border-right:0}.v480-toggle button.active{background:#211f1b;color:#fff}
+.v480-nav{display:flex;align-items:center;gap:8px}.v480-nav span{font-size:11px;font-weight:950;min-width:74px;text-align:center}
+#v480DayBody{min-height:180px}
+.v480-day{border:1px solid #ddd6cb;border-radius:13px;overflow:hidden}
+.v480-dayhead{background:#f7f4ee;padding:12px 13px;border-bottom:1px solid #e5dfd5}
+.v480-date{font-size:18px;font-weight:950}.v480-worksummary{font-size:11px;color:#665f55;margin-top:4px;line-height:1.45}
+.v480-site-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}.v480-site-row label{font-size:10px;font-weight:950;text-transform:uppercase}.v480-site{height:40px;min-width:175px;border:1.5px solid #aaa296;border-radius:8px;background:#fff;padding:5px 8px;font-weight:850}
+.v480-event{padding:11px 13px;border-bottom:1px solid #eee9e1}.v480-event:last-child{border-bottom:0}
+.v480-eventtop{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.v480-time{font-size:11px;font-weight:950;color:#806716}.v480-eventtitle{font-size:13px;font-weight:950}.v480-who{font-size:10px;color:#756d62}
+.v480-legrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.v480-leglabel{font-size:9px;font-weight:950;text-transform:uppercase;color:#71695f;margin-bottom:4px}
+.v480-pills{display:flex;gap:5px;flex-wrap:wrap}.v480-pills input{position:absolute;opacity:0;pointer-events:none}.v480-pills label{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:5px 10px;border:1.5px solid #aaa296;border-radius:999px;background:#fff;color:#29251f;font-size:11px;font-weight:950;cursor:pointer}.v480-pills input:checked+label{background:#211f1b;color:#fff;border-color:#211f1b}.v480-pills input:focus-visible+label{outline:3px solid #d6a800;outline-offset:2px}
+.v480-note{padding:12px 13px;background:#fffaf0;border-top:1px solid #eadca8}.v480-note label{font-size:11px;font-weight:950;display:block;margin-bottom:5px}.v480-note textarea{width:100%;min-height:74px;border:1.5px solid #aaa296;border-radius:9px;padding:9px;font-size:13px;resize:vertical}
+.v480-note small{display:block;color:#776d5e;margin-top:4px;font-size:9.5px}
+.v480-ten{display:grid;gap:8px}.v480-ten-day{border:1px solid #ddd6cb;border-radius:10px;padding:10px;background:#fff}.v480-ten-date{font-size:13px;font-weight:950}.v480-ten-work{font-size:10px;color:#6b6358;margin:2px 0 6px}.v480-ten-event{font-size:10.5px;padding:3px 0;border-top:1px solid #f1ede6}.v480-ten-event:first-of-type{border-top:0}
+.v480-actions{display:flex;gap:8px;flex-wrap:wrap}.v480-actions .v480-btn{flex:1 1 180px}
+.v480-state{padding:9px 11px;border-radius:9px;background:#f4f1eb;font-size:11px;font-weight:850;color:#625b51;margin-bottom:10px}.v480-state.hot{background:#fff0bd;color:#604900}.v480-state.good{background:#e7f2e9;color:#285a32}
+.v480-output{display:none;margin-top:10px;border-top:1px solid #e4ddd2;padding-top:12px}.v480-output.show{display:block}.v480-output textarea{width:100%;min-height:170px;border:1px solid #bbb2a6;border-radius:9px;padding:10px;font-size:12px}
+@media(max-width:720px){.v480-steps{grid-template-columns:1fr 1fr}.v480-legrow{grid-template-columns:1fr}.v480-row>*{width:100%}#v480Status{margin-left:0}.v480-btn{width:100%}.v480-nav{width:100%;justify-content:space-between}}
+@media print{#autopilotTabs,.v480-hero,.v480-card:not(#v480ReviewCard),.v480-reviewtop,.v480-note,.v480-site-row{display:none!important}#v480ReviewCard{border:0;padding:0}#v480DayBody{display:block!important}.v480-ten{display:grid!important}}
+</style>
+
+<script id="v480SimpleWeeklyPlannerScript">
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const PENDING='familyOptimizerV23.v4732PendingEdits',DRAFT='familyOptimizerV23.v4735DailyDrafts';
+let dayIndex=0, mode='day', recalculated=false, finalized=false;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function plansNow(){return Array.isArray(window.plans)?window.plans:(typeof plans!=='undefined'&&Array.isArray(plans)?plans:[])}
+function normDate(p){if(p?.dateStr)return p.dateStr;const d=p?.date instanceof Date?p.date:new Date(p?.date||Date.now());return !isNaN(d)?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:''}
+function dayLabel(p){const d=p?.date instanceof Date?p.date:new Date((normDate(p)||'')+'T12:00:00');return !isNaN(d)?d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}):(normDate(p)||'Day')}
+function loadPending(){try{const x=JSON.parse(localStorage.getItem(PENDING)||'{}')||{};return {work:x.work||{},owner:x.owner||{},ride:x.ride||{},departure:x.departure||{},notes:x.notes||{},quickText:Array.isArray(x.quickText)?x.quickText:[]}}catch{return {work:{},owner:{},ride:{},departure:{},notes:{},quickText:[]}}}
+function savePending(x){localStorage.setItem(PENDING,JSON.stringify(x));recalculated=false;finalized=false;renderState()}
+function loadDrafts(){try{return JSON.parse(localStorage.getItem(DRAFT)||'{}')||{}}catch{return {}}}
+function saveDraft(date,val){const d=loadDrafts();if(val.trim())d[date]=val;else delete d[date];localStorage.setItem(DRAFT,JSON.stringify(d));recalculated=false;finalized=false;renderState()}
+function pendingCount(){const x=loadPending();return Object.keys(x.work).length+Object.keys(x.owner).length+Object.keys(x.ride).length+Object.keys(x.departure).length+Object.keys(x.notes).length+x.quickText.length+Object.keys(loadDrafts()).filter(k=>String(loadDrafts()[k]||'').trim()).length}
+function evKey(a){try{return typeof planActivityKey==='function'?planActivityKey(a):(a.uid||a.id||[a.title,a.start,a.location].join('~'))}catch{return a.uid||a.id||[a.title,a.start].join('~')}}
+function fmtTime(v){if(!v)return'';try{const d=v instanceof Date?v:new Date(v);if(!isNaN(d))return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).replace(' ',' ')}catch{}return String(v)}
+function who(a){try{return typeof childLabel==='function'?childLabel(a.child||a.role||a.childRole):(a.child||a.role||a.childRole||'')}catch{return a.child||a.role||a.childRole||''}}
+function workSite(p){const date=normDate(p),x=loadPending();return x.work[date]??p?.site??p?.workSite??p?.selectedSite??'Remote'}
+function kiraLine(p){const k=p?.kira||p?.kiraWork||p?.kiraShift||p?.kiraSchedule||{};if(typeof k==='string')return k;return k.label||k.site||k.location||k.shift||p?.kiraLabel||p?.kiraSite||p?.kiraShiftName||'See Kira schedule'}
+function chrisLine(p){let s=workSite(p);let arr=p?.arrival||p?.arrivalTime||p?.workArrival||'',dep=p?.departure||p?.departureTime||p?.workDeparture||'';return [s,arr?`arrive ${fmtTime(arr)}`:'',dep?`depart ${fmtTime(dep)}`:''].filter(Boolean).join(' · ')}
+function sites(){try{return typeof getSites==='function'?getSites():[]}catch{return []}}
+function siteOptions(p){const cur=workSite(p);let a=sites().map(x=>typeof x==='string'?x:(x.name||x.label||x.id)).filter(Boolean);['Remote','Off'].forEach(x=>{if(!a.includes(x))a.push(x)});if(cur&&!a.includes(cur))a.unshift(cur);return a.map(x=>`<option ${x===cur?'selected':''} value="${esc(x)}">${esc(x)}</option>`).join('')}
+function assignment(p,a,kind){const date=normDate(p),key=date+'|'+evKey(a)+'|'+kind,x=loadPending();if(x.ride[key]!=null)return x.ride[key];const as=p?.assignments?.[evKey(a)]||p?.assignments?.[a.uid]||{};return as[kind]||as[kind.toLowerCase()]||a?.[kind.toLowerCase()]||'Recommended'}
+function choices(p,a,kind){const date=normDate(p),ak=evKey(a),cur=assignment(p,a,kind);let vals=['Recommended','Chris','Kira','No ride'];try{const oldest=typeof childLabel==='function'?childLabel('Oldest'):'';if(oldest&&!vals.includes(oldest))vals.splice(3,0,oldest)}catch{}return `<div class="v480-pills">${vals.map((v,i)=>{const id='v480_'+Math.random().toString(36).slice(2);return `<input class="v480-ride" id="${id}" type="radio" name="${esc(date+'|'+ak+'|'+kind)}" data-date="${esc(date)}" data-ak="${esc(ak)}" data-kind="${kind}" value="${esc(v)}" ${String(cur)===v?'checked':''}><label for="${id}">${esc(v)}</label>`}).join('')}</div>`}
+function activities(p){return (p?.activities||p?.events||[]).filter(a=>a&&a.title)}
+function renderDay(){
+ const ps=plansNow();if(!ps.length){$('v480DayBody').innerHTML='<div class="v480-state">No plan yet. Choose a start date above and click <b>START / REFRESH PLAN</b>.</div>';return}
+ dayIndex=Math.max(0,Math.min(dayIndex,ps.length-1));const p=ps[dayIndex],date=normDate(p),draft=loadDrafts()[date]||'';
+ $('v480DayCount').textContent=`Day ${dayIndex+1} of ${ps.length}`;$('v480Prev').disabled=dayIndex===0;$('v480Next').disabled=dayIndex===ps.length-1;
+ const ev=activities(p);
+ $('v480DayBody').innerHTML=`<section class="v480-day"><div class="v480-dayhead"><div class="v480-date">${esc(dayLabel(p))}</div><div class="v480-worksummary"><b>Chris:</b> ${esc(chrisLine(p))}<br><b>Kira:</b> ${esc(kiraLine(p))}</div><div class="v480-site-row"><label>Chris work location</label><select class="v480-site" data-date="${esc(date)}">${siteOptions(p)}</select></div></div><div>${ev.length?ev.map(a=>`<div class="v480-event"><div class="v480-eventtop"><span class="v480-time">${esc(fmtTime(a.start))}</span><span class="v480-eventtitle">${esc(a.title)}</span><span class="v480-who">${esc(who(a))}${a.location?' · '+esc(a.location):''}</span></div><div class="v480-legrow"><div><div class="v480-leglabel">Drop-off</div>${choices(p,a,'Drop')}</div><div><div class="v480-leglabel">Pickup</div>${choices(p,a,'Pickup')}</div></div></div>`).join(''):'<div class="v480-event">No transportation events for this day.</div>'}</div><div class="v480-note"><label>Anything different about this day?</label><textarea class="v480-draft" data-date="${esc(date)}" placeholder="Example: Kira picks Whitney up from gymnastics. I need to stay at Wheeling until 6 PM.">${esc(draft)}</textarea><small>This note belongs only to ${esc(dayLabel(p))}. It will be applied when you recalculate.</small></div></section>`;
+}
+function renderTen(){
+ const ps=plansNow();$('v480DayCount').textContent=`${ps.length} days`;$('v480Prev').disabled=true;$('v480Next').disabled=true;
+ $('v480DayBody').innerHTML=`<div class="v480-ten">${ps.map(p=>`<div class="v480-ten-day"><div class="v480-ten-date">${esc(dayLabel(p))}</div><div class="v480-ten-work"><b>Chris:</b> ${esc(chrisLine(p))} &nbsp; • &nbsp; <b>Kira:</b> ${esc(kiraLine(p))}</div>${activities(p).map(a=>`<div class="v480-ten-event"><b>${esc(fmtTime(a.start))}</b> ${esc(a.title)} — ${esc(who(a))} · Drop: ${esc(assignment(p,a,'Drop'))} · Pickup: ${esc(assignment(p,a,'Pickup'))}</div>`).join('')||'<div class="v480-ten-event">No transportation events.</div>'}</div>`).join('')}</div>`;
+}
+function renderReview(){mode==='day'?renderDay():renderTen();document.querySelectorAll('[data-v480-mode]').forEach(b=>b.classList.toggle('active',b.dataset.v480Mode===mode))}
+function renderState(msg){
+ const n=pendingCount(),el=$('v480State');if(!el)return;
+ if(msg){el.textContent=msg;el.className='v480-state good';return}
+ if(n){el.innerHTML=`<b>${n} unsaved planning change${n===1?'':'s'}.</b> Keep reviewing. When finished, click APPLY CHANGES + RECALCULATE.`;el.className='v480-state hot'}
+ else if(finalized){el.innerHTML='<b>Plan finalized.</b> Email summary and ICS are ready below.';el.className='v480-state good'}
+ else if(recalculated){el.innerHTML='<b>Recalculated.</b> Review the 10-day plan. If it looks right, finalize it.';el.className='v480-state good'}
+ else{el.innerHTML='<b>Ready to review.</b> Page through each day and make any needed changes.';el.className='v480-state'}
+ updateSteps()
+}
+function updateSteps(){const has=plansNow().length>0,n=pendingCount();const step=n?3:(finalized?4:(recalculated?4:(has?3:1)));document.querySelectorAll('.v480-step').forEach((e,i)=>{e.classList.toggle('active',i+1===step);e.classList.toggle('done',i+1<step)})}
+function syncStart(){const s=$('v480Start'),c=$('startDate');if(s&&c&&!s.value)s.value=c.value||''}
+async function setStartAndGenerate(){
+ const s=$('v480Start'),c=$('startDate');if(!s?.value)return; if(c){c.value=s.value;c.dispatchEvent(new Event('change',{bubbles:true}))}
+ $('v480Status').textContent='Refreshing calendars and building the 10-day plan…';
+ try{if(typeof window.__apV4742ApplyDate==='function')await window.__apV4742ApplyDate(s.value);else if(typeof generate==='function')await generate();dayIndex=0;recalculated=false;finalized=false;renderReview();renderState();$('v480Status').textContent='Plan ready. Start with Day 1 below.';$('v480ReviewCard').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){console.error(e);$('v480Status').textContent='Could not refresh the plan: '+e.message}
+}
+function shiftWeek(delta){const s=$('v480Start');let d=new Date((s.value||new Date().toISOString().slice(0,10))+'T12:00:00');d.setDate(d.getDate()+delta*7);s.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function thisMonday(){const d=new Date();const x=(d.getDay()+6)%7;d.setDate(d.getDate()-x);$('v480Start').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+async function recalc(){
+ const b=$('v480Recalc');if(b.disabled)return;b.disabled=true;b.textContent='APPLYING…';
+ try{
+   // Convert date-specific draft notes into the existing pending notes before the authoritative override engine runs.
+   const drafts=loadDrafts(),x=loadPending();Object.entries(drafts).forEach(([d,t])=>{if(String(t||'').trim())x.notes[d]=String(t).trim()});localStorage.setItem(PENDING,JSON.stringify(x));
+   if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine unavailable');
+   await window.__apV4732ApplyPending(false);
+   // Preserve drafts only if unresolved; legacy parser/engine may leave them in notes.
+   const after=loadPending();const nd={};Object.entries(drafts).forEach(([d,t])=>{if(after.notes?.[d]||after.quickText?.some(q=>String(q).includes(t)))nd[d]=t});localStorage.setItem(DRAFT,JSON.stringify(nd));
+   recalculated=true;finalized=false;mode='10';renderReview();renderState('Changes applied. This is your recalculated preliminary plan. Review it, then finalize when ready.');
+ }catch(e){console.error(e);renderState('Recalculation did not finish. Your edits are still saved; nothing was discarded.')}
+ finally{b.disabled=false;b.textContent='APPLY CHANGES + RECALCULATE'}
+}
+async function finalize(){
+ if(pendingCount()){renderState('You still have edits waiting to be applied. Click APPLY CHANGES + RECALCULATE first.');return}
+ try{
+   const old=$('v4738Finalize')||$('finalizePlanBtn')||$('finalizeBtn');
+   if(old){old.click();finalized=true;renderState()}else{finalized=true;renderState('Plan marked final.')}
+ }catch(e){console.error(e);renderState('Could not finalize the plan.')}
+}
+function email(){const old=$('v4738Email');if(old){old.click();setTimeout(()=>{const src=$('v4738EmailText')||$('bossMessage');if(src){$('v480EmailText').value=src.value||src.textContent||'';$('v480EmailOut').classList.add('show')}},50)}}
+function ics(){const old=$('v4738Ics');if(old)old.click();else if(typeof downloadPhilOutlookIcs==='function')downloadPhilOutlookIcs()}
+function install(){
+ const panel=$('tab-plan');if(!panel)return setTimeout(install,100);if($('v480Planner'))return;
+ const root=document.createElement('div');root.id='v480Planner';
+ root.innerHTML=`<div class="v480-hero"><div class="v480-title">Family Logistics Planner</div><div class="v480-sub">One simple flow: choose the dates → review each day → apply your changes → finalize and share.</div><div class="v480-steps"><div class="v480-step">1 · DATES</div><div class="v480-step">2 · BUILD PLAN</div><div class="v480-step">3 · REVIEW + EDIT</div><div class="v480-step">4 · FINALIZE</div></div></div>
+ <section class="v480-card"><div class="v480-cardhead"><div class="v480-num">1</div><div><strong>Choose the 10-day planning window</strong><div class="v480-help">Usually start with Monday. Change this anytime schedules evolve.</div></div></div><div class="v480-row"><label class="v480-field">Plan starts<input id="v480Start" type="date"></label><button class="v480-btn" id="v480PrevWeek">← Previous week</button><button class="v480-btn" id="v480Monday">This Monday</button><button class="v480-btn" id="v480NextWeek">Next week →</button><button class="v480-btn primary" id="v480Build">START / REFRESH PLAN</button><span id="v480Status">Choose a date, then start the plan.</span></div></section>
+ <section class="v480-card" id="v480ReviewCard"><div class="v480-cardhead"><div class="v480-num">2</div><div><strong>Review and adjust</strong><div class="v480-help">Start day-by-day. Your changes are saved while you page forward and backward. Nothing is recalculated until you choose to apply them.</div></div></div><div class="v480-reviewtop"><div class="v480-toggle"><button type="button" class="active" data-v480-mode="day">DAY-BY-DAY</button><button type="button" data-v480-mode="10">10-DAY OVERVIEW</button></div><div class="v480-nav"><button class="v480-btn" id="v480Prev">← Previous</button><span id="v480DayCount"></span><button class="v480-btn" id="v480Next">Next →</button></div></div><div id="v480DayBody"></div></section>
+ <section class="v480-card"><div class="v480-cardhead"><div class="v480-num">3</div><div><strong>Apply your changes</strong><div class="v480-help">Do this once after you finish reviewing. Your manual choices are authoritative and are reapplied after the scheduling engine recalculates.</div></div></div><div id="v480State" class="v480-state"></div><div class="v480-actions"><button class="v480-btn gold" id="v480Recalc">APPLY CHANGES + RECALCULATE</button><button class="v480-btn" id="v480Print">PRINT / SAVE PRELIMINARY PDF</button></div></section>
+ <section class="v480-card"><div class="v480-cardhead"><div class="v480-num">4</div><div><strong>Finalize and share</strong><div class="v480-help">Only finalize after the recalculated 10-day overview looks right.</div></div></div><div class="v480-actions"><button class="v480-btn primary" id="v480Finalize">FINALIZE PLAN</button><button class="v480-btn" id="v480Email">SUMMARIZE WORK PLAN EMAIL</button><button class="v480-btn" id="v480Ics">GENERATE ICS</button></div><div id="v480EmailOut" class="v480-output"><textarea id="v480EmailText" readonly></textarea></div></section>`;
+ panel.prepend(root);
+ syncStart();renderReview();renderState();
+ $('v480PrevWeek').onclick=()=>shiftWeek(-1);$('v480NextWeek').onclick=()=>shiftWeek(1);$('v480Monday').onclick=thisMonday;$('v480Build').onclick=setStartAndGenerate;
+ $('v480Prev').onclick=()=>{const t=$('v480DayBody').querySelector('.v480-draft');if(t)saveDraft(t.dataset.date,t.value);dayIndex=Math.max(0,dayIndex-1);renderReview()};
+ $('v480Next').onclick=()=>{const t=$('v480DayBody').querySelector('.v480-draft');if(t)saveDraft(t.dataset.date,t.value);dayIndex=Math.min(Math.max(0,plansNow().length-1),dayIndex+1);renderReview()};
+ document.querySelectorAll('[data-v480-mode]').forEach(b=>b.onclick=()=>{const t=$('v480DayBody').querySelector('.v480-draft');if(t)saveDraft(t.dataset.date,t.value);mode=b.dataset.v480Mode;renderReview()});
+ root.addEventListener('change',e=>{if(e.target.matches('.v480-site')){const x=loadPending();x.work[e.target.dataset.date]=e.target.value;savePending(x)}else if(e.target.matches('.v480-ride')){const x=loadPending();x.ride[e.target.dataset.date+'|'+e.target.dataset.ak+'|'+e.target.dataset.kind]=e.target.value;savePending(x)}},true);
+ root.addEventListener('input',e=>{if(e.target.matches('.v480-draft'))saveDraft(e.target.dataset.date,e.target.value)},true);
+ $('v480Recalc').onclick=recalc;$('v480Print').onclick=()=>{mode='10';renderReview();setTimeout(()=>window.print(),50)};$('v480Finalize').onclick=finalize;$('v480Email').onclick=email;$('v480Ics').onclick=ics;
+ // Keep the main planner visible when the legacy app tries to route to hidden Review/Outputs.
+ document.querySelectorAll('#autopilotTabs [data-tab="plan"]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>root.scrollIntoView({block:'start'}),30)));
+}
+window.__apV480Render=()=>{syncStart();renderReview();renderState()};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
