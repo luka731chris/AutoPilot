@@ -6267,6 +6267,154 @@ window.__apV480Render=()=>{syncStart();renderReview();renderState()};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();
 </script>
+
+<style id="v481GuidedStyle">
+/* v48.1 guided turn-by-turn workflow */
+#v480Planner{display:none!important}
+#v481Planner{max-width:1180px;margin:0 auto;padding:4px 0 30px}
+.v481-hero{border:1px solid #d9d1c5;border-radius:18px;background:#fff;padding:19px;margin-bottom:13px}
+.v481-title{font-size:26px;font-weight:950;color:#211f1b;line-height:1.08}.v481-sub{font-size:13px;color:#6a6258;margin-top:6px;line-height:1.5}
+.v481-route{display:flex;gap:5px;align-items:center;margin-top:15px;overflow:auto;padding-bottom:2px}
+.v481-route-step{white-space:nowrap;border-radius:999px;padding:7px 10px;background:#eeeae3;color:#71695e;font-size:10px;font-weight:950}
+.v481-route-step.active{background:#211f1b;color:#fff}.v481-route-step.done{background:#f3df8a;color:#4c3c00}.v481-arrow{color:#9c9488;font-weight:900}
+.v481-guide{border-radius:14px;padding:14px 15px;margin:0 0 12px;background:#211f1b;color:#fff;display:flex;gap:11px;align-items:flex-start}
+.v481-guide-icon{font-size:22px;line-height:1}.v481-guide-title{font-size:15px;font-weight:950}.v481-guide-text{font-size:11.5px;line-height:1.45;margin-top:3px;color:#eee9e0}.v481-guide-next{font-size:10px;font-weight:950;color:#f3d35f;margin-top:7px;text-transform:uppercase}
+.v481-card{border:1px solid #d9d1c5;border-radius:15px;background:#fff;padding:16px;margin-bottom:12px}
+.v481-card h2{font-size:18px;margin:0 0 4px}.v481-explain{font-size:11px;color:#71695e;line-height:1.45;margin-bottom:12px}
+.v481-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.v481-field{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:950;text-transform:uppercase;color:#625b51}
+#v481Start{height:48px;min-width:200px;border:2px solid #91887b;border-radius:9px;padding:7px 10px;font-size:16px;font-weight:900;background:#fff}
+.v481-btn{min-height:48px;border:1.5px solid #a89f92;border-radius:10px;background:#fff;color:#28241f;padding:8px 14px;font-size:12px;font-weight:950;cursor:pointer;line-height:1.2}
+.v481-btn:hover{background:#f5f1ea}.v481-btn.primary{background:#211f1b;color:#fff;border-color:#211f1b}.v481-btn.gold{background:#d6a800;color:#211f1b;border-color:#b78f00}.v481-btn:disabled{opacity:.42;cursor:not-allowed}
+.v481-btn small{display:block;font-size:8.5px;font-weight:750;margin-top:2px;opacity:.75}
+.v481-source{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid #ddd6ca;border-radius:11px;padding:11px;margin-top:11px;background:#faf8f4}
+.v481-source-title{font-size:12px;font-weight:950}.v481-source-status{font-size:10px;color:#6e665c;margin-top:2px;line-height:1.4}.v481-source-status.good{color:#2f6b3b}.v481-source-status.warn{color:#8a5d00}
+.v481-check{display:none;margin-top:10px;border-radius:10px;padding:10px 11px;font-size:11px;line-height:1.45}.v481-check.show{display:block}.v481-check.good{background:#e9f4eb;color:#275a31}.v481-check.warn{background:#fff0bd;color:#6c5000}
+.v481-review-head{display:flex;justify-content:space-between;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.v481-toggle{display:flex;border:1px solid #bcb3a7;border-radius:10px;overflow:hidden}.v481-toggle button{border:0;border-right:1px solid #c9c1b6;background:#fff;padding:10px 13px;font-size:11px;font-weight:950;cursor:pointer}.v481-toggle button:last-child{border-right:0}.v481-toggle button.active{background:#211f1b;color:#fff}
+.v481-nav{display:flex;gap:7px;align-items:center}.v481-nav span{min-width:72px;text-align:center;font-size:11px;font-weight:950}
+.v481-day{border:1px solid #ddd6cb;border-radius:13px;overflow:hidden}.v481-dayhead{background:#f7f4ee;padding:12px 13px;border-bottom:1px solid #e5dfd5}.v481-date{font-size:18px;font-weight:950}.v481-work{font-size:11px;color:#655e54;margin-top:4px;line-height:1.45}
+.v481-site-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}.v481-site-row label{font-size:10px;font-weight:950;text-transform:uppercase}.v481-site{height:42px;min-width:185px;border:1.5px solid #a99f92;border-radius:8px;padding:6px 8px;font-weight:850;background:#fff}
+.v481-event{padding:11px 13px;border-bottom:1px solid #eee9e1}.v481-event:last-child{border-bottom:0}.v481-eventtop{display:flex;gap:7px;align-items:baseline;flex-wrap:wrap}.v481-time{font-size:11px;font-weight:950;color:#7c6517}.v481-eventtitle{font-size:13px;font-weight:950}.v481-who{font-size:10px;color:#746c61}
+.v481-legrow{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:8px}.v481-leglabel{font-size:9px;font-weight:950;text-transform:uppercase;color:#71695f;margin-bottom:4px}
+.v481-pills{display:flex;gap:5px;flex-wrap:wrap}.v481-pills input{position:absolute;opacity:0;pointer-events:none}.v481-pills label{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:6px 11px;border:1.5px solid #9f9689;border-radius:999px;background:#fff;color:#28241f;font-size:11px;font-weight:950;cursor:pointer}.v481-pills input:checked+label{background:#211f1b;color:#fff;border-color:#211f1b}.v481-pills input:focus-visible+label{outline:3px solid #d6a800;outline-offset:2px}
+.v481-note{padding:12px 13px;background:#fffaf0;border-top:1px solid #eadca8}.v481-note label{font-size:11px;font-weight:950;display:block;margin-bottom:5px}.v481-note textarea{width:100%;min-height:75px;border:1.5px solid #a99f92;border-radius:9px;padding:9px;font-size:13px;resize:vertical}.v481-note small{font-size:9.5px;color:#776e60;display:block;margin-top:4px}
+.v481-ten{display:grid;gap:8px}.v481-ten-day{border:1px solid #ddd6cb;border-radius:10px;padding:10px}.v481-ten-date{font-size:13px;font-weight:950}.v481-ten-work{font-size:10px;color:#6b6358;margin:2px 0 6px}.v481-ten-event{font-size:10.5px;padding:3px 0;border-top:1px solid #f1ede6}
+.v481-state{padding:11px;border-radius:10px;background:#f3f0ea;color:#5e574d;font-size:11px;font-weight:850;line-height:1.45;margin-bottom:10px}.v481-state.hot{background:#fff0bd;color:#674c00}.v481-state.good{background:#e7f3e9;color:#285c33}
+.v481-actions{display:flex;gap:8px;flex-wrap:wrap}.v481-actions .v481-btn{flex:1 1 210px}
+.v481-share{display:none}.v481-share.show{display:block}
+.v481-output{display:none;margin-top:10px}.v481-output.show{display:block}.v481-output textarea{width:100%;min-height:170px;border:1px solid #b9b0a4;border-radius:9px;padding:10px;font-size:12px}
+.v481-tip{display:inline-block;margin-left:5px;width:17px;height:17px;border-radius:50%;background:#eee8df;text-align:center;line-height:17px;font-size:10px;font-weight:950;color:#5f574d;cursor:help}
+@media(max-width:720px){.v481-legrow{grid-template-columns:1fr}.v481-row>*{width:100%}.v481-source{grid-template-columns:1fr}.v481-btn{width:100%}.v481-nav{width:100%;justify-content:space-between}.v481-route{gap:3px}.v481-route-step{font-size:9px;padding:6px 8px}}
+@media print{#autopilotTabs,.v481-hero,.v481-guide,.v481-card:not(#v481ReviewCard),.v481-review-head,.v481-note,.v481-site-row{display:none!important}#v481ReviewCard{border:0;padding:0}}
+</style>
+<script id="v481GuidedScript">
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),P='familyOptimizerV23.v4732PendingEdits',D='familyOptimizerV23.v481DailyDrafts';
+let idx=0,view='day',phase='start',lastSourceSignature='';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ps=()=>Array.isArray(window.plans)?window.plans:(typeof plans!=='undefined'&&Array.isArray(plans)?plans:[]);
+function dateKey(p){if(p?.dateStr)return p.dateStr;let d=p?.date instanceof Date?p.date:new Date(p?.date||Date.now());return isNaN(d)?'':`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function label(p){let d=p?.date instanceof Date?p.date:new Date(dateKey(p)+'T12:00:00');return isNaN(d)?dateKey(p):d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})}
+function pending(){try{let x=JSON.parse(localStorage.getItem(P)||'{}')||{};return {work:x.work||{},owner:x.owner||{},ride:x.ride||{},departure:x.departure||{},notes:x.notes||{},quickText:Array.isArray(x.quickText)?x.quickText:[]}}catch{return {work:{},owner:{},ride:{},departure:{},notes:{},quickText:[]}}}
+function saveP(x){localStorage.setItem(P,JSON.stringify(x));phase='review';state()}
+function drafts(){try{return JSON.parse(localStorage.getItem(D)||'{}')||{}}catch{return {}}}
+function saveDraft(d,v){let x=drafts();v=String(v||'');if(v.trim())x[d]=v;else delete x[d];localStorage.setItem(D,JSON.stringify(x));phase='review';state()}
+function count(){let x=pending();return Object.keys(x.work).length+Object.keys(x.owner).length+Object.keys(x.ride).length+Object.keys(x.departure).length+Object.keys(x.notes).length+x.quickText.length+Object.keys(drafts()).filter(k=>String(drafts()[k]||'').trim()).length}
+function akey(a){try{return typeof planActivityKey==='function'?planActivityKey(a):(a.uid||a.id||[a.title,a.start].join('~'))}catch{return a.uid||a.id||[a.title,a.start].join('~')}}
+function fmt(v){if(!v)return'';let d=v instanceof Date?v:new Date(v);return !isNaN(d)?d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):String(v)}
+function owner(a){try{return typeof childLabel==='function'?childLabel(a.child||a.role||a.childRole):(a.child||a.role||a.childRole||'')}catch{return a.child||a.role||a.childRole||''}}
+function acts(p){return (p?.activities||p?.events||[]).filter(a=>a?.title)}
+function site(p){let d=dateKey(p),x=pending();return x.work[d]??p?.site??p?.workSite??p?.selectedSite??'Remote'}
+function sites(){let a=[];try{a=(typeof getSites==='function'?getSites():[]).map(x=>typeof x==='string'?x:(x.name||x.label||x.id)).filter(Boolean)}catch{};['Remote','Off'].forEach(x=>{if(!a.includes(x))a.push(x)});return a}
+function kira(p){let k=p?.kira||p?.kiraWork||p?.kiraShift||p?.kiraSchedule||{};if(typeof k==='string')return k;return k.label||k.site||k.location||k.shift||p?.kiraLabel||p?.kiraSite||p?.kiraShiftName||'Not available from source'}
+function chris(p){return site(p)}
+function assign(p,a,k){let d=dateKey(p),key=d+'|'+akey(a)+'|'+k,x=pending();if(x.ride[key]!=null)return x.ride[key];let z=p?.assignments?.[akey(a)]||p?.assignments?.[a.uid]||{};return z[k]||z[k.toLowerCase()]||a?.[k.toLowerCase()]||'Use plan suggestion'}
+function rideChoices(p,a,k){let d=dateKey(p),ak=akey(a),cur=assign(p,a,k),vals=['Use plan suggestion','Chris','Kira','No ride needed'];try{let o=typeof childLabel==='function'?childLabel('Oldest'):'';if(o&&!vals.includes(o))vals.splice(3,0,o)}catch{};return `<div class="v481-pills">${vals.map(v=>{let id='r'+Math.random().toString(36).slice(2);return `<input class="v481-ride" id="${id}" type="radio" name="${esc(d+'|'+ak+'|'+k)}" data-date="${esc(d)}" data-ak="${esc(ak)}" data-kind="${k}" value="${esc(v)}" ${String(cur)===v?'checked':''}><label for="${id}" title="Choose who should handle this ride. Your choice will be kept when the plan recalculates.">${esc(v)}</label>`}).join('')}</div>`}
+function render(){
+ let a=ps();if(!a.length){$('v481Body').innerHTML='<div class="v481-state">No plan is loaded yet. Go to Step 1 above, choose the starting date, then click <b>Load schedules and build my 10-day plan</b>.</div>';return}
+ idx=Math.max(0,Math.min(idx,a.length-1));$('v481Count').textContent=view==='day'?`Day ${idx+1} of ${a.length}`:`All ${a.length} days`;$('v481Back').disabled=view!=='day'||idx===0;$('v481Forward').disabled=view!=='day'||idx===a.length-1;
+ document.querySelectorAll('[data-v481-view]').forEach(b=>b.classList.toggle('active',b.dataset.v481View===view));
+ if(view==='10'){ $('v481Body').innerHTML=`<div class="v481-ten">${a.map(p=>`<div class="v481-ten-day"><div class="v481-ten-date">${esc(label(p))}</div><div class="v481-ten-work"><b>Chris:</b> ${esc(chris(p))} &nbsp; • &nbsp; <b>Kira:</b> ${esc(kira(p))}</div>${acts(p).map(x=>`<div class="v481-ten-event"><b>${esc(fmt(x.start))}</b> ${esc(x.title)} — ${esc(owner(x))} · Drop-off: ${esc(assign(p,x,'Drop'))} · Pickup: ${esc(assign(p,x,'Pickup'))}</div>`).join('')||'<div class="v481-ten-event">No transportation events.</div>'}</div>`).join('')}</div>`;return}
+ let p=a[idx],d=dateKey(p),note=drafts()[d]||'',ev=acts(p),opts=sites();if(!opts.includes(site(p)))opts.unshift(site(p));
+ $('v481Body').innerHTML=`<section class="v481-day"><div class="v481-dayhead"><div class="v481-date">${esc(label(p))}</div><div class="v481-work"><b>Chris:</b> ${esc(chris(p))}<br><b>Kira:</b> ${esc(kira(p))}</div><div class="v481-site-row"><label>Where is Chris working?</label><select class="v481-site" data-date="${esc(d)}" title="Change Chris's work location for this day. This is saved as a manual override.">${opts.map(x=>`<option value="${esc(x)}" ${x===site(p)?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div><div>${ev.length?ev.map(x=>`<div class="v481-event"><div class="v481-eventtop"><span class="v481-time">${esc(fmt(x.start))}</span><span class="v481-eventtitle">${esc(x.title)}</span><span class="v481-who">${esc(owner(x))}${x.location?' · '+esc(x.location):''}</span></div><div class="v481-legrow"><div><div class="v481-leglabel">Who drops off?</div>${rideChoices(p,x,'Drop')}</div><div><div class="v481-leglabel">Who picks up?</div>${rideChoices(p,x,'Pickup')}</div></div></div>`).join(''):'<div class="v481-event">Nothing needs transportation planning today.</div>'}</div><div class="v481-note"><label>Anything else we should know about this day?</label><textarea class="v481-draft" data-date="${esc(d)}" placeholder="Example: I need to stay at Wheeling until 6 PM. Kira picks Whitney up from gymnastics.">${esc(note)}</textarea><small>This note is saved only for ${esc(label(p))}. You can keep paging through the other days before recalculating.</small></div></section>`;
+}
+function state(msg,type){
+ let el=$('v481State'),n=count();if(!el)return;if(msg){el.textContent=msg;el.className='v481-state '+(type||'good')}else if(n){el.innerHTML=`You have <b>${n} change${n===1?'':'s'} waiting to be applied.</b> Keep reviewing if needed. When you are done, click the gold button below.`;el.className='v481-state hot'}else if(phase==='recalculated'){el.innerHTML='<b>Your changes have been applied.</b> Check the 10-day overview. If everything looks right, finalize the plan.';el.className='v481-state good'}else if(phase==='final'){el.innerHTML='<b>This plan is finalized.</b> You can now create the email summary or calendar file.';el.className='v481-state good'}else{el.innerHTML='<b>No unapplied changes.</b> Review the days above and adjust anything that needs to change.';el.className='v481-state'};guide()
+}
+function guide(){
+ let t=$('v481GuideTitle'),x=$('v481GuideText'),n=$('v481GuideNext');if(!t)return;let has=ps().length>0,c=count();
+ if(!has){t.textContent='Start here: choose the first day of the plan';x.textContent='Then load the family schedules. AutoPilot will build the next 10 workdays for you.';n.textContent='NEXT: LOAD SCHEDULES + BUILD PLAN';phase='start'}
+ else if(c){t.textContent='Keep reviewing — your edits are being saved';x.textContent='Use Next Day to move forward. Nothing will be lost and nothing recalculates yet.';n.textContent='WHEN FINISHED: APPLY MY CHANGES + RECALCULATE'}
+ else if(phase==='recalculated'){t.textContent='Check the recalculated 10-day plan';x.textContent='Make sure the work locations, rides, and events look right. You can still go back and edit any day.';n.textContent='IF IT LOOKS RIGHT: FINALIZE THIS PLAN'}
+ else if(phase==='final'){t.textContent='You are finished planning';x.textContent='Create the work-plan email summary and/or download the calendar file when you are ready to share.';n.textContent='DONE'}
+ else{t.textContent='Review the plan one day at a time';x.textContent='For each day, confirm work locations and rides. Use the note box for anything unusual.';n.textContent='NEXT: PAGE THROUGH ALL 10 DAYS'}
+ document.querySelectorAll('.v481-route-step').forEach((e,i)=>{let p=phase==='start'?1:(phase==='final'?5:(phase==='recalculated'?4:3));e.classList.toggle('active',i+1===p);e.classList.toggle('done',i+1<p)})
+}
+function sourceSignature(){let a=ps();return a.length+'|'+a.map(p=>dateKey(p)+':'+acts(p).length+':'+kira(p)).join('|')}
+async function loadPlan(){
+ let s=$('v481Start'),legacy=$('startDate');if(!s.value){state('Choose the first date of the plan before continuing.','warn');return}if(legacy){legacy.value=s.value;legacy.dispatchEvent(new Event('change',{bubbles:true}))}
+ let b=$('v481Load');b.disabled=true;b.innerHTML='LOADING SCHEDULES…<small>Please wait</small>';$('v481SourceStatus').textContent='Refreshing connected calendars and Kira’s work schedule…';$('v481SourceStatus').className='v481-source-status warn';lastSourceSignature=sourceSignature();
+ try{
+   // Use the canonical date/window refresh first.
+   if(typeof window.__apV4742ApplyDate==='function') await window.__apV4742ApplyDate(s.value);
+   // Force a planning generation pass after source refresh; v47.42 could stop after the green source banner.
+   if(typeof generate==='function') await generate();
+   else if(typeof generateCore==='function') await generateCore();
+   await new Promise(r=>setTimeout(r,150));
+   let a=ps(),sig=sourceSignature();
+   if(!a.length) throw new Error('Schedules refreshed, but no 10-day plan was created.');
+   idx=0;view='day';phase='review';render();state();
+   let eventCount=a.reduce((n,p)=>n+acts(p).length,0),kiraCount=a.filter(p=>kira(p)!=='Not available from source').length;
+   $('v481SourceStatus').textContent=`Loaded ${a.length} planning days, ${eventCount} calendar events, and Kira schedule data on ${kiraCount} day${kiraCount===1?'':'s'}.`;
+   $('v481SourceStatus').className='v481-source-status good';
+   let check=$('v481SourceCheck');check.className='v481-check show '+(eventCount||kiraCount?'good':'warn');check.innerHTML=eventCount||kiraCount?'<b>Schedules loaded.</b> Your next step is below: review Day 1.':'<b>Plan created, but little source data was found.</b> Check Calendar Connections before relying on this plan.';
+   $('v481ReviewCard').scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(e){console.error(e);$('v481SourceStatus').textContent='Source refresh finished, but AutoPilot could not build the visible plan.';$('v481SourceStatus').className='v481-source-status warn';let c=$('v481SourceCheck');c.className='v481-check show warn';c.innerHTML='<b>Nothing populated.</b> Your source connections may be refreshed, but the plan-generation step did not return data. Open Calendar Connections to verify the family calendars, then click this button again.'}
+ finally{b.disabled=false;b.innerHTML='LOAD SCHEDULES + BUILD MY 10-DAY PLAN<small>This is the button to start each planning cycle</small>'}
+}
+async function apply(){
+ let b=$('v481Apply');b.disabled=true;b.innerHTML='APPLYING MY CHANGES…<small>Recalculating around your choices</small>';
+ try{
+   let dr=drafts(),x=pending();Object.entries(dr).forEach(([d,t])=>{if(String(t||'').trim())x.notes[d]=String(t).trim()});localStorage.setItem(P,JSON.stringify(x));
+   if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine unavailable');
+   await window.__apV4732ApplyPending(false);phase='recalculated';view='10';render();state('Your changes are applied. Review the 10-day overview now. If it looks right, click FINALIZE THIS PLAN.','good');$('v481FinishCard').scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(e){console.error(e);state('AutoPilot could not finish recalculating. Your edits are still saved — nothing was discarded.','warn')}
+ finally{b.disabled=false;b.innerHTML='APPLY MY CHANGES + RECALCULATE THE PLAN<small>Use this after you finish reviewing all 10 days</small>'}
+}
+function finalize(){
+ if(count()){state('You still have changes waiting to be applied. First click APPLY MY CHANGES + RECALCULATE THE PLAN.','warn');return}
+ let old=$('v4738Finalize')||$('finalizePlanBtn')||$('finalizeBtn');try{if(old)old.click()}catch(e){console.error(e)}phase='final';$('v481Share').classList.add('v481-share show');state();$('v481Share').scrollIntoView({behavior:'smooth',block:'start'})
+}
+function email(){let old=$('v4738Email');if(old){old.click();setTimeout(()=>{let s=$('v4738EmailText')||$('bossMessage');if(s){$('v481EmailText').value=s.value||s.textContent||'';$('v481EmailOut').classList.add('v481-output show')}},80)}}
+function ics(){let old=$('v4738Ics');if(old)old.click();else if(typeof downloadPhilOutlookIcs==='function')downloadPhilOutlookIcs()}
+function monday(){let d=new Date(),x=(d.getDay()+6)%7;d.setDate(d.getDate()-x);$('v481Start').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function shift(n){let s=$('v481Start'),d=new Date((s.value||new Date().toISOString().slice(0,10))+'T12:00:00');d.setDate(d.getDate()+7*n);s.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function install(){
+ let panel=$('tab-plan');if(!panel)return setTimeout(install,100);if($('v481Planner'))return;
+ let r=document.createElement('div');r.id='v481Planner';r.innerHTML=`<div class="v481-hero"><div class="v481-title">Family Logistics Planner</div><div class="v481-sub">You do not need to know how AutoPilot works. Just follow the highlighted instruction. The screen will tell you what to do next.</div><div class="v481-route"><span class="v481-route-step">1 Choose dates</span><span class="v481-arrow">›</span><span class="v481-route-step">2 Load schedules</span><span class="v481-arrow">›</span><span class="v481-route-step">3 Review days</span><span class="v481-arrow">›</span><span class="v481-route-step">4 Recalculate</span><span class="v481-arrow">›</span><span class="v481-route-step">5 Finalize</span></div></div>
+ <div class="v481-guide"><div class="v481-guide-icon">➜</div><div><div class="v481-guide-title" id="v481GuideTitle"></div><div class="v481-guide-text" id="v481GuideText"></div><div class="v481-guide-next" id="v481GuideNext"></div></div></div>
+ <section class="v481-card"><h2>1. When should this plan start? <span class="v481-tip" title="Choose the first workday you want AutoPilot to plan. The planner will build the next 10 workdays from here.">?</span></h2><div class="v481-explain">Pick the first day. For a normal planning cycle, use Monday.</div><div class="v481-row"><label class="v481-field">First day of plan<input id="v481Start" type="date"></label><button class="v481-btn" id="v481PrevWeek" title="Move the start date back seven days.">← One week earlier</button><button class="v481-btn" id="v481Monday" title="Set the start date to Monday of the current week.">Use this Monday</button><button class="v481-btn" id="v481NextWeek" title="Move the start date forward seven days.">One week later →</button></div>
+ <div class="v481-source"><div><div class="v481-source-title">2. Load the family schedules and build the plan</div><div id="v481SourceStatus" class="v481-source-status">This reads the connected family calendars and Kira’s work schedule, then creates the 10-day logistics plan you will review.</div></div><button class="v481-btn primary" id="v481Load" title="Refresh the connected schedule sources AND build a visible 10-day plan.">LOAD SCHEDULES + BUILD MY 10-DAY PLAN<small>This is the button to start each planning cycle</small></button></div><div id="v481SourceCheck" class="v481-check"></div></section>
+ <section class="v481-card" id="v481ReviewCard"><h2>3. Review each day <span class="v481-tip" title="Page through all 10 days. Your edits are saved immediately, but AutoPilot waits to recalculate until you tell it to.">?</span></h2><div class="v481-explain">Confirm Chris and Kira’s work information, then choose who handles each ride. Use the note box for anything unusual.</div><div class="v481-review-head"><div class="v481-toggle"><button class="active" data-v481-view="day" title="Best for making changes one day at a time.">REVIEW ONE DAY AT A TIME</button><button data-v481-view="10" title="See all 10 days together.">SEE ALL 10 DAYS</button></div><div class="v481-nav"><button class="v481-btn" id="v481Back" title="Save this day's note and go to the previous day.">← Previous day</button><span id="v481Count"></span><button class="v481-btn" id="v481Forward" title="Save this day's changes and go to the next day.">Save + next day →</button></div></div><div id="v481Body"></div></section>
+ <section class="v481-card" id="v481FinishCard"><h2>4. Apply the edits you made <span class="v481-tip" title="This tells AutoPilot to keep your manual choices, then recalculate the rest of the logistics around them.">?</span></h2><div class="v481-explain">Wait until you have reviewed the days you care about. Your manual choices are kept; AutoPilot recalculates everything else around them.</div><div id="v481State" class="v481-state"></div><div class="v481-actions"><button class="v481-btn gold" id="v481Apply" title="Commit your manual changes and rebuild the plan around them.">APPLY MY CHANGES + RECALCULATE THE PLAN<small>Use this after you finish reviewing all 10 days</small></button><button class="v481-btn" id="v481Print" title="Show all 10 days and open your browser's print dialog so you can print or save a PDF.">PRINT / SAVE THE 10-DAY PLAN AS PDF<small>Optional review copy</small></button></div></section>
+ <section class="v481-card"><h2>5. Finalize when the plan looks right</h2><div class="v481-explain">Finalizing freezes the reviewed plan for this planning cycle. If something is wrong, go back to Step 3, edit it, and recalculate again first.</div><button class="v481-btn primary" id="v481Finalize" title="Mark the current recalculated plan as final.">YES — THIS PLAN LOOKS RIGHT. FINALIZE IT.</button><div id="v481Share" class="v481-share"><div class="v481-explain" style="margin-top:13px"><b>Finished.</b> Choose either or both sharing options:</div><div class="v481-actions"><button class="v481-btn" id="v481Email" title="Create a short email-ready summary of Chris's work plan.">CREATE WORK-PLAN EMAIL SUMMARY</button><button class="v481-btn" id="v481Ics" title="Download a calendar (.ics) file for the finalized work plan.">DOWNLOAD CALENDAR FILE (.ICS)</button></div><div id="v481EmailOut" class="v481-output"><textarea id="v481EmailText" readonly></textarea></div></div></section>`;
+ panel.prepend(r);
+ let legacy=$('startDate');$('v481Start').value=legacy?.value||'';if(!$('v481Start').value)monday();
+ $('v481PrevWeek').onclick=()=>shift(-1);$('v481NextWeek').onclick=()=>shift(1);$('v481Monday').onclick=monday;$('v481Load').onclick=loadPlan;
+ $('v481Back').onclick=()=>{let t=$('v481Body').querySelector('.v481-draft');if(t)saveDraft(t.dataset.date,t.value);idx=Math.max(0,idx-1);render()};
+ $('v481Forward').onclick=()=>{let t=$('v481Body').querySelector('.v481-draft');if(t)saveDraft(t.dataset.date,t.value);idx=Math.min(Math.max(0,ps().length-1),idx+1);render()};
+ document.querySelectorAll('[data-v481-view]').forEach(b=>b.onclick=()=>{let t=$('v481Body').querySelector('.v481-draft');if(t)saveDraft(t.dataset.date,t.value);view=b.dataset.v481View;render()});
+ r.addEventListener('change',e=>{if(e.target.matches('.v481-site')){let x=pending();x.work[e.target.dataset.date]=e.target.value;saveP(x)}else if(e.target.matches('.v481-ride')){let x=pending();x.ride[e.target.dataset.date+'|'+e.target.dataset.ak+'|'+e.target.dataset.kind]=e.target.value;saveP(x)}},true);
+ r.addEventListener('input',e=>{if(e.target.matches('.v481-draft'))saveDraft(e.target.dataset.date,e.target.value)},true);
+ $('v481Apply').onclick=apply;$('v481Print').onclick=()=>{view='10';render();setTimeout(()=>window.print(),50)};$('v481Finalize').onclick=finalize;$('v481Email').onclick=email;$('v481Ics').onclick=ics;
+ render();state();
+}
+window.__apV481Render=()=>{render();state()};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
+
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
