@@ -6048,6 +6048,64 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 #v4735Print,#v4739PrintPdf{font-weight:900}
 @media print{#v4735Review{display:block!important}.v4735-body{display:block!important}.v4735-day{page-break-inside:avoid}}
 </style>
+
+
+<!-- AutoPilot v47.42: first-class main-screen 10-day planning start-date control. -->
+<style id="v4742PlanStartStyle">
+#v4742PlanWindow{display:flex;align-items:flex-end;gap:7px;flex-wrap:wrap;padding:8px 10px;margin:0 0 10px;border:1px solid #d8d1c5;border-radius:11px;background:#faf8f4}
+#v4742PlanWindow .v4742-label{display:flex;flex-direction:column;gap:4px;font-size:10px;font-weight:900;color:#5b554c;text-transform:uppercase;letter-spacing:.04em}
+#v4742PlanStart{min-width:165px;height:40px;border:2px solid #aca397;border-radius:8px;background:#fff;padding:5px 8px;font-size:14px;font-weight:900;color:#211f1b}
+#v4742PlanWindow button{min-height:40px;padding:7px 11px;border:1.5px solid #aaa296;border-radius:8px;background:#fff;color:#29251f;font-size:11px;font-weight:900;cursor:pointer}
+#v4742PlanWindow button:hover{background:#f1ece4}
+#v4742PlanWindow .v4742-go{background:#211f1b;color:#fff;border-color:#211f1b}
+#v4742PlanWindow .v4742-status{font-size:10.5px;color:#696258;align-self:center;min-width:180px}
+@media(max-width:720px){#v4742PlanWindow{align-items:stretch}#v4742PlanWindow .v4742-label{width:100%}#v4742PlanStart{width:100%}#v4742PlanWindow button{flex:1 1 auto}.v4742-status{width:100%}}
+</style>
+<script id="v4742PlanStartScript">
+(function(){
+  if(window.__apV4742)return;window.__apV4742=true;
+  const $=id=>document.getElementById(id);
+  const isoLocal=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const parseLocal=s=>{const m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?new Date(+m[1],+m[2]-1,+m[3],12,0,0):null};
+  function mondayOf(d){const x=new Date(d);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x}
+  function syncFromCanonical(){const q=$('v4742PlanStart'),c=$('startDate');if(q&&c&&q!==document.activeElement)q.value=c.value||''}
+  async function applyDate(value){
+    const c=$('startDate'),q=$('v4742PlanStart'),st=$('v4742PlanStartStatus');
+    if(!c||!value)return;
+    if(c.value===value){if(q)q.value=value;if(st)st.textContent='Planning window already starts on this date.';return}
+    if(st)st.textContent='Updating 10-day planning window…';
+    c.value=value;
+    try{
+      if(typeof handlePlanningStartDateChange==='function')await handlePlanningStartDateChange();
+      else c.dispatchEvent(new Event('change',{bubbles:true}));
+      localStorage.setItem('familyOptimizerV23.v4736DayIndex','0');
+      try{if(typeof window.__apV4735Render==='function')window.__apV4735Render()}catch{}
+      if(q)q.value=c.value;
+      if(st)st.textContent='10-day window updated. Day-by-Day review reset to Day 1.';
+    }catch(err){
+      if(st)st.textContent='Start date changed, but refresh encountered a problem. Your saved setup was preserved.';
+    }
+  }
+  function shift(days){const q=$('v4742PlanStart'),base=parseLocal(q?.value||$('startDate')?.value);if(!base)return;const d=new Date(base);d.setDate(d.getDate()+days);if(q)q.value=isoLocal(d);applyDate(isoLocal(d))}
+  function install(){
+    const panel=$('tab-plan'),toolbar=panel?.querySelector('.toolbar');
+    if(!panel||!toolbar)return setTimeout(install,120);
+    if($('v4742PlanWindow'))return syncFromCanonical();
+    const box=document.createElement('div');box.id='v4742PlanWindow';
+    box.innerHTML='<label class="v4742-label">10-Day Plan Starts<input id="v4742PlanStart" type="date"></label><button type="button" id="v4742PrevWeek">← 1 WEEK</button><button type="button" id="v4742ThisWeek">THIS MONDAY</button><button type="button" id="v4742NextWeek">1 WEEK →</button><button type="button" class="v4742-go" id="v4742ApplyStart">UPDATE PLAN WINDOW</button><span class="v4742-status" id="v4742PlanStartStatus">Change the date here anytime; Settings are not required.</span>';
+    toolbar.parentNode.insertBefore(box,toolbar);
+    syncFromCanonical();
+    $('v4742PlanStart').addEventListener('change',e=>{e.stopPropagation();applyDate(e.target.value)});
+    $('v4742ApplyStart').addEventListener('click',()=>applyDate($('v4742PlanStart').value));
+    $('v4742PrevWeek').addEventListener('click',()=>shift(-7));
+    $('v4742NextWeek').addEventListener('click',()=>shift(7));
+    $('v4742ThisWeek').addEventListener('click',()=>{const d=mondayOf(new Date());const v=isoLocal(d);$('v4742PlanStart').value=v;applyDate(v)});
+    const canonical=$('startDate');if(canonical){canonical.addEventListener('change',()=>setTimeout(syncFromCanonical,0),true)}
+    const obs=new MutationObserver(syncFromCanonical);try{obs.observe(canonical,{attributes:true,attributeFilter:['value']})}catch{}
+  }
+  setTimeout(install,100);
+})();
+</script>
 </body>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
