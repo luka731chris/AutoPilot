@@ -1035,6 +1035,67 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 @media(max-width:700px){.v500-wrap{padding:14px 10px 28px}.v500-center{margin-top:4vh}.v500-q{font-size:29px}.v500-stack>*{width:100%;margin-left:0}.v500-workgrid,.v500-legs,.v500-finalgrid{grid-template-columns:1fr}.v500-tiles{grid-template-columns:1fr}.v500-nav{width:100%;justify-content:space-between}.v500-btn{width:100%}.v500-toggle{width:100%}.v500-toggle button{flex:1}}
 @media print{body{background:#fff}#v500App .v500-stage,#v500App .v500-guide,#v500App .v500-stepbar,#v500App .v500-actions,#v500App .v500-toggle,#v500App .v500-nav,#v500App .v500-textbox{display:none!important}#v500App.print-prelim #v500StagePrelim{display:block!important}#v500App.print-final #v500StageFinal{display:block!important}.v500-tiles{grid-template-columns:repeat(5,1fr)!important}.v500-card{border:0;box-shadow:none;padding:0}.v500-tile{break-inside:avoid}}
 </style>
+
+<style id="v501ContrastAndNavFix">
+/* v50.1 readability + interaction hardening */
+#v500App button,
+#v500App .v500-btn,
+#v500App .v500-editday{
+  color:#1f1b17 !important;
+  background:#ffffff !important;
+  border-color:#756d63 !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+  -webkit-text-fill-color:currentColor !important;
+}
+#v500App button.primary,
+#v500App .primary,
+#v500App button.on,
+#v500App .v500-toggle button.on{
+  color:#ffffff !important;
+  background:#201d19 !important;
+  border-color:#201d19 !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+#v500App button.gold,
+#v500App .gold{
+  color:#1d1808 !important;
+  background:#e2b600 !important;
+  border-color:#9f7f00 !important;
+  -webkit-text-fill-color:#1d1808 !important;
+}
+#v500App button:disabled{
+  color:#6c655c !important;
+  background:#e9e5df !important;
+  border-color:#c4bdb3 !important;
+  opacity:.72 !important;
+  -webkit-text-fill-color:#6c655c !important;
+}
+#v500App .v500-pills label{
+  color:#211d19 !important;
+  background:#ffffff !important;
+  border-color:#81786d !important;
+  -webkit-text-fill-color:#211d19 !important;
+}
+#v500App .v500-pills input:checked + label{
+  color:#ffffff !important;
+  background:#211d19 !important;
+  border-color:#211d19 !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+#v500App select,#v500App textarea,#v500App input[type=date]{
+  color:#211d19 !important;
+  background:#ffffff !important;
+  -webkit-text-fill-color:#211d19 !important;
+}
+.v501-savehint{
+  margin:8px 0 0;
+  font-size:10px;
+  font-weight:850;
+  color:#5e574d;
+}
+</style>
+
 </head>
 <body>
 <div id="v500App">
@@ -6320,9 +6381,22 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);const P='familyOptimizerV23.v4732PendingEdits',DN='familyOptimizerV23.v500DailyText',RAW='familyOptimizerV23.v500RawText',FINAL='familyOptimizerV23.v500FinalSnapshot';
-let dayIndex=0,view='day',phase=1,finalData=null,phoneIndex=0;
+let dayIndex=0,view='day',phase=1,finalData=null,phoneIndex=0,workingPlans=[];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function plansAll(){try{return typeof plans!=='undefined'&&Array.isArray(plans)?plans:(Array.isArray(window.plans)?window.plans:[])}catch{return[]}}
+function plansAll(){
+  try{
+    if(Array.isArray(workingPlans)&&workingPlans.length)return workingPlans;
+    const live=(typeof plans!=='undefined'&&Array.isArray(plans))?plans:(Array.isArray(window.plans)?window.plans:[]);
+    return live;
+  }catch{return Array.isArray(workingPlans)?workingPlans:[]}
+}
+function captureWorkingPlans(){
+  try{
+    const live=(typeof plans!=='undefined'&&Array.isArray(plans))?plans:(Array.isArray(window.plans)?window.plans:[]);
+    workingPlans=Array.isArray(live)?live.filter(Boolean).slice():[];
+    return workingPlans;
+  }catch{workingPlans=[];return workingPlans}
+}
 function dObj(p){return p?.date instanceof Date?p.date:new Date((p?.dateStr||p?.date||'')+(String(p?.dateStr||p?.date||'').includes('T')?'':'T12:00:00'))}
 function isWeekend(p){let d=dObj(p);return p?.weekend===true||(!isNaN(d)&&[0,6].includes(d.getDay()))}
 function workPlans(){return plansAll().filter(p=>!isWeekend(p)).slice(0,10)}
@@ -6346,14 +6420,14 @@ function start(a){return fmtMin(a?.start)}function end(a){return fmtMin(a?.end||
 function ridePills(p,a,k){let d=dkey(p),key=ak(a),cur=assignment(p,a,k),vals=[['__AUTO__','Plan suggestion'],['Chris','Chris'],['Kira','Kira'],['Ride with teammate','Ride with teammate'],['__NONE__','No ride needed']];try{let o=childLabel('Oldest');if(o)vals.splice(3,0,[o,o])}catch{};return `<div class="v500-pills">${vals.map(([v,l])=>{let id='v500_'+Math.random().toString(36).slice(2),checked=v==='__AUTO__'?cur==='Plan suggestion':v==='__NONE__'?cur==='No ride needed':cur===v;return `<input id="${id}" class="v500-ride" type="radio" name="${esc(d+'|'+key+'|'+k)}" data-date="${esc(d)}" data-ak="${esc(key)}" data-kind="${k}" value="${esc(v)}" ${checked?'checked':''}><label for="${id}">${esc(l)}</label>`}).join('')}</div>`}
 function groups(p){let m=new Map();for(const a of acts(p)){let n=safeOwner(a);if(!m.has(n))m.set(n,[]);m.get(n).push(a)}return [...m.entries()]}
 function stage(n){phase=n;['Start','Calendars','Review','Prelim','Final'].forEach((x,j)=>$('v500Stage'+x)?.classList.toggle('on',j+1===n));document.querySelectorAll('.v500-step').forEach((e,j)=>{e.classList.toggle('on',j+1===n);e.classList.toggle('done',j+1<n)});window.scrollTo({top:0,behavior:'smooth'})}
-function renderDay(){let ps=workPlans();if(!ps.length){$('v500ReviewBody').innerHTML='<div class="v500-status warn">No plan is loaded yet.</div>';return}dayIndex=Math.max(0,Math.min(dayIndex,ps.length-1));let p=ps[dayIndex],d=dkey(p),sl=siteList();if(!sl.includes(site(p)))sl.unshift(site(p));$('v500Count').textContent=`Day ${dayIndex+1} of ${ps.length}`;$('v500Prev').disabled=dayIndex===0;$('v500Next').disabled=dayIndex===ps.length-1;let g=groups(p);$('v500ReviewBody').innerHTML=`<div class="v500-day"><div class="v500-dayhead"><div class="v500-date">${esc(dateLabel(p,true))}</div><div class="v500-workgrid"><div class="v500-work"><b>Chris work schedule</b>${esc(chris(p))}<br><select class="v500-site" data-date="${esc(d)}">${sl.map(x=>`<option value="${esc(x)}" ${x===site(p)?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="v500-work"><b>Kira work schedule</b>${esc(kira(p))}</div></div></div>${g.length?g.map(([person,evs])=>`<div class="v500-person"><div class="v500-personhead">${esc(person)}</div>${evs.map(a=>`<div class="v500-event"><div class="v500-eventtop"><span class="v500-time">${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}</span><span class="v500-etitle">${esc(a.title)}</span>${a.location?`<span class="v500-loc">${esc(a.location)}</span>`:''}</div><div class="v500-legs"><div><div class="v500-leglabel">Drop-off · ${esc(start(a))}</div>${ridePills(p,a,'Drop')}</div><div><div class="v500-leglabel">Pickup · ${esc(end(a))}</div>${ridePills(p,a,'Pickup')}</div></div></div>`).join('')}</div>`).join(''):'<div class="v500-person"><div class="v500-event">No transportation events for this day.</div></div>'}<div class="v500-textbox" style="margin:10px"><label>Anything different about this day?</label><textarea class="v500-daily" data-date="${esc(d)}" placeholder="Example: Kira picks Whitney up from gymnastics. I need to stay at Wheeling until 6 PM.">${esc(daily()[d]||'')}</textarea><small>This note applies only to ${esc(dateLabel(p,true))}.</small></div></div>`}
+function renderDay(){let ps=workPlans();if(!ps.length){$('v500ReviewBody').innerHTML='<div class="v500-status warn">No plan is loaded yet.</div>';return}dayIndex=Math.max(0,Math.min(dayIndex,ps.length-1));let p=ps[dayIndex],d=dkey(p),sl=siteList();if(!sl.includes(site(p)))sl.unshift(site(p));$('v500Count').textContent=`Day ${dayIndex+1} of ${ps.length}`;$('v500Prev').disabled=dayIndex===0;$('v500Next').disabled=dayIndex===ps.length-1;let g=groups(p);$('v500ReviewBody').innerHTML=`<div class="v500-day"><div class="v500-dayhead"><div class="v500-date">${esc(dateLabel(p,true))}</div><div class="v500-workgrid"><div class="v500-work"><b>Chris work schedule</b>${esc(chris(p))}<br><select class="v500-site" data-date="${esc(d)}">${sl.map(x=>`<option value="${esc(x)}" ${x===site(p)?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="v500-work"><b>Kira work schedule</b>${esc(kira(p))}</div></div></div>${g.length?g.map(([person,evs])=>`<div class="v500-person"><div class="v500-personhead">${esc(person)}</div>${evs.map(a=>`<div class="v500-event"><div class="v500-eventtop"><span class="v500-time">${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}</span><span class="v500-etitle">${esc(a.title)}</span>${a.location?`<span class="v500-loc">${esc(a.location)}</span>`:''}</div><div class="v500-legs"><div><div class="v500-leglabel">Drop-off · ${esc(start(a))}</div>${ridePills(p,a,'Drop')}</div><div><div class="v500-leglabel">Pickup · ${esc(end(a))}</div>${ridePills(p,a,'Pickup')}</div></div></div>`).join('')}</div>`).join(''):'<div class="v500-person"><div class="v500-event">No transportation events for this day.</div></div>'}<div class="v500-textbox" style="margin:10px"><label>Anything different about this day?</label><textarea class="v500-daily" data-date="${esc(d)}" placeholder="Example: Kira picks Whitney up from gymnastics. I need to stay at Wheeling until 6 PM.">${esc(daily()[d]||'')}</textarea><small>This note applies only to ${esc(dateLabel(p,true))}.</small><div class="v501-savehint">Your selections and notes are saved as you make them. “Save + next day” keeps this day and opens the next one.</div></div></div>`}
 function tile(p,editable=false){return `<div class="v500-tile"><div class="v500-tdate">${esc(dateLabel(p))}</div><div class="v500-twork"><b>Chris:</b> ${esc(chris(p))}<br><b>Kira:</b> ${esc(kira(p))}</div>${acts(p).length?acts(p).map(a=>`<div class="v500-tev"><b>${esc(safeOwner(a))} · ${esc(a.title)}</b><br>${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}${a.location?'<br>'+esc(a.location):''}<div class="v500-tride">Drop: ${esc(assignment(p,a,'Drop'))}<br>Pickup: ${esc(assignment(p,a,'Pickup'))}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}${editable?`<button class="v500-editday" data-date="${esc(dkey(p))}">EDIT THIS DAY</button>`:''}</div>`}
 function renderTen(target='v500ReviewBody',editable=false){let ps=workPlans();$(target).innerHTML=`<div class="v500-tiles">${ps.map(p=>tile(p,editable)).join('')}</div>`;if(target==='v500ReviewBody'){$('v500Count').textContent=`All ${ps.length} days`;$('v500Prev').disabled=true;$('v500Next').disabled=true}}
 function renderReview(){if(view==='day')renderDay();else renderTen();$('v500ViewDay').classList.toggle('on',view==='day');$('v500ViewTen').classList.toggle('on',view==='10')}
-async function refreshPlan(){let b=$('v500Refresh');b.disabled=true;$('v500RefreshStatus').className='v500-status busy';$('v500RefreshStatus').textContent='Refreshing connected calendars and building your 10-day plan…';try{let s=$('v500StartDate').value,legacy=$('startDate');if(legacy){legacy.value=s;legacy.dispatchEvent(new Event('change',{bubbles:true}))}try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}let r={ok:0,total:0};if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');let ps=workPlans();if(ps.length!==10)throw new Error(`AutoPilot built ${ps.length} workdays instead of 10.`);dayIndex=0;view='day';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Start with Day 1.`;stage(3)}catch(e){console.error(e);$('v500RefreshStatus').className='v500-status warn';$('v500RefreshStatus').innerHTML='<b>The plan did not load.</b> '+esc(e.message)+' This screen will not show success until Day 1 can actually be displayed.'}finally{b.disabled=false}}
+async function refreshPlan(){let b=$('v500Refresh');b.disabled=true;$('v500RefreshStatus').className='v500-status busy';$('v500RefreshStatus').textContent='Refreshing connected calendars and building your 10-day plan…';try{let s=$('v500StartDate').value,legacy=$('startDate');if(legacy){legacy.value=s;legacy.dispatchEvent(new Event('change',{bubbles:true}))}try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}let r={ok:0,total:0};if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==10)throw new Error(`AutoPilot built ${ps.length} workdays instead of 10.`);dayIndex=0;view='day';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Start with Day 1.`;stage(3)}catch(e){console.error(e);$('v500RefreshStatus').className='v500-status warn';$('v500RefreshStatus').innerHTML='<b>The plan did not load.</b> '+esc(e.message)+' This screen will not show success until Day 1 can actually be displayed.'}finally{b.disabled=false}}
 async function parseLine(line,prefix=''){let box=$('v4731Input'),btn=$('v4731Apply');if(!box||!btn)return false;let before=JSON.stringify(pending());box.value=(prefix?prefix+' ':'')+line;btn.click();await new Promise(r=>setTimeout(r,0));let after=JSON.stringify(pending()),remain=String(box.value||'').trim();box.value='';return before!==after&&!remain}
 async function applyFreeText(){let unresolved=[];for(const p of workPlans()){let t=String(daily()[dkey(p)]||'').trim();for(const line of t.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,dkey(p))))unresolved.push(dateLabel(p)+': '+line)}}let raw=String($('v500Raw').value||'').trim();localStorage.setItem(RAW,raw);for(const line of raw.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,'')))unresolved.push(line)}return unresolved}
-async function generatePrelim(){let b=$('v500GeneratePrelim');b.disabled=true;$('v500ReviewStatus').className='v500-status busy';$('v500ReviewStatus').textContent='Applying your edits and recalculating the draft…';try{let unresolved=await applyFreeText();if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine is unavailable.');await window.__apV4732ApplyPending(false);try{window.__apV4731EnforceWhitney?.()}catch{};if(workPlans().length!==10)throw new Error('The recalculated plan no longer contains exactly 10 workdays.');renderTen('v500PrelimTiles',true);$('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');$('v500PrelimStatus').innerHTML=unresolved.length?`<b>Draft generated.</b> ${unresolved.length} free-text item${unresolved.length===1?' was':'s were'} not interpreted confidently. AutoPilot did not guess; use Edit this day for those changes.`:'<b>Draft generated.</b> Your edits were applied.';stage(4)}catch(e){console.error(e);$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Could not generate the preliminary plan.</b> '+esc(e.message)}finally{b.disabled=false}}
+async function generatePrelim(){let b=$('v500GeneratePrelim');b.disabled=true;$('v500ReviewStatus').className='v500-status busy';$('v500ReviewStatus').textContent='Applying your edits and recalculating the draft…';try{let unresolved=await applyFreeText();if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine is unavailable.');await window.__apV4732ApplyPending(false);try{window.__apV4731EnforceWhitney?.()}catch{};captureWorkingPlans();if(workPlans().length!==10)throw new Error('The recalculated plan no longer contains exactly 10 workdays.');renderTen('v500PrelimTiles',true);$('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');$('v500PrelimStatus').innerHTML=unresolved.length?`<b>Draft generated.</b> ${unresolved.length} free-text item${unresolved.length===1?' was':'s were'} not interpreted confidently. AutoPilot did not guess; use Edit this day for those changes.`:'<b>Draft generated.</b> Your edits were applied.';stage(4)}catch(e){console.error(e);$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Could not generate the preliminary plan.</b> '+esc(e.message)}finally{b.disabled=false}}
 function jumpDate(d){let ps=workPlans(),ix=ps.findIndex(p=>dkey(p)===d);if(ix<0)return;dayIndex=ix;view='day';renderReview();stage(3)}
 function bossMessage(){return 'Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+workPlans().map(p=>`${dateLabel(p,true)}: ${p.holiday?'Holiday / no work.':p.onsite?`${site(p)} — approx. arrival ${fmtArr(p.arrive)}; approx. departure ${fmtDep(p.leaveWork)}.`:'Remote.'}`).join('\n')}
 function snapshot(){return workPlans().map(p=>({date:dkey(p),label:dateLabel(p,true),chris:chris(p),kira:kira(p),events:acts(p).map(a=>({person:safeOwner(a),title:a.title,start:start(a),end:end(a),location:a.location||'',drop:assignment(p,a,'Drop'),pickup:assignment(p,a,'Pickup')}))}))}
@@ -6364,14 +6438,35 @@ function download(name,text,type='text/plain'){let u=URL.createObjectURL(new Blo
 function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);try{let old=$('v4738Finalize')||$('finalizePlanBtn')||$('finalizeBtn');old?.click()}catch{};stage(5)}
 function printStage(which){$('v500App').classList.remove('print-prelim','print-final');$('v500App').classList.add(which);setTimeout(()=>window.print(),50);setTimeout(()=>$('v500App').classList.remove(which),800)}
 function downloadIcs(){try{if(typeof downloadPhilOutlookIcs==='function')return downloadPhilOutlookIcs('all')}catch{};let old=$('v4738Ics');old?.click()}
-function init(){let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-$('v500StartNext').onclick=()=>{if(!$('v500StartDate').value)return;stage(2)};$('v500BackStart').onclick=()=>stage(1);$('v500Refresh').onclick=refreshPlan;$('v500ChangeDate').onclick=()=>stage(1);
-$('v500ViewDay').onclick=()=>{view='day';renderReview()};$('v500ViewTen').onclick=()=>{view='10';renderReview()};$('v500Prev').onclick=()=>{let t=$('v500ReviewBody').querySelector('.v500-daily');if(t)saveDaily(t.dataset.date,t.value);dayIndex=Math.max(0,dayIndex-1);renderReview()};$('v500Next').onclick=()=>{let t=$('v500ReviewBody').querySelector('.v500-daily');if(t)saveDaily(t.dataset.date,t.value);dayIndex=Math.min(Math.max(0,workPlans().length-1),dayIndex+1);renderReview()};
+function hardenGuidedButtons(){
+  document.querySelectorAll('#v500App button').forEach(b=>b.setAttribute('type','button'));
+  const app=$('v500App');
+  if(app)app.addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();return false},true);
+}
+function init(){hardenGuidedButtons();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+$('v500StartNext').textContent='NEXT';$('v500StartNext').onclick=e=>{e?.preventDefault();e?.stopPropagation();if(!$('v500StartDate').value)return false;stage(2);return false};$('v500BackStart').onclick=e=>{e?.preventDefault();e?.stopPropagation();stage(1);return false};$('v500Refresh').onclick=e=>{e?.preventDefault();e?.stopPropagation();refreshPlan();return false};$('v500ChangeDate').onclick=e=>{e?.preventDefault();e?.stopPropagation();stage(1);return false};
+function saveVisibleDay(){
+  const host=$('v500ReviewBody'); if(!host)return;
+  const t=host.querySelector('.v500-daily'); if(t)saveDaily(t.dataset.date,t.value);
+  const siteEl=host.querySelector('.v500-site');
+  if(siteEl){let x=pending();x.work[siteEl.dataset.date]=siteEl.value;savePending(x)}
+}
+$('v500ViewDay').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();view='day';renderReview();return false};
+$('v500ViewTen').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();view='10';renderReview();return false};
+$('v500Prev').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();let ps=workPlans();if(!ps.length){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>The working plan was unexpectedly unavailable.</b> Your Day edits are still saved. Reload the initial plan only if this persists.';return false}dayIndex=Math.max(0,dayIndex-1);view='day';renderReview();$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML='<b>Changes saved.</b> Now reviewing Day '+(dayIndex+1)+' of '+ps.length+'.';return false};
+$('v500Next').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();let ps=workPlans();if(!ps.length){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>The working plan was unexpectedly unavailable.</b> Your Day edits are still saved. Reload the initial plan only if this persists.';return false}dayIndex=Math.min(ps.length-1,dayIndex+1);view='day';renderReview();$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML='<b>Changes saved.</b> Now reviewing Day '+(dayIndex+1)+' of '+ps.length+'.';return false};
 document.addEventListener('change',e=>{if(e.target.matches('.v500-site')){let x=pending();x.work[e.target.dataset.date]=e.target.value;savePending(x)}else if(e.target.matches('.v500-ride')){let x=pending();x.ride[e.target.dataset.date+'|'+e.target.dataset.ak+'|'+e.target.dataset.kind]=e.target.value;savePending(x)}});document.addEventListener('input',e=>{if(e.target.matches('.v500-daily'))saveDaily(e.target.dataset.date,e.target.value);if(e.target.id==='v500Raw')localStorage.setItem(RAW,e.target.value)});
 $('v500GeneratePrelim').onclick=generatePrelim;$('v500BackReview').onclick=()=>stage(3);$('v500PrintPrelim').onclick=()=>printStage('print-prelim');$('v500Finalize').onclick=finalize;$('v500PrintFridge').onclick=()=>printStage('print-final');$('v500DownloadIcs').onclick=downloadIcs;$('v500DownloadPhone').onclick=()=>download('AutoPilot-iPhone-Plan.html',phoneHtml(),'text/html');$('v500PhonePrev').onclick=()=>renderPhone(phoneIndex-1);$('v500PhoneNext').onclick=()=>renderPhone(phoneIndex+1);$('v500EditFinal').onclick=()=>stage(3);document.addEventListener('click',e=>{let b=e.target.closest('.v500-editday');if(b)jumpDate(b.dataset.date)});stage(1)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+
+<script id="v501ButtonHardener">
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('#v500App button').forEach(b=>b.setAttribute('type','button'));
+});
+</script>
+
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
