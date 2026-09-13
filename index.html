@@ -6397,6 +6397,20 @@ function captureWorkingPlans(){
     return workingPlans;
   }catch{workingPlans=[];return workingPlans}
 }
+function reviewedTen(){
+  return Array.isArray(workingPlans)?workingPlans.filter(p=>!isWeekend(p)).slice(0,10):[];
+}
+function mergeLiveIntoWorking(baseTen){
+  try{
+    const live=(typeof plans!=='undefined'&&Array.isArray(plans))?plans:(Array.isArray(window.plans)?window.plans:[]);
+    const byDate=new Map((Array.isArray(live)?live:[]).filter(Boolean).map(p=>[dkey(p),p]));
+    workingPlans=baseTen.map(old=>byDate.get(dkey(old))||old);
+    return reviewedTen();
+  }catch{
+    workingPlans=baseTen.slice();
+    return reviewedTen();
+  }
+}
 function dObj(p){return p?.date instanceof Date?p.date:new Date((p?.dateStr||p?.date||'')+(String(p?.dateStr||p?.date||'').includes('T')?'':'T12:00:00'))}
 function isWeekend(p){let d=dObj(p);return p?.weekend===true||(!isNaN(d)&&[0,6].includes(d.getDay()))}
 function workPlans(){return plansAll().filter(p=>!isWeekend(p)).slice(0,10)}
@@ -6427,7 +6441,53 @@ function renderReview(){if(view==='day')renderDay();else renderTen();$('v500View
 async function refreshPlan(){let b=$('v500Refresh');b.disabled=true;$('v500RefreshStatus').className='v500-status busy';$('v500RefreshStatus').textContent='Refreshing connected calendars and building your 10-day plan…';try{let s=$('v500StartDate').value,legacy=$('startDate');if(legacy){legacy.value=s;legacy.dispatchEvent(new Event('change',{bubbles:true}))}try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}let r={ok:0,total:0};if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==10)throw new Error(`AutoPilot built ${ps.length} workdays instead of 10.`);dayIndex=0;view='day';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Start with Day 1.`;stage(3)}catch(e){console.error(e);$('v500RefreshStatus').className='v500-status warn';$('v500RefreshStatus').innerHTML='<b>The plan did not load.</b> '+esc(e.message)+' This screen will not show success until Day 1 can actually be displayed.'}finally{b.disabled=false}}
 async function parseLine(line,prefix=''){let box=$('v4731Input'),btn=$('v4731Apply');if(!box||!btn)return false;let before=JSON.stringify(pending());box.value=(prefix?prefix+' ':'')+line;btn.click();await new Promise(r=>setTimeout(r,0));let after=JSON.stringify(pending()),remain=String(box.value||'').trim();box.value='';return before!==after&&!remain}
 async function applyFreeText(){let unresolved=[];for(const p of workPlans()){let t=String(daily()[dkey(p)]||'').trim();for(const line of t.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,dkey(p))))unresolved.push(dateLabel(p)+': '+line)}}let raw=String($('v500Raw').value||'').trim();localStorage.setItem(RAW,raw);for(const line of raw.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,'')))unresolved.push(line)}return unresolved}
-async function generatePrelim(){let b=$('v500GeneratePrelim');b.disabled=true;$('v500ReviewStatus').className='v500-status busy';$('v500ReviewStatus').textContent='Applying your edits and recalculating the draft…';try{let unresolved=await applyFreeText();if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine is unavailable.');await window.__apV4732ApplyPending(false);try{window.__apV4731EnforceWhitney?.()}catch{};captureWorkingPlans();if(workPlans().length!==10)throw new Error('The recalculated plan no longer contains exactly 10 workdays.');renderTen('v500PrelimTiles',true);$('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');$('v500PrelimStatus').innerHTML=unresolved.length?`<b>Draft generated.</b> ${unresolved.length} free-text item${unresolved.length===1?' was':'s were'} not interpreted confidently. AutoPilot did not guess; use Edit this day for those changes.`:'<b>Draft generated.</b> Your edits were applied.';stage(4)}catch(e){console.error(e);$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Could not generate the preliminary plan.</b> '+esc(e.message)}finally{b.disabled=false}}
+async function generatePrelim(){
+  let b=$('v500GeneratePrelim');
+  b.disabled=true;
+  $('v500ReviewStatus').className='v500-status busy';
+  $('v500ReviewStatus').textContent='Applying your 10 days of edits and building the preliminary plan…';
+
+  const baseTen=reviewedTen().slice();
+  if(baseTen.length!==10){
+    b.disabled=false;
+    $('v500ReviewStatus').className='v500-status warn';
+    $('v500ReviewStatus').innerHTML='<b>Your saved 10-day review could not be found.</b> Your day-by-day edits are still stored, but the initial plan needs to be loaded again before creating the preliminary view.';
+    return;
+  }
+
+  try{
+    let unresolved=await applyFreeText();
+
+    if(typeof window.__apV4732ApplyPending!=='function')
+      throw new Error('Recalculation engine is unavailable.');
+
+    await window.__apV4732ApplyPending(false);
+    try{window.__apV4731EnforceWhitney?.()}catch{}
+
+    let merged=mergeLiveIntoWorking(baseTen);
+    if(merged.length!==10){
+      workingPlans=baseTen.slice();
+      merged=reviewedTen();
+    }
+    if(merged.length!==10)
+      throw new Error('The saved reviewed plan could not be reconstructed.');
+
+    renderTen('v500PrelimTiles',true);
+    $('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');
+    $('v500PrelimStatus').innerHTML=unresolved.length
+      ? `<b>Preliminary plan built.</b> Your 10 reviewed days were preserved. ${unresolved.length} free-text item${unresolved.length===1?'':'s'} could not be interpreted automatically and are listed below for manual review.<br><br>${unresolved.map(x=>'• '+esc(x)).join('<br>')}`
+      : '<b>Preliminary 10-day plan built.</b> All saved day-by-day changes have been incorporated. Review it with Kira, then edit any day or finalize.';
+    stage(4);
+  }catch(e){
+    console.error(e);
+    workingPlans=baseTen.slice();
+    renderReview();
+    $('v500ReviewStatus').className='v500-status warn';
+    $('v500ReviewStatus').innerHTML='<b>Your 10 reviewed days and edits are still saved.</b> AutoPilot could not finish recalculating the preliminary plan: '+esc(e.message);
+  }finally{
+    b.disabled=false;
+  }
+}
 function jumpDate(d){let ps=workPlans(),ix=ps.findIndex(p=>dkey(p)===d);if(ix<0)return;dayIndex=ix;view='day';renderReview();stage(3)}
 function bossMessage(){return 'Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+workPlans().map(p=>`${dateLabel(p,true)}: ${p.holiday?'Holiday / no work.':p.onsite?`${site(p)} — approx. arrival ${fmtArr(p.arrive)}; approx. departure ${fmtDep(p.leaveWork)}.`:'Remote.'}`).join('\n')}
 function snapshot(){return workPlans().map(p=>({date:dkey(p),label:dateLabel(p,true),chris:chris(p),kira:kira(p),events:acts(p).map(a=>({person:safeOwner(a),title:a.title,start:start(a),end:end(a),location:a.location||'',drop:assignment(p,a,'Drop'),pickup:assignment(p,a,'Pickup')}))}))}
