@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v47.26</title>
+<title>AutoPilot — Family Logistics Planner v50.10</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1213,7 +1213,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 <body>
 <div id="v500App">
   <div class="v500-wrap">
-    <div class="v500-brand">AutoPilot · Family Logistics Planner <span style="font-size:9px;opacity:.55">v50.6</span></div>
+    <div class="v500-brand">AutoPilot · Family Logistics Planner <span style="font-size:9px;opacity:.55">v50.10</span></div>
     <div class="v504-toolbar" id="v502CycleBar">
       <div class="v504-toolbar-main">
         <button id="v504EditPlan" class="v500-btn">EDIT PLAN</button>
@@ -1249,12 +1249,12 @@ body>.app-shell,body>.brand-watermark{display:none!important}
       
       <div class="v500-card">
         <div class="v500-header">
-          <div><h2>10-day family plan</h2><div class="v500-muted">Edit anything here. Changes are saved as you make them. Use the same toolbar above to refresh, print, or finalize at any time.</div></div>
+          <div><h2>10-day family plan</h2><div class="v500-muted">AutoPilot has already recommended work sites and family transportation. Review the plan and change only the exceptions. Changes save as you make them.</div></div>
           <div class="v500-toggle"><button id="v500ViewDay" class="on">ONE DAY AT A TIME</button><button id="v500ViewTen">ALL 10 DAYS</button></div>
         </div>
         <div class="v500-nav"><button id="v500Prev" class="v500-btn">← Previous day</button><span id="v500Count"></span><button id="v500Next" class="v500-btn">Save + next day →</button></div>
         <div id="v500ReviewBody" style="margin-top:10px"></div>
-        <div class="v500-textbox"><label>Type any change in plain English</label><textarea id="v500Raw" placeholder="Examples:\nRemote Thursday\nKira picks Whitney up from gymnastics Thursday\nSoccer Friday — ride with teammate\nI need to stay at Wheeling until 6 PM Wednesday"></textarea><small>Examples: “Make my departure 6pm Wednesday” or “Will will ride home with Ben from soccer.” AutoPilot applies these when you refresh, print, or finalize. It will not silently guess when something is ambiguous.</small></div>
+        <div class="v500-textbox"><label>Add only non-routine exceptions</label><textarea id="v500Raw" placeholder="Examples:\nRemote Thursday\nKira picks Whitney up from gymnastics Thursday\nSoccer Friday — ride with teammate\nI need to stay at Wheeling until 6 PM Wednesday"></textarea><small>Use this for unusual items only. Your ordinary week is already recommended as Remote M/F · Weirton T/Th · Wheeling Wed, with pickup/drop-off recommendations built around the family schedule. AutoPilot applies exceptions when you refresh, print, or finalize.</small></div>
         <div class="v500-actions"><button id="v500GeneratePrelim" class="v500-btn gold">GENERATE PRELIMINARY 10-DAY PLAN</button><button id="v500ChangeDate" class="v500-btn">CHANGE START DATE</button></div>
         <div id="v500ReviewStatus" class="v500-status">Review as much or as little as you need before generating the preliminary plan.</div>
       </div>
@@ -3755,7 +3755,9 @@ async function generate(){
 }
 
 async function generateCore(){
-  const start=parseDate($('startDate').value), kira=getKira(), allActs=getActivities(), acts=allActs.filter(a=>a.transportClass==='required'), adh=getAdhoc(), target=+$('onsiteTarget').value||3;
+  const start=parseDate($('startDate').value), kira=getKira(), allActs=getActivities(), acts=allActs.filter(a=>a.transportClass==='required'), adh=getAdhoc();
+  const patternSiteFor=d=>({2:'Weirton',3:'Wheeling',4:'Weirton'}[d.getDay()]||'Remote');
+  const normalPatternLabel='Remote M/F · Weirton T/Th · Wheeling Wed';
   let base=await Promise.all(Array.from({length:14},async(_,i)=>{
     const date=addDays(start,i), ds=iso(date), weekend=[0,6].includes(date.getDay()), k=kira.find(x=>x.date===ds)||{shift:'off',start:'',end:'',address:'',fallbackCommute:0};
     const kInfo=kiraShiftInfo(k.shift);
@@ -3765,40 +3767,54 @@ async function generateCore(){
     let d={date,dateStr:ds,weekend,kiraOff:k.shift==='off',kiraLocation:k.location||kInfo.location,kiraAddress:kiraWorkAddress,kiraCommuteMinutes,kiraStart:toMin(k.start),kiraEnd:toMin(k.end),kiraPickupAvailable:k.shift==='off'?0:(toMin(k.end)+kiraCommuteMinutes),activities:acts.filter(a=>a.date===ds),adhoc:adh.filter(a=>a.date===ds),busPlan:$('defaultBus').value,preferRemote:false,mustOnsite:false,holiday:false,chrisUnavailable:false,kiraUnavailable:false,opportunity:false};
     d.adhoc.forEach(a=>{if(a.impact==='preferRemote')d.preferRemote=true;if(a.impact==='holiday')d.holiday=true;if(a.impact==='mustOnsite')d.mustOnsite=true;if(a.impact==='chrisUnavailable')d.chrisUnavailable=true;if(a.impact==='kiraUnavailable')d.kiraUnavailable=true;if(a.impact==='kidsBus')d.busPlan='kids';if(a.impact==='kiraBus')d.busPlan='kira';if(a.impact==='chrisBus')d.busPlan='chris'});
     d.activities=[...d.activities,...adhocActivitiesForDay(d)];
+    d.normalPattern=patternSiteFor(date);
     return d;
   }));
   const rem=Math.max(0,+$('cushionTarget').value-(+$('cushionUsed').value||0));
   base.filter(d=>!d.weekend&&d.kiraOff).sort((a,b)=>a.activities.length-b.activities.length).slice(0,Math.min(rem,2)).forEach(d=>d.opportunity=true);
-  const onsiteSet=new Set();
-  [base.slice(0,7),base.slice(7,14)].forEach(week=>{
-    const work=week.filter(d=>!d.weekend).sort((a,b)=>scoreDay(b)-scoreDay(a));
-    work.filter(d=>d.mustOnsite).forEach(d=>onsiteSet.add(d.dateStr));
-    for(const d of work){if(week.filter(x=>onsiteSet.has(x.dateStr)).length>=target)break;if(!d.preferRemote)onsiteSet.add(d.dateStr)}
-  });
   plans=[];
   for(const d of base){
-    if(d.weekend){plans.push({...d,onsite:false,site:'',status:'remote',assignments:[]});continue;}
-    let onsite=onsiteSet.has(d.dateStr);
-    if(d.holiday)onsite=false;
-    if(d.preferRemote&&$('remoteAllowed').value==='yes'&&!d.mustOnsite)onsite=false;
+    if(d.weekend){plans.push({...d,onsite:false,site:'',status:'remote',assignments:[],recommendationBasis:'Weekend'});continue;}
+    let normal=d.normalPattern;
+    let onsite=normal!=='Remote';
+    let recommendationBasis=`Normal pattern · ${normalPatternLabel}`;
+    if(d.holiday){onsite=false;recommendationBasis='Holiday / no work';}
+    else if(d.preferRemote&&$('remoteAllowed').value==='yes'&&!d.mustOnsite){onsite=false;recommendationBasis='Logistics exception · remote recommended';}
+    else if(d.mustOnsite){onsite=true;recommendationBasis='Non-routine commitment · onsite required';}
     let site='',departHome=null,arrive=null,leaveWork=null,status='remote';
     if(onsite){
-      const evals=(await Promise.all(getSites().map(s=>evaluateSite(d,s)))).sort((a,b)=>b.score-a.score);
-      const best=evals[0];site=best.site.name;departHome=best.departHome;arrive=best.arrive;leaveWork=best.leave;status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';d.chrisWorkAddress=best.site.address||'';d.chrisCommuteMinutes=best.commute;
+      const allSites=getSites();
+      const preferred=allSites.find(s=>String(s.name).toLowerCase()===String(normal).toLowerCase());
+      let evals=await Promise.all(allSites.map(s=>evaluateSite(d,s)));
+      evals.sort((a,b)=>b.score-a.score);
+      const preferredEval=preferred?evals.find(e=>e.site===preferred):null;
+      const viable=evals.find(e=>e.ok);
+      let best=(preferredEval&&preferredEval.ok)?preferredEval:(viable||preferredEval||evals[0]);
+      if(d.mustOnsite && normal==='Remote')best=viable||evals[0];
+      if(best){site=best.site.name;departHome=best.departHome;arrive=best.arrive;leaveWork=best.leave;status=best.ok?(best.usable>=7*60?'good':'warn'):'bad';d.chrisWorkAddress=best.site.address||'';d.chrisCommuteMinutes=best.commute;}
+      if(preferredEval&&best&&best.site.name!==preferredEval.site.name)recommendationBasis=`Logistics exception · ${preferredEval.site.name} not workable, ${best.site.name} recommended`;
     }
-    const p={...d,onsite,site,departHome,arrive,leaveWork,status};
-    applyDepartureOverrideToPlan(p);
+    let p={...d,onsite,site,departHome,arrive,leaveWork,status,recommendationBasis};
+    applyArrivalOverrideToPlan(p);applyDepartureOverrideToPlan(p);
     p.assignments=await assignTransport(p);
     applyTransportOverridesToPlan(p);
+    // If the normal onsite pattern creates uncovered rides or an unusable workday, compare a remote fallback.
+    if(p.onsite&&!d.mustOnsite){
+      const onsiteBackups=(p.assignments||[]).filter(a=>a.primary==='Backup').length;
+      if(p.status==='bad'||onsiteBackups>0){
+        const r={...d,onsite:false,site:'',departHome:null,arrive:null,leaveWork:null,status:'remote',recommendationBasis:'Logistics exception · remote recommended to protect family coverage'};
+        r.assignments=await assignTransport(r);applyTransportOverridesToPlan(r);
+        const remoteBackups=(r.assignments||[]).filter(a=>a.primary==='Backup').length;
+        if(p.status==='bad'||remoteBackups<onsiteBackups)p=r;
+      }
+    }
+    // Mark the recommendation clearly; assignments are recommendations unless manually overridden later.
+    p.recommended=true;
     plans.push(p);
   }
   if(window.__savedWorkOverrides?.length){
-    const saved=[...window.__savedWorkOverrides];
-    window.__savedWorkOverrides=[];
-    for(const o of saved){
-      const idx=plans.findIndex(p=>p.dateStr===o.date);
-      if(idx>=0)await recalcDayForOverride(idx,o.value);
-    }
+    const saved=[...window.__savedWorkOverrides];window.__savedWorkOverrides=[];
+    for(const o of saved){const idx=plans.findIndex(p=>p.dateStr===o.date);if(idx>=0)await recalcDayForOverride(idx,o.value);}
   }
   render();
 }
@@ -6578,7 +6594,7 @@ function tile(p,editable=false){v507ApplyOne(p);let d=dkey(p),sl=siteList();if(!
  else body=`<div class="v500-twork"><b>Chris:</b> ${esc(chris(p))}<br><b>Kira:</b> ${esc(kira(p))}</div>`;
  const events=acts(p);const evhtml=events.length?events.map(a=>{a.__v507Key=a.__v507Key||ak(a);const key=a.__v507Key;if(!editable)return `<div class="v500-tev"><b>${esc(safeOwner(a))} · ${esc(a.title)}</b><br>${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}${a.location?'<br>'+esc(a.location):''}<div class="v500-tride">Drop: ${esc(assignment(p,a,'Drop'))}<br>Pickup: ${esc(assignment(p,a,'Pickup'))}</div></div>`;return `<div class="v507-event" data-ak="${esc(key)}"><div class="v507-sectionlabel">EVENT</div><label class="v507-mini"><span>Person</span><input class="v507-edit" data-field="eventOwner" data-date="${esc(d)}" data-ak="${esc(key)}" value="${esc(safeOwner(a))}"></label><label class="v507-mini wide"><span>Event</span><input class="v507-edit" data-field="eventTitle" data-date="${esc(d)}" data-ak="${esc(key)}" value="${esc(a.title)}"></label><label class="v507-mini"><span>Start</span><input type="time" class="v507-edit" data-field="eventStart" data-date="${esc(d)}" data-ak="${esc(key)}" value="${esc(String(a.start||''))}"></label><label class="v507-mini"><span>End</span><input type="time" class="v507-edit" data-field="eventEnd" data-date="${esc(d)}" data-ak="${esc(key)}" value="${esc(String(a.end||''))}"></label><label class="v507-mini wide"><span>Location</span><input class="v507-edit" data-field="eventLocation" data-date="${esc(d)}" data-ak="${esc(key)}" value="${esc(a.location||'')}"></label>${v507CompactRide(p,a,'Drop')}${v507CompactRide(p,a,'Pickup')}</div>`}).join(''):`<div class="v500-tev">No transportation events</div>`;
  return `<div class="v500-tile v507-tile ${editable?'editable':''}" data-date="${esc(d)}"><div class="v507-cardhead"><div class="v500-tdate">${esc(dateLabel(p))}</div>${editable?`<button type="button" class="v507-reviewday" data-date="${esc(d)}">Review day ›</button>`:''}</div>${body}${evhtml}<div class="v507-saved" aria-live="polite"></div></div>`}
-function renderTen(target='v500ReviewBody',editable=false){let ps=workPlans();v507ApplyAll(ps);const host=$(target);host.innerHTML=`<div class="v500-tiles ${editable?'v507-editgrid':''}">${ps.map(p=>tile(p,editable)).join('')}</div>`;host.querySelectorAll('.v507-reviewday').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();jumpDate(b.dataset.date)});if(target==='v500ReviewBody'){$('v500Count').textContent=`All ${ps.length} days`;$('v500Prev').disabled=true;$('v500Next').disabled=true}}
+function renderTen(target='v500ReviewBody',editable=false){let ps=workPlans();v507ApplyAll(ps);const host=$(target),renderer=(typeof window.tile==='function'?window.tile:tile);host.innerHTML=`<div class="v500-tiles ${editable?'v507-editgrid':''}">${ps.map(p=>renderer(p,editable)).join('')}</div>`;host.querySelectorAll('.v507-reviewday').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();jumpDate(b.dataset.date)});if(target==='v500ReviewBody'){$('v500Count').textContent=`All ${ps.length} days`;$('v500Prev').disabled=true;$('v500Next').disabled=true}}
 function renderReview(){if(view==='day')renderDay();else renderTen('v500ReviewBody',true);$('v500ViewDay').classList.toggle('on',view==='day');$('v500ViewTen').classList.toggle('on',view==='10')}
 function v502SetCycleStatus(text,kind=''){let el=$('v502CycleStatus');if(!el)return;el.className='v502-status'+(kind?' '+kind:'');el.innerHTML=text}
 function v502RefreshStamp(){try{let n=Number(localStorage.getItem('familyOptimizerV23.v502LastCalendarRefresh')||0);if(n)v502SetCycleStatus(`<b>Feeds last refreshed ${new Date(n).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}.</b> Refreshing never clears your current edits.`,'good')}catch{}}
@@ -6625,12 +6641,74 @@ async function publishNonzeroFromFinal(testOnly=false){
     return ok;
   }catch(e){console.error(e);set(`<b>Publish failed.</b> ${esc(e.message)} Existing NONZERO state was left intact.`,'warn');return false}
 }
-async function refreshPlan(){let b=$('v500Refresh');b.disabled=true;$('v500RefreshStatus').className='v500-status busy';$('v500RefreshStatus').textContent='Refreshing connected calendars and building your 10-day plan…';try{let s=$('v500StartDate').value,legacy=$('startDate');if(legacy){legacy.value=s;legacy.dispatchEvent(new Event('change',{bubbles:true}))}try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}let r={ok:0,total:0};if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==10)throw new Error(`AutoPilot built ${ps.length} workdays instead of 10.`);dayIndex=0;view='10';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Start with Day 1.`;stage(3)}catch(e){console.error(e);$('v500RefreshStatus').className='v500-status warn';$('v500RefreshStatus').innerHTML='<b>The plan did not load.</b> '+esc(e.message)+' This screen will not show success until Day 1 can actually be displayed.'}finally{b.disabled=false}}
+async function refreshPlan(){let b=$('v500Refresh');b.disabled=true;$('v500RefreshStatus').className='v500-status busy';$('v500RefreshStatus').textContent='Refreshing connected calendars and building your 10-day plan…';try{let s=$('v500StartDate').value,legacy=$('startDate');if(legacy){legacy.value=s;legacy.dispatchEvent(new Event('change',{bubbles:true}))}try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}let r={ok:0,total:0};if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==10)throw new Error(`AutoPilot built ${ps.length} workdays instead of 10.`);dayIndex=0;view='10';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Review the recommendations and change only exceptions.`;stage(3);v504SetToolbarState('<b>Plan ready.</b> Edit, refresh, print, or finalize at any time.','good')}catch(e){console.error(e);$('v500RefreshStatus').className='v500-status warn';$('v500RefreshStatus').innerHTML='<b>The plan did not load.</b> '+esc(e.message)+' This screen will not show success until Day 1 can actually be displayed.'}finally{b.disabled=false}}
 async function parseLine(line,prefix=''){let box=$('v4731Input'),btn=$('v4731Apply');if(!box||!btn)return false;let before=JSON.stringify(pending());box.value=(prefix?prefix+' ':'')+line;btn.click();await new Promise(r=>setTimeout(r,0));let after=JSON.stringify(pending()),remain=String(box.value||'').trim();box.value='';return before!==after&&!remain}
 function v500Clock(raw){const m=String(raw||'').toLowerCase().match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/);if(!m)return null;let h=+m[1],mi=+(m[2]||0),ap=m[3]||'';if(mi>59||h>23)return null;if(ap){if(h<1||h>12)return null;if(h===12)h=0;if(ap==='pm')h+=12}else if(h<=7)h+=12;return h*60+mi}
 function v500EventMatch(p,line){const list=acts(p),t=String(line||'').toLowerCase();if(!list.length)return null;const owner=(String(line).match(/^\s*([A-Za-z][A-Za-z'-]+)\s+will\s+ride\b/i)||[])[1]||'';let scored=list.map(a=>{let score=0,title=String(a.title||'').toLowerCase();if(/\bsoccer\b/.test(t)&&/\bsoccer\b/.test(title))score+=5;for(const tok of title.split(/[^a-z0-9]+/).filter(x=>x.length>=4&&!['practice','game','event'].includes(x)))if(t.includes(tok))score++;if(owner&&String(safeOwner(a)||'').toLowerCase()===owner.toLowerCase())score+=4;return {a,score}}).sort((a,b)=>b.score-a.score);return scored[0]&&scored[0].score>0&&(scored.length===1||scored[0].score>scored[1].score)?scored[0].a:null}
 async function v500SmartLine(line,p){const d=dkey(p),x=pending();let hit=false,affected=false;let m=String(line).match(/(?:make\s+my\s+)?(?:arrival(?:\s+time)?|arrive)(?:\s+(?:at|is|to))?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);if(m){const v=v500Clock(m[1]);if(v!=null){manualArrivalOverrides[d]=v;x.arrival[d]=v;applyArrivalOverrideToPlan(p);hit=true;affected=true}}m=String(line).match(/(?:make\s+my\s+)?(?:departure(?:\s+time)?|depart|leave\s+work)(?:\s+(?:at|is|to))?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);if(m){const v=v500Clock(m[1]);if(v!=null){x.departure[d]=v;hit=true;affected=true}}let rm=String(line).match(/\b(?:ride|rides|riding)\s+(?:home|back)\s+with\s+([A-Za-z][A-Za-z' -]{1,30}?)(?:\s+from\s+([^.;]+))?(?:\s+and\b|[.;]|$)/i);if(rm){let driver=rm[1].trim(),ev=v500EventMatch(p,rm[2]||line);if(ev){x.ride[d+'|'+ak(ev)+'|Pickup']=driver;hit=true;affected=true}}savePending(x);if(affected&&typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(d);return hit}
-async function applyFreeText(){let unresolved=[];for(const p of workPlans()){let t=String(daily()[dkey(p)]||'').trim();for(const line of t.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){const smart=await v500SmartLine(line,p);const legacy=await parseLine(line,dateLabel(p));if(!(smart||legacy))unresolved.push(dateLabel(p)+': '+line)}}let raw=String($('v500Raw').value||'').trim();localStorage.setItem(RAW,raw);for(const line of raw.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,'')))unresolved.push(line)}try{saveAllNow();captureWorkingPlans()}catch{}return unresolved}
+function v509DayTargets(line){
+  const ps=workPlans(),t=String(line||'').toLowerCase();
+  const names=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  let wd=names.findIndex(n=>new RegExp('\\b'+n+'\\b','i').test(t));
+  if(wd<0)return [];
+  let matches=ps.filter(p=>p.date?.getDay?.()===wd);
+  if(!matches.length)return [];
+  if(/\b(next|second|week\s*2|2nd)\b/i.test(t)&&matches[1])return [matches[1]];
+  return [matches[0]];
+}
+async function v510ReapplyManualTimesAndTransport(p){
+  if(!p)return;
+  const d=dkey(p);
+  // Explicit manual exceptions always win over recommendation/recalculation.
+  if(p.onsite){
+    if(manualArrivalOverrides[d]!=null&&manualArrivalOverrides[d]!==''){
+      p.arrive=Number(manualArrivalOverrides[d]);
+      if(p.chrisCommuteMinutes!=null)p.departHome=Math.max(0,p.arrive-Number(p.chrisCommuteMinutes));
+      p.manualArrivalOverride=true;
+    }
+    if(manualDepartureOverrides[d]!=null&&manualDepartureOverrides[d]!==''){
+      p.leaveWork=Number(manualDepartureOverrides[d]);
+      p.manualDepartureOverride=true;
+    }
+  }
+  try{p.assignments=await assignTransport(p)}catch{}
+  try{applyTransportOverridesToPlan(p)}catch{}
+}
+async function v509ApplyException(line,p){
+  const d=dkey(p),x=pending();let hit=false,workChanged=false;
+  let sm=String(line).match(/\b(?:at|in|to|work(?:ing)?\s+at)\s+(Wheeling|Weirton|Southpointe|Butler)\b/i);
+  if(sm){const sites=typeof getSites==='function'?getSites():[];const found=sites.find(s=>String(s.name).toLowerCase()===sm[1].toLowerCase());if(found){x.work[d]=found.name;p.onsite=true;p.holiday=false;p.site=found.name;hit=true;workChanged=true;}}
+  if(/\bremote\b/i.test(line)){x.work[d]='Remote';p.onsite=false;p.holiday=false;p.site='';p.arrive=null;p.leaveWork=null;p.departHome=null;hit=true;workChanged=true;}
+  let early=String(line).match(/\b(?:early\s+)?(?:meeting|commitment|appointment|start)\b[^.;]*?\b(?:at|by)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  if(early&&/\b(early|meeting|appointment|commitment)\b/i.test(line)){const v=v500Clock(early[1]);if(v!=null){x.arrival[d]=v;manualArrivalOverrides[d]=v;hit=true;workChanged=true;}}
+  let late=String(line).match(/\b(?:late\s+)?(?:meeting|commitment|appointment|stay|work|leave)\b[^.;]*?\b(?:until|through|to|at)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  if(late){const v=v500Clock(late[1]);if(v!=null){x.departure[d]=v;manualDepartureOverrides[d]=v;hit=true;workChanged=true;}}
+  savePending(x);
+  const smart=await v500SmartLine(line,p);
+  if(workChanged){
+    if(p.onsite&&typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(d);
+  }
+  if(hit||smart)await v510ReapplyManualTimesAndTransport(p);
+  try{saveAllNow()}catch{}
+  return hit||smart;
+}
+async function applyFreeText(){
+  let unresolved=[];
+  for(const p of workPlans()){
+    let t=String(daily()[dkey(p)]||'').trim();
+    for(const line of t.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){
+      const smart=await v509ApplyException(line,p);if(!smart)unresolved.push(dateLabel(p)+': '+line);
+    }
+  }
+  let raw=String($('v500Raw').value||'').trim();localStorage.setItem(RAW,raw);
+  for(const line of raw.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){
+    const targets=v509DayTargets(line);
+    if(targets.length){let understood=false;for(const p of targets)understood=(await v509ApplyException(line,p))||understood;if(!understood)unresolved.push(line)}
+    else unresolved.push(line);
+  }
+  try{saveAllNow()}catch{}
+  return unresolved;
+}
 async function generatePrelim(){let b=$('v500GeneratePrelim');b.disabled=true;$('v500ReviewStatus').className='v500-status busy';$('v500ReviewStatus').textContent='Applying your edits and recalculating the draft…';try{let unresolved=await applyFreeText();if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine is unavailable.');await window.__apV4732ApplyPending(false);try{window.__apV4731EnforceWhitney?.()}catch{};captureWorkingPlans();if(workPlans().length!==10)throw new Error('The recalculated plan no longer contains exactly 10 workdays.');renderTen('v500PrelimTiles',true);$('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');$('v500PrelimStatus').innerHTML=unresolved.length?`<b>Draft generated.</b> ${unresolved.length} free-text item${unresolved.length===1?' was':'s were'} not interpreted confidently. AutoPilot did not guess; use Edit this day for those changes.`:'<b>Draft generated.</b> Your edits were applied.';stage(4)}catch(e){console.error(e);$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Could not generate the preliminary plan.</b> '+esc(e.message)}finally{b.disabled=false}}
 function jumpDate(d){let ps=workPlans(),ix=ps.findIndex(p=>dkey(p)===d);if(ix<0)return;dayIndex=ix;view='day';renderReview();stage(3)}
 function bossMessage(){return 'Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+workPlans().map(p=>`${dateLabel(p,true)}: ${p.holiday?'Holiday / no work.':p.onsite?`${site(p)} — approx. arrival ${fmtArr(p.arrive)}; approx. departure ${fmtDep(p.leaveWork)}.`:'Remote.'}`).join('\n')}
@@ -6639,7 +6717,7 @@ function snapshotTiles(data){return `<div class="v500-tiles">${data.map(d=>`<div
 function renderPhone(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`}
 function phoneHtml(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script></body></html>`}
 function download(name,text,type='text/plain'){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);try{let old=$('v4738Finalize')||$('finalizePlanBtn')||$('finalizeBtn');old?.click()}catch{};stage(5);try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
+function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);stage(5);try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
 function printStage(which){$('v500App').classList.remove('print-prelim','print-final');$('v500App').classList.add(which);setTimeout(()=>window.print(),50);setTimeout(()=>$('v500App').classList.remove(which),800)}
 function downloadIcs(){try{if(typeof downloadPhilOutlookIcs==='function')return downloadPhilOutlookIcs('all')}catch{};let old=$('v4738Ics');old?.click()}
 
@@ -6657,12 +6735,26 @@ function v504SaveVisible(){
   if($('v500Raw'))localStorage.setItem(RAW,$('v500Raw').value||'');
   try{saveAllNow?.()}catch{}
 }
+async function v510ApplyPendingSafely(){
+  const x=pending();
+  for(const p of workPlans()){
+    const d=dkey(p);let recalc=false;
+    if(Object.prototype.hasOwnProperty.call(x.work,d)){
+      const v=x.work[d];p.onsite=!(v==='Remote'||v==='Off');p.holiday=v==='Off';p.site=p.onsite?v:'';if(!p.onsite){p.arrive=null;p.leaveWork=null;p.departHome=null}recalc=p.onsite;
+    }
+    if(Object.prototype.hasOwnProperty.call(x.arrival,d)){manualArrivalOverrides[d]=Number(x.arrival[d]);recalc=recalc||p.onsite}
+    if(Object.prototype.hasOwnProperty.call(x.departure,d)){manualDepartureOverrides[d]=Number(x.departure[d]);recalc=recalc||p.onsite}
+    if(recalc&&typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(d);
+    await v510ReapplyManualTimesAndTransport(p);
+  }
+  try{saveAllNow()}catch{}
+}
 async function v504ApplyEdits(){
   v504SaveVisible();
   const unresolved=await applyFreeText();
-  if(typeof window.__apV4732ApplyPending==='function')await window.__apV4732ApplyPending(false);
+  await v510ApplyPendingSafely();
   try{window.__apV4731EnforceWhitney?.()}catch{}
-  captureWorkingPlans();
+  if(!workingPlans.length)captureWorkingPlans();
   return unresolved;
 }
 function v504RenderCurrent(){
@@ -6709,13 +6801,13 @@ function v504BuildPrintSheet(isFinal=false){
 }
 async function v504PrintOnePage(){
   if(v504Busy||!v504HasPlan())return;v504Busy=true;v504SetToolbarState('<b>Preparing the one-page plan…</b> Applying the latest edits first.');
-  try{await v504ApplyEdits();v504RenderCurrent();v504BuildPrintSheet(phase===5);document.body.classList.add('v504-printing');setTimeout(()=>window.print(),60);setTimeout(()=>document.body.classList.remove('v504-printing'),1200);v504SetToolbarState('<b>One-page plan ready.</b> Choose Print or Save as PDF in the print dialog.','good')}
+  try{await v504ApplyEdits();if(!v504HasPlan())throw new Error('The active plan no longer contains exactly 10 workdays. Print was stopped to protect the plan.');v504RenderCurrent();v504BuildPrintSheet(phase===5);document.body.classList.add('v504-printing');setTimeout(()=>window.print(),60);setTimeout(()=>document.body.classList.remove('v504-printing'),1200);v504SetToolbarState('<b>One-page plan ready.</b> Choose Print or Save as PDF in the print dialog.','good')}
   catch(e){console.error(e);v504SetToolbarState(`<b>Could not prepare the print view.</b> ${esc(e.message)}`,'warn')}
   finally{v504Busy=false;v504SetToolbarState()}
 }
 async function v504Finalize(){
   if(v504Busy||!v504HasPlan())return;v504Busy=true;v504SetToolbarState('<b>Applying the latest edits and finalizing…</b>');
-  try{const unresolved=await v504ApplyEdits();finalize();v504SetToolbarState(unresolved.length?`<b>Finalized with ${unresolved.length} note${unresolved.length===1?'':'s'} needing manual review.</b> Everything else is locked into the current final plan.`:'<b>Final plan ready.</b> Print the fridge copy or open the mobile view below.','good')}
+  try{const unresolved=await v504ApplyEdits();if(!v504HasPlan())throw new Error('The active plan no longer contains exactly 10 workdays. Finalization was stopped.');finalize();v504SetToolbarState(unresolved.length?`<b>Finalized with ${unresolved.length} note${unresolved.length===1?'':'s'} needing manual review.</b> Everything else is locked into the current final plan.`:'<b>Final plan ready.</b> Print the fridge copy or open the mobile view below.','good')}
   catch(e){console.error(e);v504SetToolbarState(`<b>Could not finalize.</b> ${esc(e.message)}`,'warn')}
   finally{v504Busy=false;v504SetToolbarState()}
 }
@@ -6749,7 +6841,7 @@ $('v500ViewDay').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibl
 $('v500ViewTen').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();view='10';renderReview();return false};
 $('v500Prev').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();let ps=workPlans();if(!ps.length){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>The working plan was unexpectedly unavailable.</b> Your Day edits are still saved. Reload the initial plan only if this persists.';return false}dayIndex=Math.max(0,dayIndex-1);view='day';renderReview();$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML='<b>Changes saved.</b> Now reviewing Day '+(dayIndex+1)+' of '+ps.length+'.';return false};
 $('v500Next').onclick=e=>{e?.preventDefault();e?.stopPropagation();saveVisibleDay();let ps=workPlans();if(!ps.length){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>The working plan was unexpectedly unavailable.</b> Your Day edits are still saved. Reload the initial plan only if this persists.';return false}dayIndex=Math.min(ps.length-1,dayIndex+1);view='day';renderReview();$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML='<b>Changes saved.</b> Now reviewing Day '+(dayIndex+1)+' of '+ps.length+'.';return false};
-document.addEventListener('click',async e=>{const b=e.target.closest('.v506-time-nudge');if(!b)return;e.preventDefault();e.stopPropagation();const date=b.dataset.date,kind=b.dataset.kind,delta=Number(b.dataset.delta||0),p=workPlans().find(z=>dkey(z)===date);if(!p)return;let base=kind==='arrival'?(manualArrivalOverrides?.[date]!=null?Number(manualArrivalOverrides[date]):Number(p.arrive)):(manualDepartureOverrides?.[date]!=null?Number(manualDepartureOverrides[date]):Number(p.leaveWork));if(!Number.isFinite(base))return;const mins=Math.max(0,Math.min(1439,base+delta));const field=b.closest('.v506-timefield');const input=field?.querySelector('input[type=time]');b.disabled=true;try{if(kind==='arrival')manualArrivalOverrides[date]=mins;else manualDepartureOverrides[date]=mins;if(input)input.value=v500TimeInput(mins);field?.classList.add('manual','saving');if(typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date);else{applyArrivalOverrideToPlan(p);applyDepartureOverrideToPlan(p)}try{saveAllNow();captureWorkingPlans()}catch{}if(input)input.value=v500TimeInput(kind==='arrival'?(manualArrivalOverrides?.[date]??mins):(manualDepartureOverrides?.[date]??mins));field?.classList.remove('saving');field?.classList.add('saved');setTimeout(()=>field?.classList.remove('saved'),700);const workLine=document.querySelector('#v500ReviewBody .v500-work');if(workLine&&workLine.firstElementChild?.textContent?.includes('Chris')){const current=workPlans().find(z=>dkey(z)===date);if(current){const sel=workLine.querySelector('select');const keep=sel?sel.outerHTML:'';workLine.innerHTML='<b>Chris work schedule</b>'+esc(chris(current))+'<br>'+keep}}if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status good v506-inline-status';$('v500ReviewStatus').innerHTML=`${kind==='arrival'?'Arrival':'Departure'} → <b>${esc(fmtMin(mins))}</b> · saved`}}catch(err){console.error(err);field?.classList.remove('saving');if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Time change was not saved.</b> '+esc(err.message)}}finally{b.disabled=false}});
+document.addEventListener('click',async e=>{const b=e.target.closest('.v506-time-nudge');if(!b)return;e.preventDefault();e.stopPropagation();const date=b.dataset.date,kind=b.dataset.kind,delta=Number(b.dataset.delta||0),p=workPlans().find(z=>dkey(z)===date);if(!p)return;let base=kind==='arrival'?(manualArrivalOverrides?.[date]!=null?Number(manualArrivalOverrides[date]):Number(p.arrive)):(manualDepartureOverrides?.[date]!=null?Number(manualDepartureOverrides[date]):Number(p.leaveWork));if(!Number.isFinite(base))return;const mins=Math.max(0,Math.min(1439,base+delta));const field=b.closest('.v506-timefield');const input=field?.querySelector('input[type=time]');b.disabled=true;try{if(kind==='arrival')manualArrivalOverrides[date]=mins;else manualDepartureOverrides[date]=mins;if(input)input.value=v500TimeInput(mins);field?.classList.add('manual','saving');if(typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date);else{applyArrivalOverrideToPlan(p);applyDepartureOverrideToPlan(p)}try{saveAllNow()}catch{}await v510ReapplyManualTimesAndTransport(p);if(input)input.value=v500TimeInput(kind==='arrival'?(manualArrivalOverrides?.[date]??mins):(manualDepartureOverrides?.[date]??mins));field?.classList.remove('saving');field?.classList.add('saved');setTimeout(()=>field?.classList.remove('saved'),700);const workLine=document.querySelector('#v500ReviewBody .v500-work');if(workLine&&workLine.firstElementChild?.textContent?.includes('Chris')){const current=workPlans().find(z=>dkey(z)===date);if(current){const sel=workLine.querySelector('select');const keep=sel?sel.outerHTML:'';workLine.innerHTML='<b>Chris work schedule</b>'+esc(chris(current))+'<br>'+keep}}if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status good v506-inline-status';$('v500ReviewStatus').innerHTML=`${kind==='arrival'?'Arrival':'Departure'} → <b>${esc(fmtMin(mins))}</b> · saved`}}catch(err){console.error(err);field?.classList.remove('saving');if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Time change was not saved.</b> '+esc(err.message)}}finally{b.disabled=false}});
 document.addEventListener('change',async e=>{const el=e.target.closest('.v507-edit');if(!el)return;const date=el.dataset.date,field=el.dataset.field,p=workPlans().find(z=>dkey(z)===date);if(!p)return;const key=el.dataset.ak||'',val=el.value;const card=el.closest('.v507-tile'),saved=card?.querySelector('.v507-saved');el.classList.add('saving');try{
   if(field==='workSite'){v507Set(date,['workSite'],val);let x=pending();x.work[date]=val;savePending(x);p.onsite=!(val==='Remote'||val==='Off');p.site=p.onsite?val:'';p.holiday=val==='Off'}
   else if(field==='arrival'||field==='departure'){const mins=v507ToMin(val);if(mins==null)throw new Error('Enter a valid time.');if(field==='arrival')manualArrivalOverrides[date]=mins;else manualDepartureOverrides[date]=mins}
@@ -6757,11 +6849,15 @@ document.addEventListener('change',async e=>{const el=e.target.closest('.v507-ed
   else if(field==='kiraStart'||field==='kiraEnd'){const mins=v507ToMin(val);if(mins==null)throw new Error('Enter a valid time.');v507Set(date,[field],mins);p[field]=mins;p.kiraOff=false}
   else if(field.startsWith('event')){const a=acts(p).find(z=>ak(z)===key);if(!a)throw new Error('That event is no longer in this day. Refresh the view.');a.__v507Key=key;const map={eventOwner:'owner',eventTitle:'title',eventStart:'start',eventEnd:'end',eventLocation:'location'},prop=map[field];v507Set(date,['events',key,prop],val);if(prop==='owner')a.__v507Owner=val;else a[prop]=val}
   else if(field==='ride'){const kind=el.dataset.kind,store=val.trim()===''?'__AUTO__':/^no ride needed$/i.test(val.trim())?'__NONE__':val.trim();let x=pending();x.ride[date+'|'+key+'|'+kind]=store;savePending(x)}
-  if(['workSite','arrival','departure'].includes(field)&&typeof recalcReviewPlanDay==='function'){await recalcReviewPlanDay(date);captureWorkingPlans();v507ApplyAll(workingPlans)}else{try{saveAllNow()}catch{}}
-  el.classList.remove('saving');el.classList.add('saved');if(saved){saved.textContent='Saved';saved.classList.add('show');setTimeout(()=>saved.classList.remove('show'),900)}setTimeout(()=>el.classList.remove('saved'),700);if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status good v506-inline-status';$('v500ReviewStatus').innerHTML='<b>Saved.</b> The 10-day plan stays open and Final will use this change.'}
+  if(['workSite','arrival','departure'].includes(field)&&typeof recalcReviewPlanDay==='function'){await recalcReviewPlanDay(date);await v510ReapplyManualTimesAndTransport(p);v507ApplyAll(workPlans())}
+  else if(['kiraLocation','kiraStart','kiraEnd','eventOwner','eventTitle','eventStart','eventEnd','eventLocation'].includes(field)&&typeof assignTransport==='function'){
+    p.assignments=await assignTransport(p);try{applyTransportOverridesToPlan(p)}catch{};try{saveAllNow()}catch{}
+  }else{try{saveAllNow()}catch{}}
+  el.classList.remove('saving');el.classList.add('saved');if(saved){saved.textContent='Saved';saved.classList.add('show');setTimeout(()=>saved.classList.remove('show'),900)}setTimeout(()=>el.classList.remove('saved'),700);if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status good v506-inline-status';$('v500ReviewStatus').innerHTML='<b>Saved.</b> The 10-day plan stays open and Final will use this change.'}if(typeof window.v510RefreshCard==='function'&&view==='10')window.v510RefreshCard(date)
  }catch(err){console.error(err);el.classList.remove('saving');if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Change was not saved.</b> '+esc(err.message)}}});
-document.addEventListener('change',async e=>{if(e.target.matches('.v500-site')){let x=pending();x.work[e.target.dataset.date]=e.target.value;savePending(x)}else if(e.target.matches('.v500-ride')){let x=pending();x.ride[e.target.dataset.date+'|'+e.target.dataset.ak+'|'+e.target.dataset.kind]=e.target.value;savePending(x)}else if(e.target.matches('.v500-prelim-arrival,.v500-prelim-departure')){let date=e.target.dataset.date,p=workPlans().find(z=>dkey(z)===date),v=String(e.target.value||'').match(/^(\d{1,2}):(\d{2})$/);if(!p||!v)return;let mins=(+v[1])*60+(+v[2]);e.target.disabled=true;try{if(e.target.matches('.v500-prelim-arrival'))manualArrivalOverrides[date]=mins;else manualDepartureOverrides[date]=mins;if(typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date);else{applyArrivalOverrideToPlan(p);applyDepartureOverrideToPlan(p)}try{saveAllNow();captureWorkingPlans()}catch{}const f=e.target.closest('.v506-timefield');f?.classList.add('manual','saved');setTimeout(()=>f?.classList.remove('saved'),700);if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML='<b>Work time updated.</b> Saved immediately and carried into the final plan.'}if($('v500PrelimStatus')){$('v500PrelimStatus').className='v500-status good';$('v500PrelimStatus').innerHTML='<b>Work time updated.</b> Saved immediately and carried into the final plan.'}}catch(err){console.error(err);$('v500PrelimStatus').className='v500-status warn';$('v500PrelimStatus').innerHTML='<b>Time edit was not applied.</b> '+esc(err.message)}finally{e.target.disabled=false}}});document.addEventListener('input',e=>{if(e.target.matches('.v500-daily'))saveDaily(e.target.dataset.date,e.target.value);if(e.target.id==='v500Raw')localStorage.setItem(RAW,e.target.value)});
+document.addEventListener('change',async e=>{if(e.target.matches('.v500-site')){let x=pending();x.work[e.target.dataset.date]=e.target.value;savePending(x)}else if(e.target.matches('.v500-ride')){let x=pending();x.ride[e.target.dataset.date+'|'+e.target.dataset.ak+'|'+e.target.dataset.kind]=e.target.value;savePending(x)}else if(e.target.matches('.v500-prelim-arrival,.v500-prelim-departure')){let date=e.target.dataset.date,p=workPlans().find(z=>dkey(z)===date),v=String(e.target.value||'').match(/^(\d{1,2}):(\d{2})$/);if(!p||!v)return;let mins=(+v[1])*60+(+v[2]);e.target.disabled=true;try{if(e.target.matches('.v500-prelim-arrival'))manualArrivalOverrides[date]=mins;else manualDepartureOverrides[date]=mins;if(typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date);else{applyArrivalOverrideToPlan(p);applyDepartureOverrideToPlan(p)}try{saveAllNow()}catch{};await v510ReapplyManualTimesAndTransport(p);const f=e.target.closest('.v506-timefield');f?.classList.add('manual','saved');setTimeout(()=>f?.classList.remove('saved'),700);if($('v500ReviewStatus')){$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML='<b>Work time updated.</b> Saved immediately and carried into the final plan.'}if($('v500PrelimStatus')){$('v500PrelimStatus').className='v500-status good';$('v500PrelimStatus').innerHTML='<b>Work time updated.</b> Saved immediately and carried into the final plan.'}}catch(err){console.error(err);$('v500PrelimStatus').className='v500-status warn';$('v500PrelimStatus').innerHTML='<b>Time edit was not applied.</b> '+esc(err.message)}finally{e.target.disabled=false}}});document.addEventListener('input',e=>{if(e.target.matches('.v500-daily'))saveDaily(e.target.dataset.date,e.target.value);if(e.target.id==='v500Raw')localStorage.setItem(RAW,e.target.value)});
 $('v500GeneratePrelim').onclick=async()=>{await v504ApplyEdits();renderTen('v500PrelimTiles',true);stage(4)};$('v500BackReview').onclick=()=>stage(3);$('v500PrintPrelim').onclick=v504PrintOnePage;$('v500Finalize').onclick=v504Finalize;$('v500PrintFridge').onclick=v504PrintOnePage;$('v500DownloadIcs').onclick=downloadIcs;$('v500DownloadPhone').onclick=()=>download('AutoPilot-iPhone-Plan.html',phoneHtml(),'text/html');$('v500PhonePrev').onclick=()=>renderPhone(phoneIndex-1);$('v500PhoneNext').onclick=()=>renderPhone(phoneIndex+1);$('v500EditFinal').onclick=v504Edit;document.addEventListener('click',e=>{let b=e.target.closest('.v500-editday');if(b)jumpDate(b.dataset.date)});stage(1);v504SetToolbarState()}
+Object.assign(window,{v507ApplyOne,dkey,acts,site,dateLabel,start,safeOwner,assignment,kira,siteList,v507TimeValue,v507CompactRide,ak,v507Set,pending,savePending,workPlans,captureWorkingPlans,renderReview,jumpDate});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -6816,8 +6912,149 @@ document.addEventListener('DOMContentLoaded',()=>{
   const obs=new MutationObserver(()=>setTimeout(tick,0));try{obs.observe(document.body,{childList:true,subtree:true})}catch{}
 })();
 </script>
+
+<!-- AutoPilot v50.8: compact scan-first 10-day workspace + Remote/Onsite conversion -->
+<style id="v508CompactTenDayStyle">
+#v500App .v507-editgrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;align-items:start}
+#v500App .v507-tile.editable{padding:8px!important;border-radius:9px!important}
+#v500App .v507-cardhead{padding-bottom:5px!important;margin-bottom:5px!important}
+#v500App .v508-modebar{display:flex;align-items:center;gap:4px;margin:0 0 6px}
+#v500App .v508-modebar button{min-height:26px!important;height:26px!important;padding:2px 9px!important;border-radius:999px!important;border:1px solid #c8c0b4!important;background:#fff!important;font-size:8.5px!important;font-weight:950!important;color:#5f574c!important}
+#v500App .v508-modebar button.on{background:#211f1b!important;color:#fff!important;border-color:#211f1b!important}
+#v500App .v508-chris{display:grid;grid-template-columns:1.2fr .75fr .75fr;gap:5px;align-items:end}
+#v500App .v508-essential{margin-bottom:4px}
+#v500App .v508-summaryline{font-size:9px;line-height:1.3;color:#5e574e;margin:4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#v500App .v508-events-summary{border-top:1px solid #eee8df;margin-top:5px;padding-top:5px;display:grid;gap:3px}
+#v500App .v508-event-summary{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:4px;align-items:center;font-size:8.5px;line-height:1.2}
+#v500App .v508-event-summary .time{font-weight:950;color:#37312b}#v500App .v508-event-summary .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#v500App .v508-event-summary .ride{color:#6f675d;white-space:nowrap;font-size:7.8px}
+#v500App details.v508-details{margin-top:6px;border-top:1px solid #eee8df;padding-top:4px}
+#v500App details.v508-details>summary{cursor:pointer;list-style:none;font-size:8.5px;font-weight:950;color:#675f54;display:flex;align-items:center;justify-content:space-between;gap:6px}
+#v500App details.v508-details>summary::-webkit-details-marker{display:none}
+#v500App details.v508-details>summary:after{content:'EDIT DETAILS ▾';font-size:7.5px;letter-spacing:.04em}
+#v500App details.v508-details[open]>summary:after{content:'HIDE DETAILS ▴'}
+#v500App .v508-detailbody{padding-top:6px}
+#v500App .v508-kiraedit{display:grid;grid-template-columns:1.3fr .8fr .8fr;gap:5px;margin-bottom:5px}
+#v500App .v508-detailbody .v507-event{margin-top:5px!important;padding-top:5px!important}
+#v500App .v508-detailbody .v507-sectionlabel{font-size:7px!important}
+#v500App .v508-detailbody .v507-mini input,#v500App .v508-detailbody .v507-mini select{height:25px!important;min-height:25px!important;font-size:8.5px!important}
+@media(max-width:1250px){#v500App .v507-editgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:760px){#v500App .v507-editgrid{grid-template-columns:1fr!important}#v500App .v508-event-summary{grid-template-columns:42px minmax(0,1fr)}#v500App .v508-event-summary .ride{grid-column:2}}
+
+#v500App .v509-rec{font-size:7.5px;font-weight:900;color:#756c60;background:#f3efe8;border:1px solid #e1d9cd;border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block;margin:1px 0 4px}
+#v500App .v509-rec.exception{color:#7a4d00;background:#fff6df;border-color:#e9cf89}
+</style>
+<script id="v508CompactTenDayScript">
+(function(){
+ if(window.__apV508)return;window.__apV508=true;
+ const esc508=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function actualSites(){try{return (siteList()||[]).filter(x=>x&&x!=='Remote'&&x!=='Off'&&x!=='Holiday / off')}catch{return[]}}
+ function v508EventEditor(p,a,d,key){return `<div class="v507-event" data-ak="${esc508(key)}"><div class="v507-sectionlabel">EVENT</div><label class="v507-mini"><span>Person</span><input class="v507-edit" data-field="eventOwner" data-date="${esc508(d)}" data-ak="${esc508(key)}" value="${esc508(safeOwner(a))}"></label><label class="v507-mini wide"><span>Event</span><input class="v507-edit" data-field="eventTitle" data-date="${esc508(d)}" data-ak="${esc508(key)}" value="${esc508(a.title)}"></label><label class="v507-mini"><span>Start</span><input type="time" class="v507-edit" data-field="eventStart" data-date="${esc508(d)}" data-ak="${esc508(key)}" value="${esc508(String(a.start||''))}"></label><label class="v507-mini"><span>End</span><input type="time" class="v507-edit" data-field="eventEnd" data-date="${esc508(d)}" data-ak="${esc508(key)}" value="${esc508(String(a.end||''))}"></label><label class="v507-mini wide"><span>Location</span><input class="v507-edit" data-field="eventLocation" data-date="${esc508(d)}" data-ak="${esc508(key)}" value="${esc508(a.location||'')}"></label>${v507CompactRide(p,a,'Drop')}${v507CompactRide(p,a,'Pickup')}</div>`}
+ window.tile=function(p,editable=false){
+   v507ApplyOne(p);const d=dkey(p),events=acts(p),sites=actualSites();let current=site(p),arr=manualArrivalOverrides?.[d]!=null?manualArrivalOverrides[d]:p.arrive,dep=manualDepartureOverrides?.[d]!=null?manualDepartureOverrides[d]:p.leaveWork;
+   if(!editable)return `<div class="v500-tile"><div class="v500-tdate">${esc508(dateLabel(p,true))}</div><div class="v500-twork"><b>Chris:</b> ${esc508(chris(p))}<br><b>Kira:</b> ${esc508(kira(p))}</div></div>`;
+   let siteOptions=sites.slice();if(p.onsite&&current&&!siteOptions.includes(current))siteOptions.unshift(current);if(!siteOptions.length)siteOptions=['Onsite'];
+   const summaries=events.length?events.slice(0,4).map(a=>`<div class="v508-event-summary"><span class="time">${esc508(start(a))}</span><span class="who"><b>${esc508(safeOwner(a))}</b> · ${esc508(a.title||'Event')}</span><span class="ride">D:${esc508(assignment(p,a,'Drop'))} · P:${esc508(assignment(p,a,'Pickup'))}</span></div>`).join('')+(events.length>4?`<div class="v508-summaryline">+ ${events.length-4} more event${events.length-4===1?'':'s'}</div>`:''):`<div class="v508-summaryline">No transportation events</div>`;
+   const eventEditors=events.map(a=>{a.__v507Key=a.__v507Key||ak(a);return v508EventEditor(p,a,d,a.__v507Key)}).join('');
+   const recBasis=String(p.recommendationBasis||'Recommended plan');const recClass=/exception/i.test(recBasis)?' exception':'';
+   const chrisFields=p.onsite?`<div class="v508-chris"><label class="v507-mini wide"><span>Site</span><select class="v507-edit v508-site" data-field="workSite" data-date="${esc508(d)}">${siteOptions.map(x=>`<option value="${esc508(x)}" ${x===current?'selected':''}>${esc508(x)}</option>`).join('')}</select></label><label class="v507-mini"><span>Arrive</span><input type="time" class="v507-edit" data-field="arrival" data-date="${esc508(d)}" value="${esc508(v507TimeValue(arr))}"></label><label class="v507-mini"><span>Leave</span><input type="time" class="v507-edit" data-field="departure" data-date="${esc508(d)}" value="${esc508(v507TimeValue(dep))}"></label></div>`:`<div class="v508-summaryline"><b>Remote day.</b> Tap Onsite to add site, arrival and departure.</div>`;
+   return `<div class="v500-tile v507-tile editable" data-date="${esc508(d)}"><div class="v507-cardhead"><div class="v500-tdate">${esc508(dateLabel(p,true))}</div><button type="button" class="v507-reviewday" data-date="${esc508(d)}">Review day ›</button></div><div class="v508-modebar"><button type="button" class="v508-mode ${!p.onsite&&!p.holiday?'on':''}" data-mode="remote" data-date="${esc508(d)}">REMOTE</button><button type="button" class="v508-mode ${p.onsite?'on':''}" data-mode="onsite" data-date="${esc508(d)}">ONSITE</button></div><div class="v509-rec${recClass}">${esc508(recBasis)}</div><div class="v508-essential">${chrisFields}</div><div class="v508-summaryline"><b>Kira:</b> ${esc508(kira(p))}</div><div class="v508-events-summary">${summaries}</div><details class="v508-details"><summary><span>All fields editable</span></summary><div class="v508-detailbody"><div class="v508-kiraedit"><label class="v507-mini"><span>Kira location</span><input class="v507-edit" data-field="kiraLocation" data-date="${esc508(d)}" value="${esc508(p.kiraOff?'Off':(p.kiraLocation||p.kiraSite||''))}"></label><label class="v507-mini"><span>Kira start</span><input type="time" class="v507-edit" data-field="kiraStart" data-date="${esc508(d)}" value="${esc508(v507TimeValue(p.kiraStart))}" ${p.kiraOff?'disabled':''}></label><label class="v507-mini"><span>Kira end</span><input type="time" class="v507-edit" data-field="kiraEnd" data-date="${esc508(d)}" value="${esc508(v507TimeValue(p.kiraEnd))}" ${p.kiraOff?'disabled':''}></label></div>${eventEditors||'<div class="v508-summaryline">No events to edit.</div>'}</div></details><div class="v507-saved"></div></div>`
+ };
+ async function setMode(date,mode){const p=workPlans().find(z=>dkey(z)===date);if(!p)return;let val;
+   if(mode==='remote')val='Remote';else{const sites=actualSites();val=(p.site&&sites.includes(p.site))?p.site:(sites[0]||'Onsite')}
+   v507Set(date,['workSite'],val);let x=pending();x.work[date]=val;savePending(x);p.onsite=mode==='onsite';p.holiday=false;p.site=p.onsite?val:'';
+   if(p.onsite&&typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date);else if(!p.onsite){p.arrive=null;p.leaveWork=null;p.departHome=null;p.status='remote'}
+   try{saveAllNow();captureWorkingPlans()}catch{}
+   if(typeof window.v510RefreshCard==='function')window.v510RefreshCard(date);else{const top=window.scrollY;renderReview();window.scrollTo(0,top)}
+ }
+ document.addEventListener('click',e=>{const b=e.target.closest('.v508-mode');if(!b)return;e.preventDefault();e.stopPropagation();setMode(b.dataset.date,b.dataset.mode).catch(err=>{console.error(err);const st=document.getElementById('v500ReviewStatus');if(st)st.innerHTML='<b>Work-day change failed.</b> '+esc508(err.message)})},true);
+})();
+</script>
+
+<style id="v510HardeningStyle">
+/* v50.10 release-candidate shell: one workflow visible by default; legacy setup remains available on demand. */
+body > .app-shell,body > .brand-watermark,#v4735Review{display:none!important}
+body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!important}
+#v500App .v510-setup-link{border:0!important;background:transparent!important;padding:2px 5px!important;min-height:0!important;font-size:9px!important;text-decoration:underline!important;color:#6a6258!important}
+#v500App .v510-health{font-size:9px;color:#6a6258;margin-right:auto}
+#v500App .v510-health.good{color:#23724a}#v500App .v510-health.warn{color:#9a6200}
+</style>
+<script id="v510HardeningScript">
+(function(){
+ if(window.__apV510)return;window.__apV510=true;
+ const $=id=>document.getElementById(id);
+ function refreshCard(date){
+   const p=workPlans().find(z=>dkey(z)===date);if(!p)return;
+   const old=document.querySelector('#v500ReviewBody .v507-tile[data-date="'+CSS.escape(date)+'"]')||document.querySelector('#v500PrelimTiles .v507-tile[data-date="'+CSS.escape(date)+'"]');if(!old)return;
+   const wasOpen=!!old.querySelector('details.v508-details[open]');
+   const box=document.createElement('div');box.innerHTML=window.tile(p,true);const next=box.firstElementChild;if(!next)return;
+   old.replaceWith(next);if(wasOpen)next.querySelector('details.v508-details')?.setAttribute('open','');
+   const rb=next.querySelector('.v507-reviewday');if(rb)rb.onclick=e=>{e.preventDefault();e.stopPropagation();jumpDate(date)};
+ }
+ window.v510RefreshCard=refreshCard;
+ // Keep Review day functional even after any surgical card replacement.
+ document.addEventListener('click',e=>{const b=e.target.closest('.v507-reviewday');if(!b)return;e.preventDefault();e.stopPropagation();jumpDate(b.dataset.date)},false);
+ // Optional advanced setup stays out of the ordinary workflow.
+ function installSetup(){const meta=$('v502CycleBar')?.querySelector('.v504-toolbar-meta');if(!meta||$('v510Setup'))return;const b=document.createElement('button');b.id='v510Setup';b.type='button';b.className='v510-setup-link';b.textContent='Advanced setup';b.onclick=()=>{document.body.classList.toggle('v510-setup-open');b.textContent=document.body.classList.contains('v510-setup-open')?'Close setup':'Advanced setup';if(document.body.classList.contains('v510-setup-open'))document.querySelector('.app-shell')?.scrollIntoView({behavior:'smooth',block:'start'})};meta.appendChild(b)}
+ function health(){const meta=$('v502CycleBar')?.querySelector('.v504-toolbar-meta');if(!meta||$('v510Health'))return;const s=document.createElement('span');s.id='v510Health';s.className='v510-health good';s.textContent='Recommended-plan mode';meta.prepend(s)}
+ function init(){installSetup();health();document.querySelectorAll('#v500App button').forEach(b=>b.type='button')}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<style id="v511GaHardeningStyle">
+@media print{
+  @page{size:Letter landscape;margin:.18in}
+  body.v504-printing #v504PrintSheet{width:10.64in!important;height:8.14in!important;max-width:10.64in!important;max-height:8.14in!important}
+  body.v504-printing{margin:0!important;padding:0!important}
+}
+#v500App .v511-busyflag{font-size:9px;font-weight:850;color:#8a6500;margin-left:5px}
+</style>
+<script id="v511GaHardeningScript">
+(function(){
+ if(window.__apV511)return;window.__apV511=true;
+ try{
+   const originalGenerateCore=generateCore;
+   let generationPromise=null;
+   generateCore=async function(){
+     if(generationPromise)return generationPromise;
+     const args=arguments,self=this;
+     generationPromise=(async()=>{
+       try{
+         const result=await originalGenerateCore.apply(self,args);
+         if(Array.isArray(plans)){
+           const seen=new Set(),clean=[];
+           for(const p of plans){const k=String(p?.dateStr||'');if(!k||seen.has(k))continue;seen.add(k);clean.push(p)}
+           if(clean.length!==plans.length)plans.splice(0,plans.length,...clean);
+           const work=plans.filter(p=>!p.weekend);
+           if(work.length<10)throw new Error(`Plan generation produced only ${work.length} unique workdays.`);
+         }
+         return result;
+       }finally{generationPromise=null}
+     })();
+     return generationPromise;
+   };
+ }catch(e){console.error('v50.11 generation hardening unavailable',e)}
+ let refreshGate=false;
+ document.addEventListener('click',e=>{
+   const b=e.target.closest('#v500Refresh,#v504RefreshPlan');if(!b)return;
+   if(refreshGate){e.preventDefault();e.stopImmediatePropagation();return}
+   refreshGate=true;setTimeout(()=>{refreshGate=false},1800);
+ },true);
+ function init(){
+   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
+   document.title='AutoPilot — Family Logistics Planner v50.11';
+   const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- AutoPilot v50.11: generation mutex + unique-date invariant + duplicate-refresh suppression. -->
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
 <!-- AutoPilot v47.30: in-place pill controls; no destructive legacy render on owner/dropoff/pickup changes. -->
 <!-- AutoPilot v47.8: complete activity review + independent dropoff/pickup decisions + Sam away soccer pickup-only default -->
+
+<!-- AutoPilot v50.9: recommendation-first work pattern (Remote M/F, Weirton T/Th, Wheeling Wed), logistics exceptions, recommended transport assignments, and exception-oriented free-text intake. -->
+
+<!-- AutoPilot v50.10: RC hardening; legacy-shell isolation, viable-site fallback, surgical card refresh, logistics re-recommendation after edits, legacy finalize side-effect removal. -->
