@@ -1094,6 +1094,15 @@ body>.app-shell,body>.brand-watermark{display:none!important}
   font-weight:850;
   color:#5e574d;
 }
+.v502-cyclebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 14px;padding:10px 12px;border:1px solid #d7d0c6;border-radius:13px;background:#f7f4ee}
+.v502-cyclebar .v500-btn{min-height:40px;padding:8px 12px;font-size:10.5px}
+.v502-cyclebar .v502-cyclelabel{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.04em;color:#645d53;margin-right:2px}
+.v502-cyclebar .v502-status{flex:1 1 260px;min-width:220px;font-size:10.5px;font-weight:800;line-height:1.35;color:#645d53}
+.v502-cyclebar .v502-status.good{color:#285c33}.v502-cyclebar .v502-status.warn{color:#745600}
+.v502-nonzero{margin-top:14px;border:1.5px solid #c8b25d;border-radius:14px;background:#fffaf0;padding:13px 14px}
+.v502-nonzero h3{margin:0 0 4px;font-size:14px}.v502-nonzero p{margin:0 0 10px;font-size:10.5px;line-height:1.45;color:#665e52}
+.v502-nonzero .v500-actions{margin-top:8px}.v502-nonzero .v502-publishstatus{margin-top:8px;font-size:10.5px;font-weight:850;line-height:1.4;color:#5f574d}.v502-nonzero .v502-publishstatus.good{color:#285c33}.v502-nonzero .v502-publishstatus.warn{color:#7b5900}
+@media(max-width:650px){.v502-cyclebar>*{width:100%}.v502-cyclebar .v502-status{min-width:0}}
 </style>
 
 </head>
@@ -1101,6 +1110,12 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 <div id="v500App">
   <div class="v500-wrap">
     <div class="v500-brand">AutoPilot · Family Logistics Planner</div>
+    <div class="v502-cyclebar" id="v502CycleBar">
+      <span class="v502-cyclelabel">Planning cycle</span>
+      <button id="v502RefreshFeeds" class="v500-btn">↻ REFRESH CALENDAR FEEDS</button>
+      <button id="v502RestartCycle" class="v500-btn">START / RESTART CYCLE</button>
+      <span id="v502CycleStatus" class="v502-status">Saved setup stays intact. Refresh feeds anytime; restart only when you want a clean working plan.</span>
+    </div>
     <div class="v500-stepbar" id="v500Stepbar">
       <span class="v500-step on">1 · Start date</span><b class="v500-arrow">›</b><span class="v500-step">2 · Calendars</span><b class="v500-arrow">›</b><span class="v500-step">3 · Review</span><b class="v500-arrow">›</b><span class="v500-step">4 · Preliminary</span><b class="v500-arrow">›</b><span class="v500-step">5 · Final</span>
     </div>
@@ -1108,7 +1123,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
     <section id="v500StageStart" class="v500-stage on">
       <div class="v500-card v500-center">
         <h1 class="v500-q">What day do you want to start the plan?</h1>
-        <p class="v500-sub">Choose the first day. AutoPilot will build the next 10 workdays from there.</p>
+        <p class="v500-sub">Choose the first day. AutoPilot will build the next 10 workdays from there. Your saved calendars, locations, work sites, rules, and NonZero connection are not reset when you start a new planning cycle.</p>
         <div class="v500-stack">
           <input id="v500StartDate" type="date" aria-label="First day of plan">
           <button id="v500StartNext" class="v500-btn primary v500-next">NEXT →</button>
@@ -1119,7 +1134,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
     <section id="v500StageCalendars" class="v500-stage">
       <div class="v500-card v500-center">
         <h1 class="v500-q">Now load the family schedules</h1>
-        <p class="v500-sub">This refreshes the connected calendars, reads Kira's work schedule, builds the initial recommendations, and then opens Day 1 automatically.</p>
+        <p class="v500-sub">This pulls the latest events from every saved feed, reads Kira's work schedule, builds the initial recommendations, and then opens Day 1 automatically. You can refresh the feeds again from the Planning cycle bar at any time without wiping your edits.</p>
         <button id="v500Refresh" class="v500-btn primary">REFRESH CALENDARS + SHOW DAY 1</button>
         <div id="v500RefreshStatus" class="v500-status">Nothing else to do on this screen.</div>
         <div class="v500-actions"><button id="v500BackStart" class="v500-btn">← Change start date</button></div>
@@ -1136,7 +1151,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
         <div class="v500-nav"><button id="v500Prev" class="v500-btn">← Previous day</button><span id="v500Count"></span><button id="v500Next" class="v500-btn">Save + next day →</button></div>
         <div id="v500ReviewBody" style="margin-top:10px"></div>
         <div class="v500-textbox"><label>Dump any other changes here</label><textarea id="v500Raw" placeholder="Examples:\nRemote Thursday\nKira picks Whitney up from gymnastics Thursday\nSoccer Friday — ride with teammate\nI need to stay at Wheeling until 6 PM Wednesday"></textarea><small>Write naturally. AutoPilot will interpret these when you generate the preliminary plan. If something is ambiguous, it should not guess silently.</small></div>
-        <div class="v500-actions"><button id="v500GeneratePrelim" class="v500-btn gold">GENERATE PRELIMINARY 10-DAY PLAN</button><button id="v500ChangeDate" class="v500-btn">Start over with a different date</button></div>
+        <div class="v500-actions"><button id="v500GeneratePrelim" class="v500-btn gold">GENERATE PRELIMINARY 10-DAY PLAN</button><button id="v500ChangeDate" class="v500-btn">CHANGE START DATE</button></div>
         <div id="v500ReviewStatus" class="v500-status">Review as much or as little as you need before generating the preliminary plan.</div>
       </div>
     </section>
@@ -1160,6 +1175,12 @@ body>.app-shell,body>.brand-watermark{display:none!important}
         <div class="v500-finalgrid" style="margin-top:14px">
           <div class="v500-finalbox"><h3>Message to Phil</h3><textarea id="v500BossMessage" readonly></textarea></div>
           <div class="v500-finalbox"><h3>Quick iPhone reminder</h3><div class="v500-phone"><div class="v500-phone-nav"><button id="v500PhonePrev" class="v500-btn">←</button><b id="v500PhoneCount"></b><button id="v500PhoneNext" class="v500-btn">→</button></div><div id="v500PhoneBody" class="v500-phone-body"></div></div></div>
+        </div>
+        <div class="v502-nonzero" id="v502NonzeroFinal">
+          <h3>Publish AutoPilot to NonZero</h3>
+          <p>Publishes today's privacy-safe AutoPilot agenda into <code>autopilotAgenda</code> only. Workout sessions, streaks, timers, and all other NonZero state remain untouched.</p>
+          <div class="v500-actions"><button id="v502PublishNonzero" class="v500-btn gold">PUBLISH TODAY TO NONZERO</button><button id="v502TestNonzero" class="v500-btn">TEST NONZERO CONNECTION</button></div>
+          <div id="v502PublishStatus" class="v502-publishstatus">Finalizing the plan will also auto-publish when Auto-publish is enabled in Settings.</div>
         </div>
         <div class="v500-actions"><button id="v500EditFinal" class="v500-btn">← Edit and regenerate</button></div>
       </div>
@@ -1959,7 +1980,10 @@ async function refreshAllCalendarsCore({quiet=false,reason='manual'}={}){
     }catch{failed.push(name)}
   }
   renderSavedCalendarLinks();renderCalendarSyncSummary();
-  const msg=`Last app-open sync: ${new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
+  const refreshedAt=Date.now();
+  try{localStorage.setItem('familyOptimizerV23.v502LastCalendarRefresh',String(refreshedAt))}catch{}
+  const label=reason==='open'?'App-open sync':'Calendar refresh';
+  const msg=`${label}: ${new Date(refreshedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
   setStartupCalendarSyncStatus(msg);
   if(!quiet)$('importStatus').textContent=`Calendar refresh complete · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
   return {ok,total:links.length,failed};
@@ -4563,7 +4587,7 @@ function buildNonzeroAgenda(){
   const conflicts=(p.assignments||[]).filter(a=>a.primary==='Backup').length+(p.status==='bad'?1:0);
   let status='READY'; if(conflicts>0)status='ATTENTION'; else if(items.length)status='LIVE';
   const next=items.find(i=>i.time)||items[0]||null;
-  return {schema:1,date,updatedAt:Date.now(),status,items,summary:{eventCount:items.length,conflictCount:conflicts},nextCriticalAction:next?{time:next.time,text:next.title}:null,source:'autopilot-v47.15'};
+  return {schema:1,date,updatedAt:Date.now(),status,items,summary:{eventCount:items.length,conflictCount:conflicts},nextCriticalAction:next?{time:next.time,text:next.title}:null,source:'autopilot-v50.2'};
 }
 async function nonzeroCloudRequest(path,opts={}){
   const cfg=nonzeroIntegrationConfig();
@@ -4638,7 +4662,8 @@ function rmonth(){const f=new Date(focus.getFullYear(),focus.getMonth(),1),s=mon
 function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===view));document.getElementById('title').textContent=view==='month'?focus.toLocaleDateString(undefined,{month:'long',year:'numeric'}):view==='week'?'Week of '+mon(focus).toLocaleDateString(undefined,{month:'short',day:'numeric'}):focus.toLocaleDateString(undefined,{month:'long',day:'numeric'});document.getElementById('body').innerHTML=view==='day'?rday():view==='week'?rweek():rmonth();document.querySelectorAll('[data-date]').forEach(c=>c.onclick=()=>{focus=pd(c.dataset.date);view='day';render()})}document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;render()});document.getElementById('prev').onclick=()=>{focus=view==='month'?new Date(focus.getFullYear(),focus.getMonth()-1,1):add(focus,view==='week'?-7:-1);render()};document.getElementById('next').onclick=()=>{focus=view==='month'?new Date(focus.getFullYear(),focus.getMonth()+1,1):add(focus,view==='week'?7:1);render()};document.getElementById('today').onclick=()=>{focus=(today0>=first&&today0<=last)?today0:first;render()};render();
 <\/script></div>
 <!-- AutoPilot v47.41: authoritative manual overrides; Kira daily work visibility; reliable electronic preliminary review. -->
-</body></html>`;
+</body></html>
+<!-- AutoPilot v50.2: anytime non-destructive calendar refresh; clean planning-cycle restart preserving durable setup; final-step NONZERO publish/test receipt + auto-publish visibility. -->`;
 }
 function downloadMobileSnapshot(){
   if(!plans.length){alert('Generate the recommended 2-week plan first.');return}
@@ -6397,20 +6422,6 @@ function captureWorkingPlans(){
     return workingPlans;
   }catch{workingPlans=[];return workingPlans}
 }
-function reviewedTen(){
-  return Array.isArray(workingPlans)?workingPlans.filter(p=>!isWeekend(p)).slice(0,10):[];
-}
-function mergeLiveIntoWorking(baseTen){
-  try{
-    const live=(typeof plans!=='undefined'&&Array.isArray(plans))?plans:(Array.isArray(window.plans)?window.plans:[]);
-    const byDate=new Map((Array.isArray(live)?live:[]).filter(Boolean).map(p=>[dkey(p),p]));
-    workingPlans=baseTen.map(old=>byDate.get(dkey(old))||old);
-    return reviewedTen();
-  }catch{
-    workingPlans=baseTen.slice();
-    return reviewedTen();
-  }
-}
 function dObj(p){return p?.date instanceof Date?p.date:new Date((p?.dateStr||p?.date||'')+(String(p?.dateStr||p?.date||'').includes('T')?'':'T12:00:00'))}
 function isWeekend(p){let d=dObj(p);return p?.weekend===true||(!isNaN(d)&&[0,6].includes(d.getDay()))}
 function workPlans(){return plansAll().filter(p=>!isWeekend(p)).slice(0,10)}
@@ -6438,56 +6449,55 @@ function renderDay(){let ps=workPlans();if(!ps.length){$('v500ReviewBody').inner
 function tile(p,editable=false){return `<div class="v500-tile"><div class="v500-tdate">${esc(dateLabel(p))}</div><div class="v500-twork"><b>Chris:</b> ${esc(chris(p))}<br><b>Kira:</b> ${esc(kira(p))}</div>${acts(p).length?acts(p).map(a=>`<div class="v500-tev"><b>${esc(safeOwner(a))} · ${esc(a.title)}</b><br>${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}${a.location?'<br>'+esc(a.location):''}<div class="v500-tride">Drop: ${esc(assignment(p,a,'Drop'))}<br>Pickup: ${esc(assignment(p,a,'Pickup'))}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}${editable?`<button class="v500-editday" data-date="${esc(dkey(p))}">EDIT THIS DAY</button>`:''}</div>`}
 function renderTen(target='v500ReviewBody',editable=false){let ps=workPlans();$(target).innerHTML=`<div class="v500-tiles">${ps.map(p=>tile(p,editable)).join('')}</div>`;if(target==='v500ReviewBody'){$('v500Count').textContent=`All ${ps.length} days`;$('v500Prev').disabled=true;$('v500Next').disabled=true}}
 function renderReview(){if(view==='day')renderDay();else renderTen();$('v500ViewDay').classList.toggle('on',view==='day');$('v500ViewTen').classList.toggle('on',view==='10')}
+function v502SetCycleStatus(text,kind=''){let el=$('v502CycleStatus');if(!el)return;el.className='v502-status'+(kind?' '+kind:'');el.innerHTML=text}
+function v502RefreshStamp(){try{let n=Number(localStorage.getItem('familyOptimizerV23.v502LastCalendarRefresh')||0);if(n)v502SetCycleStatus(`<b>Feeds last refreshed ${new Date(n).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}.</b> Refreshing never clears your current edits.`,'good')}catch{}}
+async function refreshFeedsAnywhere(){
+  let b=$('v502RefreshFeeds');if(b)b.disabled=true;
+  try{
+    try{saveVisibleDay()}catch{}
+    try{if(typeof saveAllNow==='function')saveAllNow()}catch{}
+    v502SetCycleStatus('<b>Refreshing all saved calendar feeds…</b> Your current working-plan edits are being preserved.');
+    if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');
+    const r=await refreshAllCalendarsCore({quiet:true,reason:'guided-anytime'});
+    const stamp=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+    v502SetCycleStatus(`<b>Feeds refreshed ${stamp} · ${r.ok}/${r.total} connected calendars.</b>${r.failed?.length?` ${r.failed.length} source${r.failed.length===1?' needs':'s need'} attention.`:' Current edits were preserved.'}`,r.failed?.length?'warn':'good');
+  }catch(e){console.error(e);v502SetCycleStatus(`<b>Calendar refresh failed.</b> ${esc(e.message)} Your working plan was not cleared.`,'warn')}
+  finally{if(b)b.disabled=false}
+}
+function restartGuidedCycle(){
+  const selected=$('v500StartDate')?.value||$('startDate')?.value||'';
+  if(!confirm(`Restart the planning cycle${selected?' beginning '+selected:''}?\n\nThis clears the current working plan, day edits, manual ride/work overrides, and final snapshot. Saved calendar connections, recurring locations, work sites, rules, and NONZERO settings stay intact.`))return;
+  try{
+    [P,DN,RAW,FINAL,'familyOptimizerV23.v490DailyText','familyOptimizerV23.v490RawText','familyOptimizerV23.v490FinalSnapshot'].forEach(k=>localStorage.removeItem(k));
+    if(typeof plans!=='undefined'&&Array.isArray(plans))plans.length=0;
+    if(Array.isArray(window.plans))window.plans.length=0;
+    workingPlans=[];finalData=null;
+    try{finalSnapshot=null}catch{}
+    try{manualTransportOverrides={};manualLegOverrides={};manualArrivalOverrides={};manualDepartureOverrides={}}catch{}
+    try{if($('activityBody'))$('activityBody').innerHTML='';if($('adhocBody'))$('adhocBody').innerHTML=''}catch{}
+    try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch{}
+    if($('v500Raw'))$('v500Raw').value='';
+    dayIndex=0;view='day';stage(1);
+    v502SetCycleStatus('<b>Clean planning cycle ready.</b> Saved setup and connections were preserved. Choose the start date, then load fresh calendars.','good');
+  }catch(e){console.error(e);v502SetCycleStatus(`<b>Could not restart cleanly.</b> ${esc(e.message)}`,'warn')}
+}
+async function publishNonzeroFromFinal(testOnly=false){
+  const status=$('v502PublishStatus');
+  const set=(text,kind='')=>{if(status){status.className='v502-publishstatus'+(kind?' '+kind:'');status.innerHTML=text}};
+  try{
+    try{if(typeof saveAllNow==='function')saveAllNow()}catch{}
+    if(testOnly){set('<b>Testing NONZERO connection…</b>');const ok=await testNonzeroIntegration();set(ok?'<b>NONZERO connected.</b> Canonical state is reachable and safe to publish.':'<b>Connection test failed.</b> Check the Worker URL/private key in Settings.',ok?'good':'warn');return ok}
+    set('<b>Publishing today’s AutoPilot agenda to NONZERO…</b>');
+    const ok=await publishNonzeroAgenda({silent:true});
+    if(ok){const a=buildNonzeroAgenda();set(`<b>Published.</b> ${a.date} · ${a.items.length} agenda item${a.items.length===1?'':'s'} · only <code>autopilotAgenda</code> was updated.`,'good')}
+    else set('<b>Publish did not complete.</b> Existing NONZERO state was left intact. Check the integration settings and test the connection.','warn');
+    return ok;
+  }catch(e){console.error(e);set(`<b>Publish failed.</b> ${esc(e.message)} Existing NONZERO state was left intact.`,'warn');return false}
+}
 async function refreshPlan(){let b=$('v500Refresh');b.disabled=true;$('v500RefreshStatus').className='v500-status busy';$('v500RefreshStatus').textContent='Refreshing connected calendars and building your 10-day plan…';try{let s=$('v500StartDate').value,legacy=$('startDate');if(legacy){legacy.value=s;legacy.dispatchEvent(new Event('change',{bubbles:true}))}try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}let r={ok:0,total:0};if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==10)throw new Error(`AutoPilot built ${ps.length} workdays instead of 10.`);dayIndex=0;view='day';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Start with Day 1.`;stage(3)}catch(e){console.error(e);$('v500RefreshStatus').className='v500-status warn';$('v500RefreshStatus').innerHTML='<b>The plan did not load.</b> '+esc(e.message)+' This screen will not show success until Day 1 can actually be displayed.'}finally{b.disabled=false}}
 async function parseLine(line,prefix=''){let box=$('v4731Input'),btn=$('v4731Apply');if(!box||!btn)return false;let before=JSON.stringify(pending());box.value=(prefix?prefix+' ':'')+line;btn.click();await new Promise(r=>setTimeout(r,0));let after=JSON.stringify(pending()),remain=String(box.value||'').trim();box.value='';return before!==after&&!remain}
 async function applyFreeText(){let unresolved=[];for(const p of workPlans()){let t=String(daily()[dkey(p)]||'').trim();for(const line of t.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,dkey(p))))unresolved.push(dateLabel(p)+': '+line)}}let raw=String($('v500Raw').value||'').trim();localStorage.setItem(RAW,raw);for(const line of raw.split(/\n|;/).map(x=>x.trim()).filter(Boolean)){if(!(await parseLine(line,'')))unresolved.push(line)}return unresolved}
-async function generatePrelim(){
-  let b=$('v500GeneratePrelim');
-  b.disabled=true;
-  $('v500ReviewStatus').className='v500-status busy';
-  $('v500ReviewStatus').textContent='Applying your 10 days of edits and building the preliminary plan…';
-
-  const baseTen=reviewedTen().slice();
-  if(baseTen.length!==10){
-    b.disabled=false;
-    $('v500ReviewStatus').className='v500-status warn';
-    $('v500ReviewStatus').innerHTML='<b>Your saved 10-day review could not be found.</b> Your day-by-day edits are still stored, but the initial plan needs to be loaded again before creating the preliminary view.';
-    return;
-  }
-
-  try{
-    let unresolved=await applyFreeText();
-
-    if(typeof window.__apV4732ApplyPending!=='function')
-      throw new Error('Recalculation engine is unavailable.');
-
-    await window.__apV4732ApplyPending(false);
-    try{window.__apV4731EnforceWhitney?.()}catch{}
-
-    let merged=mergeLiveIntoWorking(baseTen);
-    if(merged.length!==10){
-      workingPlans=baseTen.slice();
-      merged=reviewedTen();
-    }
-    if(merged.length!==10)
-      throw new Error('The saved reviewed plan could not be reconstructed.');
-
-    renderTen('v500PrelimTiles',true);
-    $('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');
-    $('v500PrelimStatus').innerHTML=unresolved.length
-      ? `<b>Preliminary plan built.</b> Your 10 reviewed days were preserved. ${unresolved.length} free-text item${unresolved.length===1?'':'s'} could not be interpreted automatically and are listed below for manual review.<br><br>${unresolved.map(x=>'• '+esc(x)).join('<br>')}`
-      : '<b>Preliminary 10-day plan built.</b> All saved day-by-day changes have been incorporated. Review it with Kira, then edit any day or finalize.';
-    stage(4);
-  }catch(e){
-    console.error(e);
-    workingPlans=baseTen.slice();
-    renderReview();
-    $('v500ReviewStatus').className='v500-status warn';
-    $('v500ReviewStatus').innerHTML='<b>Your 10 reviewed days and edits are still saved.</b> AutoPilot could not finish recalculating the preliminary plan: '+esc(e.message);
-  }finally{
-    b.disabled=false;
-  }
-}
+async function generatePrelim(){let b=$('v500GeneratePrelim');b.disabled=true;$('v500ReviewStatus').className='v500-status busy';$('v500ReviewStatus').textContent='Applying your edits and recalculating the draft…';try{let unresolved=await applyFreeText();if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine is unavailable.');await window.__apV4732ApplyPending(false);try{window.__apV4731EnforceWhitney?.()}catch{};captureWorkingPlans();if(workPlans().length!==10)throw new Error('The recalculated plan no longer contains exactly 10 workdays.');renderTen('v500PrelimTiles',true);$('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');$('v500PrelimStatus').innerHTML=unresolved.length?`<b>Draft generated.</b> ${unresolved.length} free-text item${unresolved.length===1?' was':'s were'} not interpreted confidently. AutoPilot did not guess; use Edit this day for those changes.`:'<b>Draft generated.</b> Your edits were applied.';stage(4)}catch(e){console.error(e);$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Could not generate the preliminary plan.</b> '+esc(e.message)}finally{b.disabled=false}}
 function jumpDate(d){let ps=workPlans(),ix=ps.findIndex(p=>dkey(p)===d);if(ix<0)return;dayIndex=ix;view='day';renderReview();stage(3)}
 function bossMessage(){return 'Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+workPlans().map(p=>`${dateLabel(p,true)}: ${p.holiday?'Holiday / no work.':p.onsite?`${site(p)} — approx. arrival ${fmtArr(p.arrive)}; approx. departure ${fmtDep(p.leaveWork)}.`:'Remote.'}`).join('\n')}
 function snapshot(){return workPlans().map(p=>({date:dkey(p),label:dateLabel(p,true),chris:chris(p),kira:kira(p),events:acts(p).map(a=>({person:safeOwner(a),title:a.title,start:start(a),end:end(a),location:a.location||'',drop:assignment(p,a,'Drop'),pickup:assignment(p,a,'Pickup')}))}))}
@@ -6495,7 +6505,7 @@ function snapshotTiles(data){return `<div class="v500-tiles">${data.map(d=>`<div
 function renderPhone(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`}
 function phoneHtml(){let data=finalData||[];return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:16px}.c{max-width:520px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:16px}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:800;padding:8px 12px}.b{font-size:16px;line-height:1.5;margin-top:12px}hr{border:0;border-top:1px solid #e7e0d7;margin:10px 0}</style></head><body><div class="c"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:20px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No evening transportation events.')}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};r();<\/script></body></html>`}
 function download(name,text,type='text/plain'){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);try{let old=$('v4738Finalize')||$('finalizePlanBtn')||$('finalizeBtn');old?.click()}catch{};stage(5)}
+function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);try{let old=$('v4738Finalize')||$('finalizePlanBtn')||$('finalizeBtn');old?.click()}catch{};stage(5);try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
 function printStage(which){$('v500App').classList.remove('print-prelim','print-final');$('v500App').classList.add(which);setTimeout(()=>window.print(),50);setTimeout(()=>$('v500App').classList.remove(which),800)}
 function downloadIcs(){try{if(typeof downloadPhilOutlookIcs==='function')return downloadPhilOutlookIcs('all')}catch{};let old=$('v4738Ics');old?.click()}
 function hardenGuidedButtons(){
@@ -6505,6 +6515,11 @@ function hardenGuidedButtons(){
 }
 function init(){hardenGuidedButtons();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 $('v500StartNext').textContent='NEXT';$('v500StartNext').onclick=e=>{e?.preventDefault();e?.stopPropagation();if(!$('v500StartDate').value)return false;stage(2);return false};$('v500BackStart').onclick=e=>{e?.preventDefault();e?.stopPropagation();stage(1);return false};$('v500Refresh').onclick=e=>{e?.preventDefault();e?.stopPropagation();refreshPlan();return false};$('v500ChangeDate').onclick=e=>{e?.preventDefault();e?.stopPropagation();stage(1);return false};
+if($('v502RefreshFeeds'))$('v502RefreshFeeds').onclick=e=>{e?.preventDefault();e?.stopPropagation();refreshFeedsAnywhere();return false};
+if($('v502RestartCycle'))$('v502RestartCycle').onclick=e=>{e?.preventDefault();e?.stopPropagation();restartGuidedCycle();return false};
+if($('v502PublishNonzero'))$('v502PublishNonzero').onclick=e=>{e?.preventDefault();e?.stopPropagation();publishNonzeroFromFinal(false);return false};
+if($('v502TestNonzero'))$('v502TestNonzero').onclick=e=>{e?.preventDefault();e?.stopPropagation();publishNonzeroFromFinal(true);return false};
+v502RefreshStamp();
 function saveVisibleDay(){
   const host=$('v500ReviewBody'); if(!host)return;
   const t=host.querySelector('.v500-daily'); if(t)saveDaily(t.dataset.date,t.value);
