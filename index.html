@@ -6915,32 +6915,32 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 <!-- AutoPilot v50.8: compact scan-first 10-day workspace + Remote/Onsite conversion -->
 <style id="v508CompactTenDayStyle">
-#v500App .v507-editgrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;align-items:start}
-#v500App .v507-tile.editable{padding:8px!important;border-radius:9px!important}
-#v500App .v507-cardhead{padding-bottom:5px!important;margin-bottom:5px!important}
-#v500App .v508-modebar{display:flex;align-items:center;gap:4px;margin:0 0 6px}
-#v500App .v508-modebar button{min-height:26px!important;height:26px!important;padding:2px 9px!important;border-radius:999px!important;border:1px solid #c8c0b4!important;background:#fff!important;font-size:8.5px!important;font-weight:950!important;color:#5f574c!important}
+#v500App .v507-editgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:start}
+#v500App .v507-tile.editable{padding:13px!important;border-radius:11px!important;min-height:230px}
+#v500App .v507-cardhead{padding-bottom:7px!important;margin-bottom:7px!important}
+#v500App .v508-modebar{display:flex;align-items:center;gap:6px;margin:1px 0 8px}
+#v500App .v508-modebar button{min-height:30px!important;height:30px!important;padding:3px 12px!important;border-radius:999px!important;border:1px solid #c8c0b4!important;background:#fff!important;font-size:10px!important;font-weight:950!important;color:#5f574c!important}
 #v500App .v508-modebar button.on{background:#211f1b!important;color:#fff!important;border-color:#211f1b!important}
-#v500App .v508-chris{display:grid;grid-template-columns:1.2fr .75fr .75fr;gap:5px;align-items:end}
-#v500App .v508-essential{margin-bottom:4px}
-#v500App .v508-summaryline{font-size:9px;line-height:1.3;color:#5e574e;margin:4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#v500App .v508-events-summary{border-top:1px solid #eee8df;margin-top:5px;padding-top:5px;display:grid;gap:3px}
-#v500App .v508-event-summary{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:4px;align-items:center;font-size:8.5px;line-height:1.2}
-#v500App .v508-event-summary .time{font-weight:950;color:#37312b}#v500App .v508-event-summary .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#v500App .v508-event-summary .ride{color:#6f675d;white-space:nowrap;font-size:7.8px}
-#v500App details.v508-details{margin-top:6px;border-top:1px solid #eee8df;padding-top:4px}
-#v500App details.v508-details>summary{cursor:pointer;list-style:none;font-size:8.5px;font-weight:950;color:#675f54;display:flex;align-items:center;justify-content:space-between;gap:6px}
+#v500App .v508-chris{display:grid;grid-template-columns:1.35fr .8fr .8fr;gap:7px;align-items:end}
+#v500App .v508-essential{margin-bottom:7px}
+#v500App .v508-summaryline{font-size:10.5px;line-height:1.4;color:#514b44;margin:6px 0;white-space:normal;overflow:visible}
+#v500App .v508-events-summary{border-top:1px solid #e7e0d6;margin-top:7px;padding-top:7px;display:grid;gap:5px}
+#v500App .v508-event-summary{display:grid;grid-template-columns:55px minmax(0,1fr);gap:3px 7px;align-items:start;font-size:10px;line-height:1.32}
+#v500App .v508-event-summary .time{font-weight:950;color:#37312b}#v500App .v508-event-summary .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#v500App .v508-event-summary .ride{grid-column:2;color:#6a6258;white-space:normal;font-size:9px}
+#v500App details.v508-details{margin-top:9px;border-top:1px solid #e7e0d6;padding-top:6px}
+#v500App details.v508-details>summary{cursor:pointer;list-style:none;font-size:10px;font-weight:950;color:#5f574e;display:flex;align-items:center;justify-content:space-between;gap:6px}
 #v500App details.v508-details>summary::-webkit-details-marker{display:none}
-#v500App details.v508-details>summary:after{content:'EDIT DETAILS ▾';font-size:7.5px;letter-spacing:.04em}
+#v500App details.v508-details>summary:after{content:'EDIT DETAILS ▾';font-size:9px;letter-spacing:.04em}
 #v500App details.v508-details[open]>summary:after{content:'HIDE DETAILS ▴'}
-#v500App .v508-detailbody{padding-top:6px}
-#v500App .v508-kiraedit{display:grid;grid-template-columns:1.3fr .8fr .8fr;gap:5px;margin-bottom:5px}
+#v500App .v508-detailbody{padding-top:8px}
+#v500App .v508-kiraedit{display:grid;grid-template-columns:1.3fr .8fr .8fr;gap:7px;margin-bottom:7px}
 #v500App .v508-detailbody .v507-event{margin-top:5px!important;padding-top:5px!important}
 #v500App .v508-detailbody .v507-sectionlabel{font-size:7px!important}
-#v500App .v508-detailbody .v507-mini input,#v500App .v508-detailbody .v507-mini select{height:25px!important;min-height:25px!important;font-size:8.5px!important}
-@media(max-width:1250px){#v500App .v507-editgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:760px){#v500App .v507-editgrid{grid-template-columns:1fr!important}#v500App .v508-event-summary{grid-template-columns:42px minmax(0,1fr)}#v500App .v508-event-summary .ride{grid-column:2}}
+#v500App .v508-detailbody .v507-mini input,#v500App .v508-detailbody .v507-mini select{height:31px!important;min-height:31px!important;font-size:10px!important}
+@media(max-width:950px){#v500App .v507-editgrid{grid-template-columns:1fr!important}}
+@media(max-width:760px){#v500App .v508-event-summary{grid-template-columns:52px minmax(0,1fr)}#v500App .v508-event-summary .ride{grid-column:2}}
 
-#v500App .v509-rec{font-size:7.5px;font-weight:900;color:#756c60;background:#f3efe8;border:1px solid #e1d9cd;border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block;margin:1px 0 4px}
+#v500App .v509-rec{font-size:9px;font-weight:900;color:#6c645a;background:#f3efe8;border:1px solid #e1d9cd;border-radius:999px;padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block;margin:1px 0 6px}
 #v500App .v509-rec.exception{color:#7a4d00;background:#fff6df;border-color:#e9cf89}
 </style>
 <script id="v508CompactTenDayScript">
@@ -6953,16 +6953,35 @@ document.addEventListener('DOMContentLoaded',()=>{
    v507ApplyOne(p);const d=dkey(p),events=acts(p),sites=actualSites();let current=site(p),arr=manualArrivalOverrides?.[d]!=null?manualArrivalOverrides[d]:p.arrive,dep=manualDepartureOverrides?.[d]!=null?manualDepartureOverrides[d]:p.leaveWork;
    if(!editable)return `<div class="v500-tile"><div class="v500-tdate">${esc508(dateLabel(p,true))}</div><div class="v500-twork"><b>Chris:</b> ${esc508(chris(p))}<br><b>Kira:</b> ${esc508(kira(p))}</div></div>`;
    let siteOptions=sites.slice();if(p.onsite&&current&&!siteOptions.includes(current))siteOptions.unshift(current);if(!siteOptions.length)siteOptions=['Onsite'];
-   const summaries=events.length?events.slice(0,4).map(a=>`<div class="v508-event-summary"><span class="time">${esc508(start(a))}</span><span class="who"><b>${esc508(safeOwner(a))}</b> · ${esc508(a.title||'Event')}</span><span class="ride">D:${esc508(assignment(p,a,'Drop'))} · P:${esc508(assignment(p,a,'Pickup'))}</span></div>`).join('')+(events.length>4?`<div class="v508-summaryline">+ ${events.length-4} more event${events.length-4===1?'':'s'}</div>`:''):`<div class="v508-summaryline">No transportation events</div>`;
+   const summaries=events.length?events.slice(0,3).map(a=>`<div class="v508-event-summary"><span class="time">${esc508(start(a))}</span><span class="who"><b>${esc508(safeOwner(a))}</b> · ${esc508(a.title||'Event')}</span><span class="ride">D:${esc508(assignment(p,a,'Drop'))} · P:${esc508(assignment(p,a,'Pickup'))}</span></div>`).join('')+(events.length>3?`<div class="v508-summaryline">+ ${events.length-3} more event${events.length-3===1?'':'s'} · open Edit details</div>`:''):`<div class="v508-summaryline">No transportation events</div>`;
    const eventEditors=events.map(a=>{a.__v507Key=a.__v507Key||ak(a);return v508EventEditor(p,a,d,a.__v507Key)}).join('');
    const recBasis=String(p.recommendationBasis||'Recommended plan');const recClass=/exception/i.test(recBasis)?' exception':'';
    const chrisFields=p.onsite?`<div class="v508-chris"><label class="v507-mini wide"><span>Site</span><select class="v507-edit v508-site" data-field="workSite" data-date="${esc508(d)}">${siteOptions.map(x=>`<option value="${esc508(x)}" ${x===current?'selected':''}>${esc508(x)}</option>`).join('')}</select></label><label class="v507-mini"><span>Arrive</span><input type="time" class="v507-edit" data-field="arrival" data-date="${esc508(d)}" value="${esc508(v507TimeValue(arr))}"></label><label class="v507-mini"><span>Leave</span><input type="time" class="v507-edit" data-field="departure" data-date="${esc508(d)}" value="${esc508(v507TimeValue(dep))}"></label></div>`:`<div class="v508-summaryline"><b>Remote day.</b> Tap Onsite to add site, arrival and departure.</div>`;
    return `<div class="v500-tile v507-tile editable" data-date="${esc508(d)}"><div class="v507-cardhead"><div class="v500-tdate">${esc508(dateLabel(p,true))}</div><button type="button" class="v507-reviewday" data-date="${esc508(d)}">Review day ›</button></div><div class="v508-modebar"><button type="button" class="v508-mode ${!p.onsite&&!p.holiday?'on':''}" data-mode="remote" data-date="${esc508(d)}">REMOTE</button><button type="button" class="v508-mode ${p.onsite?'on':''}" data-mode="onsite" data-date="${esc508(d)}">ONSITE</button></div><div class="v509-rec${recClass}">${esc508(recBasis)}</div><div class="v508-essential">${chrisFields}</div><div class="v508-summaryline"><b>Kira:</b> ${esc508(kira(p))}</div><div class="v508-events-summary">${summaries}</div><details class="v508-details"><summary><span>All fields editable</span></summary><div class="v508-detailbody"><div class="v508-kiraedit"><label class="v507-mini"><span>Kira location</span><input class="v507-edit" data-field="kiraLocation" data-date="${esc508(d)}" value="${esc508(p.kiraOff?'Off':(p.kiraLocation||p.kiraSite||''))}"></label><label class="v507-mini"><span>Kira start</span><input type="time" class="v507-edit" data-field="kiraStart" data-date="${esc508(d)}" value="${esc508(v507TimeValue(p.kiraStart))}" ${p.kiraOff?'disabled':''}></label><label class="v507-mini"><span>Kira end</span><input type="time" class="v507-edit" data-field="kiraEnd" data-date="${esc508(d)}" value="${esc508(v507TimeValue(p.kiraEnd))}" ${p.kiraOff?'disabled':''}></label></div>${eventEditors||'<div class="v508-summaryline">No events to edit.</div>'}</div></details><div class="v507-saved"></div></div>`
  };
- async function setMode(date,mode){const p=workPlans().find(z=>dkey(z)===date);if(!p)return;let val;
-   if(mode==='remote')val='Remote';else{const sites=actualSites();val=(p.site&&sites.includes(p.site))?p.site:(sites[0]||'Onsite')}
-   v507Set(date,['workSite'],val);let x=pending();x.work[date]=val;savePending(x);p.onsite=mode==='onsite';p.holiday=false;p.site=p.onsite?val:'';
-   if(p.onsite&&typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date);else if(!p.onsite){p.arrive=null;p.leaveWork=null;p.departHome=null;p.status='remote'}
+ async function setMode(date,mode){
+   const p=workPlans().find(z=>dkey(z)===date);if(!p)return;
+   const sites=actualSites();
+   const dt=(p.date instanceof Date?p.date:new Date(date+'T12:00:00'));
+   const weekday=dt.getDay();
+   const wanted=weekday===3?'Wheeling':(weekday===2||weekday===4?'Weirton':'');
+   const matchWanted=wanted?sites.find(s=>String(s).toLowerCase().includes(wanted.toLowerCase())):null;
+   let val='Remote';
+   if(mode==='onsite')val=(p.site&&sites.includes(p.site))?p.site:(matchWanted||sites[0]||wanted||'Onsite');
+   v507Set(date,['workSite'],val);
+   let x=pending();x.work[date]=val;savePending(x);
+   p.onsite=mode==='onsite';p.holiday=false;p.site=p.onsite?val:'';
+   p.recommendationBasis=p.onsite?'Manual exception · onsite selected':'Manual exception · remote selected';
+   if(p.onsite){
+     if(!Number.isFinite(Number(p.arrive)))p.arrive=8*60;
+     if(!Number.isFinite(Number(p.leaveWork)))p.leaveWork=16*60+30;
+     try{if(typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date)}catch(err){console.warn('Onsite recalculation kept manual mode',err)}
+     // Reassert the manual choice after recommendation logic. Manual mode beats the recommender until the user clears it.
+     p.onsite=true;p.holiday=false;p.site=val;p.status=p.status==='bad'?'warn':(p.status||'good');
+     v507Set(date,['workSite'],val);x=pending();x.work[date]=val;savePending(x);
+     if(!Number.isFinite(Number(p.arrive)))p.arrive=8*60;
+     if(!Number.isFinite(Number(p.leaveWork)))p.leaveWork=16*60+30;
+   }else{p.arrive=null;p.leaveWork=null;p.departHome=null;p.status='remote'}
    try{saveAllNow();captureWorkingPlans()}catch{}
    if(typeof window.v510RefreshCard==='function')window.v510RefreshCard(date);else{const top=window.scrollY;renderReview();window.scrollTo(0,top)}
  }
@@ -7049,6 +7068,267 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
 })();
 </script>
 <!-- AutoPilot v50.11: generation mutex + unique-date invariant + duplicate-refresh suppression. -->
+
+<style id="v512BalancedReviewStyle">
+#v500App .v500-tdate{font-size:15px!important;line-height:1.15!important;font-weight:950!important}
+#v500App .v507-reviewday{font-size:9.5px!important;padding:4px 7px!important;min-height:28px!important}
+#v500App .v507-mini span{font-size:9px!important;font-weight:900!important}
+#v500App .v508-chris .v507-mini input,#v500App .v508-chris .v507-mini select{height:34px!important;min-height:34px!important;font-size:11px!important}
+#v500App .v508-modebar:before{content:'WORK MODE';font-size:8px;font-weight:950;color:#83796d;margin-right:2px}
+#v500App .v508-essential{padding:7px 8px;background:#faf8f4;border:1px solid #ece6dc;border-radius:8px}
+#v500App .v508-events-summary:before{content:'FAMILY LOGISTICS';font-size:8px;font-weight:950;letter-spacing:.05em;color:#81776c;margin-bottom:1px}
+</style>
+<script id="v512BalancedReviewScript">
+(function(){
+ if(window.__apV512)return;window.__apV512=true;
+ function init(){
+   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
+   document.title='AutoPilot — Family Logistics Planner v50.12';
+   const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- AutoPilot v50.12: balanced 2-column 10-day review + authoritative Remote/Onsite manual override. -->
+
+
+
+<style id="v513DepartureGuidanceStyle">
+#v500App .v513-deadlines{margin:7px 0 4px;padding:7px 8px;border:1px solid #ddd5c9;border-radius:8px;background:#fffdf8;display:grid;gap:4px}
+#v500App .v513-deadline{display:grid;grid-template-columns:88px minmax(0,1fr);gap:7px;align-items:baseline;font-size:10px;line-height:1.3}
+#v500App .v513-deadline b{font-size:8px;letter-spacing:.04em;color:#756b60;text-transform:uppercase}
+#v500App .v513-deadline strong{font-size:11px;color:#211f1b}
+#v500App .v513-reason{color:#625a51;margin-left:4px}
+#v500App .v500-final .v513-deadline,#v500Fridge .v513-deadline{font-size:10px}
+.v504-pdeadline{margin-top:3px;padding-top:3px;border-top:1px dotted #d6cec2;font-size:7.6px;line-height:1.18;color:#2f2a25}
+.v504-pdeadline b{font-size:7px;text-transform:uppercase;letter-spacing:.03em}
+@media(max-width:760px){#v500App .v513-deadline{grid-template-columns:78px minmax(0,1fr)}}
+</style>
+<script id="v513DepartureGuidanceScript">
+(function(){
+ if(window.__apV513)return;window.__apV513=true;
+ const esc513=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function mins(v){if(v==null||v==='')return null;if(typeof v==='number'&&Number.isFinite(v))return v;try{return toMin(v)}catch{return null}}
+ function fmt513(v){if(v==null||!Number.isFinite(Number(v)))return'';try{return fmt(Number(v))}catch{let h=Math.floor(v/60)%24,m=v%60,ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${String(m).padStart(2,'0')} ${ap}`}}
+ function ownerChris(x){return String(x||'').trim().toLowerCase()==='chris'}
+ function commitmentLabel(a){const act=a?.activity||{};let child='';try{child=childLabel(act.child||'')}catch{};const title=String(act.title||'family commitment').trim();const kind=String(a?.kind||'').toLowerCase();return [child,kind,title].filter(Boolean).join(' · ')}
+ function firstChrisLeg(p){return (p?.assignments||[]).filter(a=>ownerChris(a.primary)&&mins(a.time)!=null&&mins(a.time)>=14*60).sort((a,b)=>mins(a.time)-mins(b.time))[0]||null}
+ function guidance(p){
+   const g={morning:null,evening:null};if(!p||p.holiday)return g;
+   if(p.onsite&&mins(p.departHome)!=null)g.morning={label:'Leave home by',time:mins(p.departHome),reason:`→ ${p.site||'work'}`};
+   const leg=firstChrisLeg(p);
+   if(p.onsite&&mins(p.leaveWork)!=null){
+     let reason='→ planned commute home';
+     if(leg)reason=`→ ${commitmentLabel(leg)} ${fmt513(mins(leg.time))}`;
+     g.evening={label:'Leave work by',time:mins(p.leaveWork),reason};
+   }else if(!p.onsite&&leg){
+     const act=leg.activity||{},drive=Math.max(0,Number(act.homeDrive)||20),buffer=Math.max(0,Number(document.getElementById('transportBuffer')?.value)||20),leave=Math.max(0,mins(leg.time)-drive-buffer);
+     g.evening={label:'Leave home by',time:leave,reason:`→ ${commitmentLabel(leg)} ${fmt513(mins(leg.time))}`};
+   }
+   return g;
+ }
+ window.v513Guidance=guidance;
+ function guidanceHtml(p){const g=guidance(p),rows=[];if(g.morning)rows.push(`<div class="v513-deadline"><b>${esc513(g.morning.label)}</b><div><strong>${esc513(fmt513(g.morning.time))}</strong><span class="v513-reason">${esc513(g.morning.reason)}</span></div></div>`);if(g.evening)rows.push(`<div class="v513-deadline"><b>${esc513(g.evening.label)}</b><div><strong>${esc513(fmt513(g.evening.time))}</strong><span class="v513-reason">${esc513(g.evening.reason)}</span></div></div>`);return rows.length?`<div class="v513-deadlines">${rows.join('')}</div>`:''}
+ window.v513GuidanceHtml=guidanceHtml;
+ // Add deadline guidance to the editable 10-day cards without increasing the control count.
+ const oldTile=window.tile;
+ if(typeof oldTile==='function')window.tile=function(p,editable=false){let html=oldTile(p,editable);if(!editable)return html;const gh=guidanceHtml(p);if(!gh)return html;return html.replace('<div class="v508-summaryline"><b>Kira:</b>',gh+'<div class="v508-summaryline"><b>Kira:</b>')};
+ // Final-data snapshot carries deadline context into fridge and phone views.
+ snapshot=function(){return workPlans().map(p=>{const g=guidance(p);return {date:dkey(p),label:dateLabel(p,true),chris:chris(p),kira:kira(p),leaveHome:g.morning?{time:fmt513(g.morning.time),reason:g.morning.reason}:(!p.onsite&&g.evening?{time:fmt513(g.evening.time),reason:g.evening.reason}:null),leaveWork:g.evening&&p.onsite?{time:fmt513(g.evening.time),reason:g.evening.reason}:null,events:acts(p).map(a=>({person:safeOwner(a),title:a.title,start:start(a),end:end(a),location:a.location||'',drop:assignment(p,a,'Drop'),pickup:assignment(p,a,'Pickup')}))}})};
+ function snapGuidance(d){let r=[];if(d.leaveHome)r.push(`<div class="v513-deadline"><b>Leave home by</b><div><strong>${esc513(d.leaveHome.time)}</strong><span class="v513-reason">${esc513(d.leaveHome.reason||'')}</span></div></div>`);if(d.leaveWork)r.push(`<div class="v513-deadline"><b>Leave work by</b><div><strong>${esc513(d.leaveWork.time)}</strong><span class="v513-reason">${esc513(d.leaveWork.reason||'')}</span></div></div>`);return r.length?`<div class="v513-deadlines">${r.join('')}</div>`:''}
+ snapshotTiles=function(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${snapGuidance(d)}${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b><br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`};
+ renderPhone=function(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;let action='';if(d.leaveHome)action+=`<hr><b>Leave home by:</b> ${esc(d.leaveHome.time)} <span class="muted">${esc(d.leaveHome.reason||'')}</span>`;if(d.leaveWork)action+=`<br><b>Leave work by:</b> ${esc(d.leaveWork.time)} <span class="muted">${esc(d.leaveWork.reason||'')}</span>`;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${action}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`};
+ phoneHtml=function(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}.deadline{background:#faf7ef;border:1px solid #e2d9ca;border-radius:8px;padding:7px;margin:7px 0;font-size:12px}</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script></body></html>`};
+ // One-page review/fridge output gets the same operational deadlines.
+ v504PrintCard=function(p){
+   const events=acts(p).map(a=>`<div class="v504-pevent"><b>${esc(safeOwner(a))} · ${esc(a.title)}</b><span>${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}${a.location?' · '+esc(a.location):''}</span><span><strong>Drop:</strong> ${esc(assignment(p,a,'Drop'))} &nbsp; <strong>Pickup:</strong> ${esc(assignment(p,a,'Pickup'))}</span></div>`).join('');
+   const kloc=p?.kiraOff?'Off':(p?.kiraLocation||p?.kiraSite||'Working');const kt=(p?.kiraStart!=null&&p?.kiraEnd!=null)?`${fmtMin(p.kiraStart)}–${fmtMin(p.kiraEnd)}`:'';const carr=p?.onsite&&p?.arrive!=null?fmtArr(p.arrive):'';const cdep=p?.onsite&&p?.leaveWork!=null?fmtDep(p.leaveWork):'';const g=guidance(p);let dl='';if(g.morning)dl+=`<div><b>Leave home:</b> ${esc(fmt513(g.morning.time))} ${esc(g.morning.reason)}</div>`;if(g.evening)dl+=`<div><b>${p.onsite?'Leave work':'Leave home'}:</b> ${esc(fmt513(g.evening.time))} ${esc(g.evening.reason)}</div>`;
+   return `<div class="v504-pday"><div class="v504-pdate">${esc(dateLabel(p,true))}</div><div class="v504-pwork"><div><b>Chris</b><span>${esc(site(p))}</span>${carr||cdep?`<small>Arr ${esc(carr||'—')} · Dep ${esc(cdep||'—')}</small>`:''}</div><div><b>Kira</b><span>${esc(kloc)}</span>${kt?`<small>${esc(kt)}</small>`:''}</div></div>${dl?`<div class="v504-pdeadline">${dl}</div>`:''}${events||'<div class="v504-none">No transportation events</div>'}</div>`;
+ };
+ // NONZERO daily agenda begins with the critical leave action so the Wall can surface it.
+ const oldBuildNz=buildNonzeroAgenda;
+ buildNonzeroAgenda=function(){const out=oldBuildNz();try{const p=plans.find(x=>x.dateStr===out.date);const g=guidance(p);const a=g.evening||g.morning;if(a){const title=`${a.label} ${fmt513(a.time)}`;out.items=[{time:fmt513(a.time),title,meta:a.reason||'',location:'',child:'',source:'AutoPilot timing'},...(out.items||[])];out.nextCriticalAction={time:fmt513(a.time),text:title+' '+(a.reason||'')};out.summary=out.summary||{};out.summary.eventCount=(out.items||[]).length}out.source='autopilot-v50.13'}catch{}return out};
+ function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.13';document.title='AutoPilot — Family Logistics Planner v50.13';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- AutoPilot v50.13: explicit leave-home / leave-work operational deadlines in final, print, phone and NONZERO agenda views. -->
+
+<style id="v514PressureValveStyle">
+#v500App .v514-skip-badge{display:inline-block;margin-left:6px;padding:2px 6px;border:1px solid #c99f45;border-radius:999px;background:#fff7df;color:#6f5209;font-size:7.5px;font-weight:950;letter-spacing:.025em;vertical-align:1px;white-space:nowrap}
+#v500App .v514-pressure{margin:6px 0 2px;padding:6px 8px;border:1px solid #d4b360;border-radius:8px;background:#fff9e8;color:#5f4a18;font-size:9px;line-height:1.28}
+#v500App .v514-pressure b{font-size:8px;letter-spacing:.04em;text-transform:uppercase}
+#v500App .v514-protected{display:inline-block;margin-left:5px;font-size:7px;font-weight:900;color:#57606a;white-space:nowrap}
+.v504-pskip{margin-top:2px;padding:2px 4px;border:1px solid #c9aa5b;border-radius:4px;background:#fff8e3;color:#634c13;font-size:6.7px;font-weight:800;line-height:1.15}
+.v514-phone-skip{display:inline-block;margin-left:4px;padding:1px 5px;border:1px solid #c9a44a;border-radius:999px;background:#fff7dd;color:#624a0b;font-size:10px;font-weight:850}
+</style>
+<script id="v514PressureValveScript">
+(function(){
+ if(window.__apV514)return;window.__apV514=true;
+ const esc514=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const protectedRe=/(\bgame\b|\bmatch\b|\bmeet\b|tournament|competition|championship|playoff|play-off|finals?|semifinal|quarterfinal|invite|invitational|dual\s*meet|varsity|junior\s+varsity|\bjv\b)/i;
+ const routineRe=/(practice|training|lesson|rehearsal|clinic|conditioning|workout|open\s*gym|skills?|session|club|recital\s*practice)/i;
+ function eventTitle(a){return String(a?.title||a?.activity?.title||'').trim()}
+ function protectedEvent(a){return protectedRe.test(eventTitle(a))}
+ function routineCandidate(a){const t=eventTitle(a);if(!t||protectedEvent(a))return false;return routineRe.test(t)}
+ function pressure(p){
+   const assigns=p?.assignments||[]; const actsList=typeof acts==='function'?acts(p):[];
+   const backup=assigns.filter(a=>String(a.primary||'').toLowerCase()==='backup').length;
+   const conflict=assigns.filter(a=>/conflict|impossible|uncovered/i.test(String(a.status||a.note||''))).length;
+   const status=String(p?.status||'').toLowerCase();
+   const eventCount=actsList.length;
+   let score=0; if(status==='bad')score+=4; else if(status==='warn')score+=2; score+=backup*3+conflict*3;
+   if(eventCount>=4)score+=3; else if(eventCount===3)score+=2;
+   const times=actsList.map(a=>{try{return toMin(a.start)}catch{return null}}).filter(Number.isFinite).sort((a,b)=>a-b);
+   for(let i=1;i<times.length;i++)if(times[i]-times[i-1]<=45)score+=1;
+   return {busy:score>=4,score,backup,conflict,eventCount};
+ }
+ function candidates(p){if(!pressure(p).busy)return[];const list=(typeof acts==='function'?acts(p):[]).filter(routineCandidate);return list.slice(0,2)}
+ function sameEvent(a,b){return eventTitle(a)===eventTitle(b)&&String(a?.start||'')===String(b?.start||'')&&String(a?.child||'')===String(b?.child||'')}
+ function badgeFor(a,p){if(protectedEvent(a))return'';return candidates(p).some(x=>sameEvent(x,a))?'<span class="v514-skip-badge">LAST ALTERNATIVE</span>':''}
+ function pressureHtml(p){const c=candidates(p);if(!c.length)return'';return `<div class="v514-pressure"><b>Very busy day · last alternative only</b><br>${c.map(a=>`Consider skipping ${esc514(eventTitle(a))} only if work/driver/carpool changes cannot solve the day.`).join('<br>')}</div>`}
+ window.v514Pressure=pressure;window.v514SkipCandidates=candidates;
+ const prevTile=window.tile;
+ if(typeof prevTile==='function')window.tile=function(p,editable=false){
+   let html=prevTile(p,editable); const cand=candidates(p); if(!cand.length)return html;
+   cand.forEach(a=>{let owner='';try{owner=safeOwner(a)}catch{};const needle=`<b>${esc(owner)} · ${esc(a.title)}</b>`;const repl=`<b>${esc(owner)} · ${esc(a.title)}</b><span class="v514-skip-badge">LAST ALTERNATIVE</span>`;html=html.replace(needle,repl)});
+   const ph=pressureHtml(p); if(ph)html=html.replace(/(<div class="v513-deadlines">[\s\S]*?<\/div>\s*<\/div>)/,m=>m+ph);
+   if(ph&&!html.includes('v514-pressure'))html=html.replace('<div class="v508-events-summary">',ph+'<div class="v508-events-summary">');
+   return html;
+ };
+ const prevSnapshot=window.snapshot;
+ if(typeof prevSnapshot==='function')window.snapshot=function(){const data=prevSnapshot();const ps=typeof workPlans==='function'?workPlans():[];return data.map((d,i)=>{const p=ps[i];const c=p?candidates(p):[];d.pressureValve=c.map(a=>({title:eventTitle(a),start:String(a.start||''),person:(()=>{try{return safeOwner(a)}catch{return''}})()}));d.events=(d.events||[]).map(e=>({...e,lastAlternative:c.some(a=>eventTitle(a)===e.title&&String(a.start||'')===String(e.start||''))}));return d})};
+ snapshotTiles=function(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${typeof snapGuidance==='function'?snapGuidance(d):''}${d.pressureValve?.length?`<div class="v514-pressure"><b>Very busy day · last alternative only</b><br>${d.pressureValve.map(x=>`Consider skipping ${esc(x.title)} only if needed.`).join('<br>')}</div>`:''}${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b>${e.lastAlternative?'<span class="v514-skip-badge">LAST ALTERNATIVE</span>':''}<br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`};
+ const prevPrintCard=window.v504PrintCard;
+ if(typeof prevPrintCard==='function')window.v504PrintCard=function(p){let html=prevPrintCard(p);const c=candidates(p);if(!c.length)return html;const note=`<div class="v504-pskip">⚠ Last alternative only: ${c.map(a=>`consider skipping ${esc514(eventTitle(a))}`).join(' / ')}. Games/meets are protected.</div>`;return html.replace('</div>',note+'</div>')};
+ const prevRenderPhone=window.renderPhone;
+ window.renderPhone=function(n=0){if(typeof prevRenderPhone==='function')prevRenderPhone(n);try{let d=finalData?.[phoneIndex];if(!d)return;const host=document.getElementById('v500PhoneBody');if(!host)return;(d.events||[]).filter(e=>e.lastAlternative).forEach(e=>{const needle=`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>`;host.innerHTML=host.innerHTML.replace(needle,needle+' <span class="v514-phone-skip">LAST ALTERNATIVE</span>')});if(d.pressureValve?.length)host.innerHTML+=`<hr><div style="background:#fff7dd;border:1px solid #d0af58;border-radius:8px;padding:7px"><b>Very busy day — last alternative only</b><br>${d.pressureValve.map(x=>`Consider skipping ${esc(x.title)} only if needed.`).join('<br>')}</div>`}catch(e){console.warn('v50.14 phone indicator',e)}};
+ const prevPhoneHtml=window.phoneHtml;
+ if(typeof prevPhoneHtml==='function')window.phoneHtml=function(){let out=prevPhoneHtml();out=out.replace('</style>',`.skip{display:inline-block;margin-left:4px;padding:1px 5px;border:1px solid #c9a44a;border-radius:999px;background:#fff7dd;color:#624a0b;font-size:10px;font-weight:850}.pressure{margin:7px 0;padding:7px;border:1px solid #d0af58;border-radius:8px;background:#fff8df;color:#5d4710;font-size:11px}</style>`);out=out.replace("function card(d){",`function badge(x){return x.lastAlternative?'<span class="skip">LAST ALTERNATIVE</span>':''}function pressure(d){return d.pressureValve&&d.pressureValve.length?'<div class="pressure"><b>Very busy day — last alternative only</b><br>'+d.pressureValve.map(x=>'Consider skipping '+e(x.title)+' only if needed.').join('<br>')+'</div>':''}function card(d){`);out=out.replace("+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'", "+dl(d)+pressure(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+badge(x)");out=out.replace("+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'", "+dl(d)+pressure(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+badge(x)");return out};
+ const prevNz=window.buildNonzeroAgenda;
+ if(typeof prevNz==='function')window.buildNonzeroAgenda=function(){const out=prevNz();try{const p=plans.find(x=>x.dateStr===out.date),c=p?candidates(p):[];if(c.length){out.items=(out.items||[]).map(it=>{const hit=c.find(a=>eventTitle(a)&&String(it.title||'').includes(eventTitle(a)));return hit?{...it,meta:[it.meta,'⚠ Last alternative only if day cannot otherwise be solved'].filter(Boolean).join(' · ')}:it});out.pressureValve=c.map(a=>eventTitle(a))}out.source='autopilot-v50.14'}catch{}return out};
+ function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.14';document.title='AutoPilot — Family Logistics Planner v50.14';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · protected games · last-alternative practice indicators'}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- AutoPilot v50.14: conservative last-alternative pressure-valve indicators; games/meets/matches protected. -->
+
+<style id="v515ReliableEditingStyle">
+/* v50.15: readable review + touch-friendly day editing + native work-mode control */
+#v500App .v515-mode-field{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:center;gap:10px;margin:7px 0 8px;padding:8px 10px;border:1px solid #d9d1c5;border-radius:9px;background:#fff}
+#v500App .v515-mode-field>span{font-size:9px;font-weight:950;letter-spacing:.05em;color:#6f665d;text-transform:uppercase}
+#v500App .v515-mode-select{width:100%;height:38px;min-height:38px;border:1px solid #a79d90;border-radius:8px;background:#fff;color:#211f1b;font-size:12px;font-weight:900;padding:0 10px}
+#v500App .v508-modebar{display:none!important}
+/* 10-day cards: readable but not oversized */
+#v500App .v507-tile{padding:12px!important}
+#v500App .v507-tile .v507-mini span{font-size:10px!important}
+#v500App .v507-tile .v507-edit,#v500App .v507-tile input[type=time],#v500App .v507-tile select{min-height:38px!important;height:38px!important;font-size:12px!important}
+#v500App .v507-tile .v508-summaryline,#v500App .v507-tile .v508-event-summary{font-size:10.5px!important;line-height:1.35!important}
+/* Individual-day view is an editing surface: generous touch targets */
+#v500App #v500ReviewBody .v500-day{font-size:14px!important}
+#v500App #v500ReviewBody .v500-date{font-size:21px!important;line-height:1.15!important}
+#v500App #v500ReviewBody .v500-workgrid{gap:10px!important}
+#v500App #v500ReviewBody .v500-work{font-size:13px!important;line-height:1.4!important}
+#v500App #v500ReviewBody .v500-site{width:100%!important;min-height:46px!important;height:46px!important;font-size:15px!important;border-radius:9px!important;padding:0 12px!important;margin-top:7px!important}
+#v500App #v500ReviewBody .v506-timebar{padding:10px!important;gap:8px!important}
+#v500App #v500ReviewBody .v506-timefield{grid-template-columns:58px 38px minmax(130px,1fr) 38px!important;gap:6px!important;align-items:center!important}
+#v500App #v500ReviewBody .v506-timelabel{font-size:12px!important;font-weight:950!important}
+#v500App #v500ReviewBody .v506-timefield input[type=time]{height:46px!important;min-height:46px!important;font-size:16px!important;padding:0 8px!important}
+#v500App #v500ReviewBody .v506-time-nudge{height:38px!important;min-height:38px!important;width:38px!important;padding:0!important;font-size:18px!important;border-radius:8px!important}
+#v500App #v500ReviewBody .v500-personhead{font-size:15px!important;padding:9px 10px!important}
+#v500App #v500ReviewBody .v500-event{padding:10px!important}
+#v500App #v500ReviewBody .v500-eventtop{font-size:13px!important;line-height:1.35!important}
+#v500App #v500ReviewBody .v500-leglabel{font-size:11px!important;margin-bottom:5px!important}
+#v500App #v500ReviewBody .v500-pills label{min-height:42px!important;padding:10px 11px!important;font-size:12px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+#v500App #v500ReviewBody .v500-daily{min-height:112px!important;font-size:14px!important;line-height:1.4!important;padding:10px!important}
+@media(max-width:760px){
+ #v500App .v515-mode-field{grid-template-columns:82px minmax(0,1fr)}
+ #v500App .v515-mode-select{height:44px;min-height:44px;font-size:14px}
+ #v500App #v500ReviewBody .v506-timefield{grid-template-columns:54px 42px minmax(120px,1fr) 42px!important}
+ #v500App #v500ReviewBody .v506-time-nudge{height:42px!important;min-height:42px!important;width:42px!important}
+ #v500App #v500ReviewBody .v500-pills{grid-template-columns:1fr 1fr!important}
+}
+</style>
+<script id="v515ReliableEditingScript">
+(function(){
+ if(window.__apV515)return;window.__apV515=true;
+ const esc515=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function plansNow(){try{return typeof workPlans==='function'?workPlans():[]}catch{return[]}}
+ function sitesNow(){try{return (typeof siteList==='function'?siteList():[]).filter(x=>x&&x!=='Remote'&&x!=='Off'&&x!=='Holiday / off')}catch{return[]}}
+ function siteForDate(date,p){
+   const sites=sitesNow(),dt=p?.date instanceof Date?p.date:new Date(date+'T12:00:00'),dow=dt.getDay();
+   const wanted=dow===3?'Wheeling':((dow===2||dow===4)?'Weirton':'');
+   const exact=wanted?sites.find(s=>String(s).toLowerCase().includes(wanted.toLowerCase())):null;
+   const current=p?.site&&sites.includes(p.site)?p.site:null;
+   return current||exact||sites[0]||wanted||'Onsite';
+ }
+ function persistMode(date,val){
+   try{if(typeof v507Set==='function')v507Set(date,['workSite'],val)}catch{}
+   try{let x=typeof pending==='function'?pending():null;if(x){x.work=x.work||{};x.work[date]=val;if(typeof savePending==='function')savePending(x)}}catch{}
+ }
+ function assertMode(date,mode,val){
+   const p=plansNow().find(z=>{try{return dkey(z)===date}catch{return z?.dateStr===date}});if(!p)return null;
+   if(mode==='onsite'){
+     p.onsite=true;p.holiday=false;p.site=val;p.recommendationBasis='Manual exception · onsite selected';
+     if(!Number.isFinite(Number(p.arrive)))p.arrive=8*60;
+     if(!Number.isFinite(Number(p.leaveWork)))p.leaveWork=16*60+30;
+     if(!Number.isFinite(Number(p.departHome))){try{const drive=Number(document.getElementById('defaultCommute')?.value)||75;p.departHome=Math.max(0,p.arrive-drive)}catch{}}
+   }else{
+     p.onsite=false;p.holiday=false;p.site='';p.arrive=null;p.leaveWork=null;p.departHome=null;p.status='remote';p.recommendationBasis='Manual exception · remote selected';
+   }
+   persistMode(date,mode==='onsite'?val:'Remote');return p;
+ }
+ async function applyMode(date,mode){
+   let p=plansNow().find(z=>{try{return dkey(z)===date}catch{return z?.dateStr===date}});if(!p)throw new Error('That day is not loaded.');
+   const val=mode==='onsite'?siteForDate(date,p):'Remote';
+   assertMode(date,mode,val);
+   /* Recalculate logistics if available, then re-assert the manual work decision. */
+   if(mode==='onsite'){
+     try{if(typeof recalcReviewPlanDay==='function')await recalcReviewPlanDay(date)}catch(err){console.warn('v50.15 day recalculation',err)}
+     assertMode(date,mode,val);
+   }
+   try{if(typeof saveAllNow==='function')saveAllNow();if(typeof captureWorkingPlans==='function')captureWorkingPlans()}catch{}
+   try{if(typeof window.v510RefreshCard==='function')window.v510RefreshCard(date);else if(typeof renderReview==='function')renderReview()}catch{}
+   /* Keep individual-day view synchronized if it is open. */
+   try{if(typeof view!=='undefined'&&view==='day'&&typeof renderDay==='function')renderDay()}catch{}
+ }
+ /* Replace the fragile Remote/Onsite button pair with a native selector in every 10-day card. */
+ const priorTile=window.tile;
+ if(typeof priorTile==='function')window.tile=function(p,editable=false){
+   let html=priorTile(p,editable);if(!editable)return html;
+   let date='';try{date=dkey(p)}catch{date=p?.dateStr||''}
+   const control=`<label class="v515-mode-field"><span>Work mode</span><select class="v515-mode-select" data-date="${esc515(date)}"><option value="remote" ${!p.onsite&&!p.holiday?'selected':''}>Remote</option><option value="onsite" ${p.onsite?'selected':''}>Onsite</option></select></label>`;
+   html=html.replace(/<div class="v508-modebar">[\s\S]*?<\/div>/,control);
+   return html;
+ };
+ /* Native change event is far less fragile than stacked click handlers. */
+ document.addEventListener('change',function(e){
+   const s=e.target.closest?.('.v515-mode-select');if(!s)return;
+   e.preventDefault();e.stopPropagation();
+   const old=s.value;s.disabled=true;
+   applyMode(s.dataset.date,s.value).catch(err=>{console.error(err);s.value=old==='onsite'?'remote':'onsite';const st=document.getElementById('v500ReviewStatus');if(st)st.innerHTML='<b>Work-mode change failed.</b> '+esc515(err.message)}).finally(()=>{s.disabled=false});
+ },true);
+ /* Make the individual-day work selector explicitly include Remote and normal onsite sites. */
+ const priorRenderDay=window.renderDay;
+ if(typeof priorRenderDay==='function')window.renderDay=function(){
+   priorRenderDay();
+   try{
+     const p=plansNow()[typeof dayIndex==='number'?dayIndex:0];if(!p)return;let date=dkey(p);
+     const work=document.querySelector('#v500ReviewBody .v500-work');if(!work||work.querySelector('.v515-day-mode'))return;
+     const wrap=document.createElement('label');wrap.className='v515-mode-field v515-day-mode';wrap.innerHTML=`<span>Work mode</span><select class="v515-mode-select" data-date="${esc515(date)}"><option value="remote" ${!p.onsite?'selected':''}>Remote</option><option value="onsite" ${p.onsite?'selected':''}>Onsite</option></select>`;
+     const siteSel=work.querySelector('.v500-site');if(siteSel)work.insertBefore(wrap,siteSel);else work.appendChild(wrap);
+   }catch(err){console.warn('v50.15 day work-mode control',err)}
+ };
+ function init(){
+   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.15';
+   document.title='AutoPilot — Family Logistics Planner v50.15';
+   const h=document.getElementById('v510Health');if(h)h.textContent='Reliable editing · native work-mode control';
+   try{if(typeof renderReview==='function'&&typeof view!=='undefined'&&view==='10')renderReview()}catch{}
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- AutoPilot v50.15: native authoritative work-mode selector + larger daily editing controls. -->
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
