@@ -3761,8 +3761,13 @@ async function generate(){
 
 async function generateCore(){
   const start=parseDate($('startDate').value), kira=getKira(), allActs=getActivities(), acts=allActs.filter(a=>a.transportClass==='required'), adh=getAdhoc();
-  const patternSiteFor=d=>({2:'Weirton',3:'Wheeling',4:'Weirton'}[d.getDay()]||'Remote');
-  const normalPatternLabel='Remote M/F · Weirton T/Th · Wheeling Wed';
+  const AP_WORK_PATTERN_KEY='autopilot.workPattern.v1';
+  function getWorkPattern(){
+    const fallback={1:'Remote',2:'Weirton',3:'Wheeling',4:'Weirton',5:'Remote'};
+    try{return {...fallback,...JSON.parse(localStorage.getItem(AP_WORK_PATTERN_KEY)||'{}')}}catch{return fallback}
+  }
+  const patternSiteFor=d=>getWorkPattern()[d.getDay()]||'Remote';
+  const workPatternLabel=()=>{const p=getWorkPattern();return `Mon ${p[1]} · Tue ${p[2]} · Wed ${p[3]} · Thu ${p[4]} · Fri ${p[5]}`};
   let base=await Promise.all(Array.from({length:14},async(_,i)=>{
     const date=addDays(start,i), ds=iso(date), weekend=[0,6].includes(date.getDay()), k=kira.find(x=>x.date===ds)||{shift:'off',start:'',end:'',address:'',fallbackCommute:0};
     const kInfo=kiraShiftInfo(k.shift);
@@ -3782,7 +3787,7 @@ async function generateCore(){
     if(d.weekend){plans.push({...d,onsite:false,site:'',status:'remote',assignments:[],recommendationBasis:'Weekend'});continue;}
     let normal=d.normalPattern;
     let onsite=normal!=='Remote';
-    let recommendationBasis=`Normal pattern · ${normalPatternLabel}`;
+    let recommendationBasis=`Normal pattern · ${workPatternLabel()}`;
     if(d.holiday){onsite=false;recommendationBasis='Holiday / no work';}
     else if(d.preferRemote&&$('remoteAllowed').value==='yes'&&!d.mustOnsite){onsite=false;recommendationBasis='Logistics exception · remote recommended';}
     else if(d.mustOnsite){onsite=true;recommendationBasis='Non-routine commitment · onsite required';}
@@ -7159,6 +7164,49 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
 </script>
 <!-- AutoPilot v50.13: explicit leave-home / leave-work operational deadlines in final, print, phone and NONZERO agenda views. -->
 
+
+<style id="v513Style">
+@media screen{
+  html,body{font-size:16px!important}
+  #v500App,.v510-drawer{font-size:16px!important;line-height:1.45!important}
+  #v500App button,#v500App input,#v500App select,#v500App textarea,.v510-drawer button,.v510-drawer input,.v510-drawer select,.v510-drawer textarea{font-size:15px!important}
+  #v500App label,.v510-drawer label{font-size:14px!important}
+  #v500App .small,.v510-drawer .small,#v500App small,.v510-drawer small{font-size:13px!important;line-height:1.45!important}
+  #v500App .muted,.v510-drawer .muted{font-size:13px!important}
+  .v510-drawer{width:min(900px,96vw)!important}
+  .v510-drawerhead{padding:22px 24px 18px!important}
+  .v510-drawerhead h2{font-size:28px!important}
+  .v510-drawerhead p{font-size:14px!important}
+  .v510-drawerbody{padding:20px 24px 36px!important}
+  .v510-backstage-summary b{font-size:12px!important}.v510-backstage-summary span{font-size:14px!important}
+  .v510-section>summary{padding:16px 18px!important;font-size:16px!important}
+  .v510-section-content{padding:0 18px 18px!important}
+  .v510-section-content .autopilot-tab-panel,.v510-section-content .tab-panel,.v510-section-content .simple-panel{display:block!important;visibility:visible!important;opacity:1!important}
+  .v510-section-content .card{margin:14px 0!important}
+  .v513-pattern{background:#fff;border:1px solid var(--ap-line,#d6d0c8);border-radius:12px;padding:16px;margin-bottom:16px}
+  .v513-pattern h3{font-size:19px;margin:0 0 5px}.v513-pattern p{font-size:14px;margin:0 0 14px;color:#6d655c}
+  .v513-pattern-grid{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px}
+  .v513-pattern-grid label{display:flex;flex-direction:column;gap:6px;font-weight:850}
+  .v513-pattern-grid select{min-height:42px;padding:8px 10px;border-radius:8px;border:1px solid #bfb7ac;background:#fff}
+  .v513-pattern-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .v513-save{background:#181817!important;color:#fff!important;border-color:#181817!important;padding:10px 14px!important;border-radius:8px!important;font-weight:900!important}
+  .v513-status{font-size:13px;color:#5f594f;font-weight:750}
+  @media(max-width:760px){.v513-pattern-grid{grid-template-columns:1fr 1fr}.v510-backstage-summary{grid-template-columns:1fr}}
+}
+</style>
+<script id="v513Patch">
+(function(){
+ const $=id=>document.getElementById(id), KEY='autopilot.workPattern.v1';
+ const defaults={1:'Remote',2:'Weirton',3:'Wheeling',4:'Weirton',5:'Remote'};
+ function get(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return {...defaults}}}
+ function sites(){const a=['Remote','Wheeling','Weirton'];try{(typeof getSites==='function'?getSites():[]).forEach(x=>{const n=(x&&((x.name)||(x.site))||'').trim();if(n&&!a.includes(n))a.push(n)})}catch{}return a}
+ function renderValues(){const p=get();[1,2,3,4,5].forEach(d=>{const el=$('v513d'+d);if(el)el.value=p[d]})}
+ function save(){const p={};[1,2,3,4,5].forEach(d=>p[d]=$('v513d'+d)?.value||defaults[d]);localStorage.setItem(KEY,JSON.stringify(p));const st=$('v513PatternStatus');if(st)st.innerHTML='<b>Saved.</b> This pattern will be the starting recommendation the next time you build or refresh a plan.'}
+ function reset(){localStorage.setItem(KEY,JSON.stringify(defaults));renderValues();const st=$('v513PatternStatus');if(st)st.textContent='Restored the original weekday pattern.'}
+ function install(){const host=$('v510SettingsHost');if(!host)return setTimeout(install,120);if($('v513Pattern'))return;const names={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday'},opts=sites();const card=document.createElement('div');card.id='v513Pattern';card.className='v513-pattern';const fields=[1,2,3,4,5].map(function(d){const optionHtml=opts.map(function(x){const safe=String(x).replace(/"/g,'&quot;');return '<option value="'+safe+'">'+x+'</option>'}).join('');return '<label>'+names[d]+'<select id="v513d'+d+'">'+optionHtml+'</select></label>'}).join('');card.innerHTML='<h3>Default work pattern</h3><p>Choose Chris’s normal starting recommendation for each weekday. AutoPilot may still override the pattern when family logistics or a specific exception require it.</p><div class="v513-pattern-grid">'+fields+'</div><div class="v513-pattern-actions"><button type="button" class="v513-save" id="v513PatternSave">SAVE WORK PATTERN</button><button type="button" id="v513PatternReset">Restore original pattern</button><span class="v513-status" id="v513PatternStatus">Changes apply to newly built/refreshed plans.</span></div>';host.insertBefore(card,host.firstChild);renderValues();$('v513PatternSave').onclick=save;$('v513PatternReset').onclick=reset;host.querySelectorAll('.autopilot-tab-panel,.tab-panel,.simple-panel').forEach(el=>{el.style.display='block';el.style.visibility='visible';el.style.opacity='1'})}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
@@ -7194,7 +7242,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function updateCopy(){const n=selected(),app=$('v500App');if(!app)return;const startSub=$('v500StageStart')?.querySelector('.v500-sub');if(startSub)startSub.textContent=`Choose the first day. AutoPilot will refresh every saved calendar, build the next ${n} workdays, and open one recommended plan for review. Your permanent setup stays backstage.`;if($('v500StartNext'))$('v500StartNext').textContent=`BUILD MY ${n}-DAY PLAN`;const h=$('v500StageReview')?.querySelector('.v510-reviewintro h1');if(h)h.textContent=`Review the ${n}-day family plan`;if($('v500ViewTen'))$('v500ViewTen').textContent=`ALL ${n} DAYS`;const rawHelp=$('v500Raw')?.nextElementSibling;if(rawHelp)rawHelp.textContent=`Use this only for unusual exceptions. The ${n}-day plan is already recommended from your normal work pattern and family transportation rules.`;document.querySelectorAll('[data-v510-cycle-label]').forEach(el=>el.textContent=String(n));}
   function phase(){if($('v500StageFinal')?.classList.contains('on'))return 3;if($('v500StageReview')?.classList.contains('on'))return 2;return 1}
   function syncJourney(){const p=phase();document.querySelectorAll('.v510-step').forEach((e,i)=>{e.classList.toggle('on',i+1===p);e.classList.toggle('done',i+1<p)});const status=$('v510JourneyStatus');if(status){const n=selected();status.textContent=p===1?`Choose a ${n}-day cycle and start date.`:p===2?`${n}-day working plan · review recommendations and change only exceptions.`:`${n}-day final plan · one source for print, calendar, phone, Phil, and NonZero.`}const edit=$('v510Edit'),fin=$('v510Finalize');if(edit)edit.disabled=p===1;if(fin)fin.disabled=p!==2;}
-  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v51.2 unified</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
+  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v51.3 unified</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildStart(){const st=$('v500StageStart');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<h1 class="v500-q">Build the next family planning cycle</h1><p class="v500-sub"></p><div class="v510-cyclechoice"><button type="button" class="v510-cycle" data-days="5"><strong>5 workdays</strong><span>Use for a one-week planning pass or a shorter reset.</span></button><button type="button" class="v510-cycle" data-days="10"><strong>10 workdays</strong><span>Use for the full two-week family operating cycle.</span></button></div><div class="v510-startrow"><label>Cycle starts<input id="v500StartDate" type="date" aria-label="First day of plan"></label><button id="v500StartNext" type="button" class="v500-btn primary">BUILD MY PLAN</button></div><div class="v510-promise"><strong>What happens next:</strong> AutoPilot refreshes your connected schedules, applies the normal work-site pattern and transportation logic, and gives you one recommended plan. You only change exceptions.</div>`;document.querySelectorAll('.v510-cycle').forEach(b=>b.onclick=()=>setCycle(Number(b.dataset.days)));}
   function buildLoading(){const st=$('v500StageCalendars');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<div class="v510-loader"></div><h1 class="v500-q">Building the family plan</h1><p class="v500-sub">AutoPilot is actively working. Keep this screen open while it refreshes schedules and builds recommendations.</p><div class="v512-progress"><div class="v512-step active" data-loadstep="1">Refresh calendars</div><div class="v512-step" data-loadstep="2">Apply family rules</div><div class="v512-step" data-loadstep="3">Build recommendations</div><div class="v512-step" data-loadstep="4">Prepare review</div></div><div id="v500RefreshStatus" class="v512-live"><div><b><span class="v512-dot"></span>Starting planning cycle…</b>Connecting to saved schedules.</div></div><div id="v512Elapsed" class="v512-elapsed">Working · 0s</div><button id="v500Refresh" type="button" class="v500-btn primary" style="display:none">RETRY</button>`;}
   let __v512Timer=null,__v512Started=0;
@@ -7206,8 +7254,9 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v500-status busy';st.innerHTML=`<b>Starting ${selected()}-day planning cycle…</b> Preparing saved schedules.`}let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This refresh is taking longer than expected.</b> AutoPilot is still waiting on a calendar connection. You can keep waiting, or use Backstage → Calendar connections to identify the slow feed.'}},25000);Promise.resolve(typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Unified Family Planning v51.2';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Unified Family Planning v51.3';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
 <!-- AutoPilot v51.2: adds explicit animated loading acknowledgement and real build-stage progress. -->
+<!-- AutoPilot v51.3: repairs Backstage visibility, adds editable weekday work-pattern rules, and enlarges app typography. -->
