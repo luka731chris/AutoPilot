@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v52.0</title>
+<title>AutoPilot — Family Logistics Planner v52.2</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1274,7 +1274,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </div>
 <div class="v502-nonzero" id="v502NonzeroFinal">
 <h3>Publish AutoPilot to NonZero</h3>
-<p>Publishes today's privacy-safe AutoPilot agenda into <code>autopilotAgenda</code> only. Workout sessions, streaks, timers, and all other NonZero state remain untouched.</p>
+<p>Publishes a rolling privacy-safe 14-day AutoPilot agenda cache into <code>autopilotAgenda</code> only. Workout sessions, streaks, timers, and all other NonZero state remain untouched.</p>
 <div class="v500-actions"><button class="v500-btn gold" id="v502PublishNonzero">PUBLISH TODAY TO NONZERO</button><button class="v500-btn" id="v502TestNonzero">TEST NONZERO CONNECTION</button></div>
 <div class="v502-publishstatus" id="v502PublishStatus">Finalizing the plan will also auto-publish when Auto-publish is enabled in Settings.</div>
 </div>
@@ -1733,17 +1733,17 @@ private"></textarea>
 <div class="settings-sync-status" id="settingsRefreshStatus"><strong>Reload saved settings</strong> rereads your locally saved work sites, recurring locations, rules, and current cycle. <strong>Refresh calendars now</strong> fetches the latest events from every saved calendar (using the Gateway when direct access is blocked). Neither action clears your manual final-plan overrides.</div>
 </div>
 <div class="card settings-sync-card" id="nonzeroIntegrationCard">
-<div class="section-head"><div><h2>7. NONZERO Wall integration</h2><p class="muted small">Publish a privacy-safe daily family logistics summary into the same canonical cloud state used by the NONZERO Roku Wall. AutoPilot never replaces workout, timer, pairing, or Wall-mode state.</p></div></div>
+<div class="section-head"><div><h2>7. NONZERO Wall integration</h2><p class="muted small">Publish a privacy-safe multi-day family logistics summary into the same canonical cloud state used by the NONZERO Roku Wall. AutoPilot never replaces workout, timer, pairing, or Wall-mode state.</p></div></div>
 <div class="grid2">
 <div><label>NONZERO Cloudflare Worker URL</label><input id="nonzeroCloudEndpoint" placeholder="https://nonzero-sync.example.workers.dev" type="url"/></div>
 <div><label>NONZERO private sync key</label><input autocomplete="off" id="nonzeroSyncKey" placeholder="Paste the same private sync key used by NONZERO" type="password"/></div>
 </div>
-<label class="small" style="display:flex;align-items:center;gap:10px;margin-top:12px"><input checked="" id="nonzeroAutoPublish" style="width:auto" type="checkbox"/> Auto-publish after plan generation and saved plan changes</label>
+<label class="small" style="display:flex;align-items:center;gap:10px;margin-top:12px"><input checked="" id="nonzeroAutoPublish" style="width:auto" type="checkbox"/> Keep NONZERO automatically synced (recommended)</label>
 <div class="settings-sync-actions">
 <button id="testNonzeroIntegrationBtn" type="button">Test NONZERO connection</button>
-<button class="primary" id="publishNonzeroNowBtn" type="button">Publish today to NONZERO</button>
+<button class="primary" id="publishNonzeroNowBtn" type="button">Publish current agenda to NONZERO</button>
 </div>
-<div class="settings-sync-status" id="nonzeroIntegrationStatus"><strong>Read-only dashboard contract:</strong> AutoPilot merges only <code>autopilotAgenda</code> into NONZERO cloud state using revision-safe writes. The Wall shows LIVE when today’s summary is fresh and STALE when it ages out.</div>
+<div class="settings-sync-status" id="nonzeroIntegrationStatus"><strong>Read-only dashboard contract:</strong> AutoPilot merges only <code>autopilotAgenda</code> into NONZERO cloud state using revision-safe writes. AutoPilot silently maintains a rolling 14-day last-known-good cache. Identical payloads skip Cloudflare writes; a lightweight freshness write occurs at most about once daily while AutoPilot is in use.</div>
 </div>
 </div>
 <div class="lukalab-legal-footer">A LukaLab AI Creative product | Pittsburgh, PA | All Rights Reserved</div>
@@ -4660,41 +4660,58 @@ function displayTimeForNonzero(v){
   const m=String(v).match(/^(\d{1,2}):(\d{2})/);return m?fmt((+m[1])*60+(+m[2])):String(v);
 }
 function todayIsoLocal(){const d=new Date(),o=d.getTimezoneOffset();return new Date(d.getTime()-o*60000).toISOString().slice(0,10)}
-function buildNonzeroAgenda(){
-  const date=todayIsoLocal();
-  const p=plans.find(x=>x.dateStr===date);
-  if(!p)return {schema:1,date,updatedAt:Date.now(),status:'READY',items:[],summary:{eventCount:0,conflictCount:0},source:'autopilot'};
+function buildNonzeroAgendaDay(p,date,updatedAt){
+  if(!p)return {date,weekend:[0,6].includes(new Date(date+'T12:00:00').getDay()),updatedAt,status:'READY',items:[],summary:{eventCount:0,conflictCount:0}};
   const grouped=new Map();
-  for(const a of (p.assignments||[])){
-    const act=a.activity||{};
-    const key=[act.child||'',act.title||'',act.start||'',act.end||''].join('|');
+  const add=(act,leg=null)=>{
+    if(!act||!act.title)return;
+    const key=[act.uid||'',act.child||'',act.title||'',act.start||'',act.end||'',act.location||''].join('|');
     if(!grouped.has(key))grouped.set(key,{activity:act,legs:[]});
-    grouped.get(key).legs.push(a);
-  }
-  // Include visible activities that do not require a transport assignment only when they are part of today's plan.
-  for(const act of (p.activities||[])){
-    const key=[act.child||'',act.title||'',act.start||'',act.end||''].join('|');
-    if(!grouped.has(key))grouped.set(key,{activity:act,legs:[]});
-  }
+    if(leg)grouped.get(key).legs.push(leg);
+  };
+  for(const a of (p.assignments||[]))add(a.activity||{},a);
+  // Weekend plans often have no transportation assignments, so publish all visible calendar/context commitments too.
+  for(const act of [...(p.activities||[]),...(p.contextActivities||[]),...(p.adhoc||[])])add(act);
   const items=[...grouped.values()].sort((a,b)=>toMin(a.activity.start||'23:59')-toMin(b.activity.start||'23:59')).map(x=>{
-    const act=x.activity||{};
-    const legs=x.legs||[];
+    const act=x.activity||{},legs=x.legs||[];
     const legText=legs.map(l=>`${l.kind}: ${l.primary}${l.primary==='Backup'?' ⚠':''}`).join(' · ');
-    const place=String(act.location||'').trim();
-    const child=childLabel(act.child||'');
-    return {
-      time:displayTimeForNonzero(act.start),
-      title:`${child} · ${act.title||'Family commitment'}`,
-      meta:[legText,place].filter(Boolean).join(' · '),
-      location:place,
-      child,
-      source:act.source||'AutoPilot'
-    };
+    const place=String(act.location||'').trim(),child=childLabel(act.child||'');
+    return {time:displayTimeForNonzero(act.start),title:`${child} · ${act.title||'Family commitment'}`,meta:[legText,place].filter(Boolean).join(' · '),location:place,child,source:act.source||'AutoPilot'};
   });
   const conflicts=(p.assignments||[]).filter(a=>a.primary==='Backup').length+(p.status==='bad'?1:0);
-  let status='READY'; if(conflicts>0)status='ATTENTION'; else if(items.length)status='LIVE';
+  let status='READY';if(conflicts>0)status='ATTENTION';else if(items.length)status='LIVE';
   const next=items.find(i=>i.time)||items[0]||null;
-  return {schema:1,date,updatedAt:Date.now(),status,items,summary:{eventCount:items.length,conflictCount:conflicts},nextCriticalAction:next?{time:next.time,text:next.title}:null,source:'autopilot-v50.2'};
+  return {date,weekend:p.weekend===true,updatedAt,status,items,summary:{eventCount:items.length,conflictCount:conflicts},nextCriticalAction:next?{time:next.time,text:next.title}:null};
+}
+function nonzeroDateAddIso(date,n){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function nonzeroStableHash(input){
+  const str=typeof input==='string'?input:JSON.stringify(input);let h=2166136261;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
+  return ('00000000'+(h>>>0).toString(16)).slice(-8);
+}
+function nonzeroMaterialSignature(agenda){
+  return {
+    schema:Number(agenda?.schema||3),range:agenda?.range||null,days:(agenda?.days||[]).map(d=>({
+      date:d.date,weekend:!!d.weekend,status:d.status||'READY',items:(d.items||[]).map(i=>({time:i.time||'',title:i.title||'',meta:i.meta||'',location:i.location||'',child:i.child||'',source:i.source||''})),summary:d.summary||{}
+    }))
+  };
+}
+function buildNonzeroAgenda(){
+  const date=todayIsoLocal(),updatedAt=Date.now(),horizonDays=14;
+  const allPlans=(typeof plans!=='undefined'&&Array.isArray(plans)?plans:(Array.isArray(window.plans)?window.plans:[])).filter(Boolean);
+  let allActs=[],allAdhoc=[];try{allActs=typeof getActivities==='function'?getActivities():[]}catch{}try{allAdhoc=typeof getAdhoc==='function'?getAdhoc():[]}catch{}
+  const required=allActs.filter(a=>a.transportClass==='required'),context=allActs.filter(a=>a.transportClass!=='required');
+  const byDate=new Map(allPlans.map(p=>[p.dateStr||iso(p.date),p]));
+  const days=[];
+  for(let i=0;i<horizonDays;i++){
+    const ds=nonzeroDateAddIso(date,i),existing=byDate.get(ds);
+    const synthetic=existing||{dateStr:ds,date:new Date(ds+'T12:00:00'),weekend:[0,6].includes(new Date(ds+'T12:00:00').getDay()),activities:required.filter(a=>a.date===ds),contextActivities:context.filter(a=>a.date===ds),adhoc:allAdhoc.filter(a=>a.date===ds),assignments:[],status:'ready'};
+    days.push(buildNonzeroAgendaDay(synthetic,ds,updatedAt));
+  }
+  const current=days[0]||buildNonzeroAgendaDay(null,date,updatedAt);
+  const out={...current,schema:3,updatedAt,days,range:{start:date,end:nonzeroDateAddIso(date,horizonDays-1)},horizonDays,source:'autopilot-v52.2'};
+  out.contentHash=nonzeroStableHash(nonzeroMaterialSignature(out));
+  return out;
 }
 async function nonzeroCloudRequest(path,opts={}){
   const cfg=nonzeroIntegrationConfig();
@@ -4716,7 +4733,7 @@ async function testNonzeroIntegration(){
     return true;
   }catch(e){nonzeroStatus(`<strong>Connection failed:</strong> ${esc(e.message)}`,'warn');return false}
 }
-async function publishNonzeroAgenda({silent=false}={}){
+async function publishNonzeroAgenda({silent=false,forceFreshness=false}={}){
   if(__nonzeroPublishing)return false;
   const cfg=nonzeroIntegrationConfig();
   if(!/^https:\/\//i.test(cfg.endpoint)||cfg.key.length<16){if(!silent)nonzeroStatus('<strong>Not configured.</strong> Add the NONZERO Worker URL and private sync key first.','warn');return false}
@@ -4727,21 +4744,38 @@ async function publishNonzeroAgenda({silent=false}={}){
       const current=await nonzeroCloudRequest('/state');
       const state=(current.state&&typeof current.state==='object')?current.state:{};
       if(!Array.isArray(state.sessions))state.sessions=[];
+      const existing=state.autopilotAgenda&&typeof state.autopilotAgenda==='object'?state.autopilotAgenda:null;
+      const existingHash=existing?.contentHash||nonzeroStableHash(nonzeroMaterialSignature(existing||{}));
+      const age=existing&&Number(existing.updatedAt)>0?Date.now()-Number(existing.updatedAt):Infinity;
+      const dailyFreshnessDue=age>=20*60*60*1000;
+      if(existing&&existingHash===agenda.contentHash&&!forceFreshness&&!dailyFreshnessDue){
+        if(!silent)nonzeroStatus(`<strong>Already current.</strong> The 14-day NONZERO agenda cache is unchanged, so no Cloudflare write was needed.`,'good');
+        return true;
+      }
       const baseRevision=Number(current.revision||state._meta?.revision||0);
       const nextState={...state,autopilotAgenda:agenda};
       try{
         const written=await nonzeroCloudRequest('/state',{method:'PUT',body:JSON.stringify({state:nextState,baseRevision})});
-        if(!silent)nonzeroStatus(`<strong>Published.</strong> ${agenda.date} · ${agenda.items.length} agenda item${agenda.items.length===1?'':'s'} · NONZERO revision ${written.revision||'updated'}.`,'good');
+        try{localStorage.setItem('autopilot.nonzero.lastPublishAt',String(Date.now()));localStorage.setItem('autopilot.nonzero.lastHash',agenda.contentHash)}catch{}
+        if(!silent)nonzeroStatus(`<strong>Synced.</strong> Rolling ${agenda.horizonDays}-day agenda cache · through ${agenda.range.end} · NONZERO revision ${written.revision||'updated'}.`,'good');
         return true;
       }catch(e){if(e.status!==409||attempt===2)throw e}
     }
-  }catch(e){if(!silent)nonzeroStatus(`<strong>Publish failed:</strong> ${esc(e.message)}. Existing NONZERO state was left intact.`,'warn');return false}
+  }catch(e){if(!silent)nonzeroStatus(`<strong>Sync failed:</strong> ${esc(e.message)}. The last-known-good NONZERO agenda cache was preserved.`,'warn');return false}
   finally{__nonzeroPublishing=false}
 }
-function scheduleNonzeroAgendaPublish(){
-  const cfg=nonzeroIntegrationConfig(); if(!cfg.auto||!plans.length)return;
-  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),1200);
+function scheduleNonzeroAgendaPublish(delay=1200){
+  const cfg=nonzeroIntegrationConfig();if(!cfg.auto)return;
+  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),Math.max(250,Number(delay)||1200));
 }
+function installNonzeroAutonomousSync(){
+  const run=()=>{try{if(nonzeroIntegrationConfig().auto)scheduleNonzeroAgendaPublish(1800)}catch{}};
+  // Opening AutoPilot silently reconciles the rolling cache; returning to the tab does the same.
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,2200),{once:true});else setTimeout(run,2200);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)run()});
+  window.addEventListener('online',run);
+}
+installNonzeroAutonomousSync();
 $('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();scheduleNonzeroAgendaPublish();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
 $('exportBackupBtn').onclick=exportBackup;
@@ -4773,7 +4807,7 @@ function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.t
 <!-- AutoPilot v50.7: fully editable 10-day workspace + retained day-by-day review. -->
 <scr${''}ipt>window.__apRelease='v51.5';<\/script>
 
-<!-- AutoPilot v52.0 CONSOLIDATED: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body></html>
 <!-- AutoPilot v50.2: anytime non-destructive calendar refresh; clean planning-cycle restart preserving durable setup; final-step NONZERO publish/test receipt + auto-publish visibility. -->`;
 }
@@ -4903,7 +4937,7 @@ body{background:#fff;color:#111}
 <!-- AutoPilot v47.26: HTML structure repair; generated mobile snapshot script tag is constructed dynamically so it cannot terminate the host application script. -->
 <!-- AutoPilot v47.38: day editor mounted at body root; navigation cannot be removed by legacy container rerenders. -->
 
-<!-- AutoPilot v52.0 CONSOLIDATED: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body>
 </html>`;
 }
@@ -5486,7 +5520,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
     const old=$('v4724PrintFrame');if(old)old.remove();
     const frame=document.createElement('iframe');frame.id='v4724PrintFrame';frame.setAttribute('aria-hidden','true');frame.style.position='fixed';frame.style.right='0';frame.style.bottom='0';frame.style.width='1px';frame.style.height='1px';frame.style.border='0';frame.style.opacity='0';document.body.appendChild(frame);
     const d=frame.contentDocument||frame.contentWindow.document;d.open();d.write(`<!doctype html><html><head><title>${title}</title><style>${printableCss()}</style></head><body><h1>${title}</h1><div class="sub">AutoPilot ${V} · ${new Date().toLocaleString()}</div>${src.innerHTML}
-<!-- AutoPilot v52.0 CONSOLIDATED: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body></html>`);d.close();
     const launch=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(err){console.error('Print launch failed',err);alert('The browser could not open print preview. Use Ctrl+P while the schedule preview is visible.')}setTimeout(()=>frame.remove(),2500)};
     if(d.readyState==='complete')setTimeout(launch,80);else frame.onload=()=>setTimeout(launch,80);
@@ -5680,7 +5714,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 
 
 
-<!-- AutoPilot v52.0 CONSOLIDATED: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body>
 
 
@@ -5820,7 +5854,7 @@ async function publishNonzeroFromFinal(testOnly=false){
   try{
     try{if(typeof saveAllNow==='function')saveAllNow()}catch{}
     if(testOnly){set('<b>Testing NONZERO connection…</b>');const ok=await testNonzeroIntegration();set(ok?'<b>NONZERO connected.</b> Canonical state is reachable and safe to publish.':'<b>Connection test failed.</b> Check the Worker URL/private key in Settings.',ok?'good':'warn');return ok}
-    set('<b>Publishing today’s AutoPilot agenda to NONZERO…</b>');
+    set('<b>Publishing the current AutoPilot agenda to NONZERO…</b>');
     const ok=await publishNonzeroAgenda({silent:true});
     if(ok){const a=buildNonzeroAgenda();set(`<b>Published.</b> ${a.date} · ${a.items.length} agenda item${a.items.length===1?'':'s'} · only <code>autopilotAgenda</code> was updated.`,'good')}
     else set('<b>Publish did not complete.</b> Existing NONZERO state was left intact. Check the integration settings and test the connection.','warn');
@@ -5828,7 +5862,7 @@ async function publishNonzeroFromFinal(testOnly=false){
   }catch(e){console.error(e);set(`<b>Publish failed.</b> ${esc(e.message)} Existing NONZERO state was left intact.`,'warn');return false}
 }
 async function v515Paint(){await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(resolve,0))))}
-async function refreshPlan(){let b=$('v500Refresh');if(b)b.disabled=true;v512Clock(true);v512Load(1,'Refreshing calendars…',`Pulling the latest events for this ${window.__apCycleDays||10}-day cycle.`);await v515Paint();try{let sd=$('v500StartDate').value,legacy=$('startDate');if(legacy)legacy.value=sd;try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');let r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});v512Load(2,'Applying family rules…',`${r.ok||0}${r.total?'/'+r.total:''} calendar sources refreshed. Applying saved locations, work patterns, and transportation rules.`);await v515Paint();v512Load(3,'Building recommendations…','Calculating work sites, commute timing, drop-offs, pickups, and departure guidance.');await v515Paint();if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==(window.__apCycleDays||10))throw new Error(`AutoPilot built ${ps.length} workdays instead of ${window.__apCycleDays||10}.`);v512Load(4,'Preparing your review…',`${ps.length} workdays built successfully. Formatting the recommended plan.`);await v515Paint();dayIndex=0;view='10';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Review the recommendations and change only exceptions.`;v512Clock(false);stage(3);v504SetToolbarState('<b>Plan ready.</b> Edit, refresh, print, or finalize at any time.','good')}catch(e){console.error(e);v512Clock(false);const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML='<div><b>Plan build stopped.</b>'+esc(e.message)+'<br><span style="font-size:11px;color:#6d655c">Use RETRY or open Backstage → Calendar connections if a feed needs attention.</span></div>'}if(b){b.style.display='inline-flex'}}finally{if(b)b.disabled=false}}
+async function refreshPlan(){let b=$('v500Refresh');if(b)b.disabled=true;v512Clock(true);v512Load(1,'Refreshing calendars…',`Pulling the latest events for this ${window.__apCycleDays||10}-day cycle.`);await v515Paint();try{let sd=$('v500StartDate').value,legacy=$('startDate');if(legacy)legacy.value=sd;try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');let r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});v512Load(2,'Applying family rules…',`${r.ok||0}${r.total?'/'+r.total:''} calendar sources refreshed. Applying saved locations, work patterns, and transportation rules.`);await v515Paint();v512Load(3,'Building recommendations…','Calculating work sites, commute timing, drop-offs, pickups, and departure guidance.');await v515Paint();if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==(window.__apCycleDays||10))throw new Error(`AutoPilot built ${ps.length} workdays instead of ${window.__apCycleDays||10}.`);v512Load(4,'Preparing your review…',`${ps.length} workdays built successfully. Formatting the recommended plan.`);await v515Paint();dayIndex=0;view='10';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Review the recommendations and change only exceptions.`;v512Clock(false);stage(3);v504SetToolbarState('<b>Plan ready.</b> Edit, refresh, print, or finalize at any time.','good');scheduleNonzeroAgendaPublish(400)}catch(e){console.error(e);v512Clock(false);const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML='<div><b>Plan build stopped.</b>'+esc(e.message)+'<br><span style="font-size:11px;color:#6d655c">Use RETRY or open Backstage → Calendar connections if a feed needs attention.</span></div>'}if(b){b.style.display='inline-flex'}}finally{if(b)b.disabled=false}}
 
 function v500Clock(raw){const m=String(raw||'').toLowerCase().match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/);if(!m)return null;let h=+m[1],mi=+(m[2]||0),ap=m[3]||'';if(mi>59||h>23)return null;if(ap){if(h<1||h>12)return null;if(h===12)h=0;if(ap==='pm')h+=12}else if(h<=7)h+=12;return h*60+mi}
 function v500EventMatch(p,line){const list=acts(p),t=String(line||'').toLowerCase();if(!list.length)return null;const owner=(String(line).match(/^\s*([A-Za-z][A-Za-z'-]+)\s+will\s+ride\b/i)||[])[1]||'';let scored=list.map(a=>{let score=0,title=String(a.title||'').toLowerCase();if(/\bsoccer\b/.test(t)&&/\bsoccer\b/.test(title))score+=5;for(const tok of title.split(/[^a-z0-9]+/).filter(x=>x.length>=4&&!['practice','game','event'].includes(x)))if(t.includes(tok))score++;if(owner&&String(safeOwner(a)||'').toLowerCase()===owner.toLowerCase())score+=4;return {a,score}}).sort((a,b)=>b.score-a.score);return scored[0]&&scored[0].score>0&&(scored.length===1||scored[0].score>scored[1].score)?scored[0].a:null}
@@ -5903,7 +5937,7 @@ function snapshot(){return workPlans().map(p=>({date:dkey(p),label:dateLabel(p,t
 function snapshotTiles(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b><br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`}
 function renderPhone(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`}
 function phoneHtml(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
-<!-- AutoPilot v52.0 CONSOLIDATED: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body></html>`}
 function download(name,text,type='text/plain'){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);stage(5);try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
@@ -6200,7 +6234,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v52.0';
+   document.title='AutoPilot — Family Logistics Planner v52.2';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6221,7 +6255,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v52.0';
+   document.title='AutoPilot — Family Logistics Planner v52.2';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6274,7 +6308,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  snapshotTiles=function(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${snapGuidance(d)}${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b><br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`};
  renderPhone=function(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;let action='';if(d.leaveHome)action+=`<hr><b>Leave home by:</b> ${esc(d.leaveHome.time)} <span class="muted">${esc(d.leaveHome.reason||'')}</span>`;if(d.leaveWork)action+=`<br><b>Leave work by:</b> ${esc(d.leaveWork.time)} <span class="muted">${esc(d.leaveWork.reason||'')}</span>`;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${action}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`};
  phoneHtml=function(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}.deadline{background:#faf7ef;border:1px solid #e2d9ca;border-radius:8px;padding:7px;margin:7px 0;font-size:12px}</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
-<!-- AutoPilot v52.0 CONSOLIDATED: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body></html>`};
  // One-page review/fridge output gets the same operational deadlines.
  v504PrintCard=function(p){
@@ -6285,7 +6319,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  // NONZERO daily agenda begins with the critical leave action so the Wall can surface it.
  const oldBuildNz=buildNonzeroAgenda;
  buildNonzeroAgenda=function(){const out=oldBuildNz();try{const p=plans.find(x=>x.dateStr===out.date);const g=guidance(p);const a=g.evening||g.morning;if(a){const title=`${a.label} ${fmt513(a.time)}`;out.items=[{time:fmt513(a.time),title,meta:a.reason||'',location:'',child:'',source:'AutoPilot timing'},...(out.items||[])];out.nextCriticalAction={time:fmt513(a.time),text:title+' '+(a.reason||'')};out.summary=out.summary||{};out.summary.eventCount=(out.items||[]).length}out.source='autopilot-v52.0'}catch{}return out};
- function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v52.0';document.title='AutoPilot — Family Logistics Planner v52.0';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
+ function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v52.2';document.title='AutoPilot — Family Logistics Planner v52.2';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -6376,7 +6410,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This refresh is taking longer than expected.</b> AutoPilot is still waiting on a calendar connection. You can keep waiting, or use Backstage → Calendar connections to identify the slow feed.'}},25000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Unified Family Planning v52.0';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Unified Family Planning v52.2';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
