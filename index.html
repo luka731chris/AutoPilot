@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v52.2</title>
+<title>AutoPilot — Family Logistics Planner v52.0</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1274,7 +1274,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </div>
 <div class="v502-nonzero" id="v502NonzeroFinal">
 <h3>Publish AutoPilot to NonZero</h3>
-<p>Publishes a rolling privacy-safe 14-day AutoPilot agenda cache into <code>autopilotAgenda</code> only. Workout sessions, streaks, timers, and all other NonZero state remain untouched.</p>
+<p>Publishes the current privacy-safe seven-day AutoPilot agenda cache into <code>autopilotAgenda</code> only. Workout sessions, streaks, timers, and all other NonZero state remain untouched.</p>
 <div class="v500-actions"><button class="v500-btn gold" id="v502PublishNonzero">PUBLISH TODAY TO NONZERO</button><button class="v500-btn" id="v502TestNonzero">TEST NONZERO CONNECTION</button></div>
 <div class="v502-publishstatus" id="v502PublishStatus">Finalizing the plan will also auto-publish when Auto-publish is enabled in Settings.</div>
 </div>
@@ -1738,12 +1738,12 @@ private"></textarea>
 <div><label>NONZERO Cloudflare Worker URL</label><input id="nonzeroCloudEndpoint" placeholder="https://nonzero-sync.example.workers.dev" type="url"/></div>
 <div><label>NONZERO private sync key</label><input autocomplete="off" id="nonzeroSyncKey" placeholder="Paste the same private sync key used by NONZERO" type="password"/></div>
 </div>
-<label class="small" style="display:flex;align-items:center;gap:10px;margin-top:12px"><input checked="" id="nonzeroAutoPublish" style="width:auto" type="checkbox"/> Keep NONZERO automatically synced (recommended)</label>
+<label class="small" style="display:flex;align-items:center;gap:10px;margin-top:12px"><input checked="" id="nonzeroAutoPublish" style="width:auto" type="checkbox"/> Auto-publish after plan generation and saved plan changes</label>
 <div class="settings-sync-actions">
 <button id="testNonzeroIntegrationBtn" type="button">Test NONZERO connection</button>
 <button class="primary" id="publishNonzeroNowBtn" type="button">Publish current agenda to NONZERO</button>
 </div>
-<div class="settings-sync-status" id="nonzeroIntegrationStatus"><strong>Read-only dashboard contract:</strong> AutoPilot merges only <code>autopilotAgenda</code> into NONZERO cloud state using revision-safe writes. AutoPilot silently maintains a rolling 14-day last-known-good cache. Identical payloads skip Cloudflare writes; a lightweight freshness write occurs at most about once daily while AutoPilot is in use.</div>
+<div class="settings-sync-status" id="nonzeroIntegrationStatus"><strong>Read-only dashboard contract:</strong> AutoPilot merges only <code>autopilotAgenda</code> into NONZERO cloud state using revision-safe writes. The Wall shows LIVE when the current schedule is fresh and STALE when it ages out.</div>
 </div>
 </div>
 <div class="lukalab-legal-footer">A LukaLab AI Creative product | Pittsburgh, PA | All Rights Reserved</div>
@@ -4683,35 +4683,12 @@ function buildNonzeroAgendaDay(p,date,updatedAt){
   const next=items.find(i=>i.time)||items[0]||null;
   return {date,weekend:p.weekend===true,updatedAt,status,items,summary:{eventCount:items.length,conflictCount:conflicts},nextCriticalAction:next?{time:next.time,text:next.title}:null};
 }
-function nonzeroDateAddIso(date,n){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function nonzeroStableHash(input){
-  const str=typeof input==='string'?input:JSON.stringify(input);let h=2166136261;
-  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}
-  return ('00000000'+(h>>>0).toString(16)).slice(-8);
-}
-function nonzeroMaterialSignature(agenda){
-  return {
-    schema:Number(agenda?.schema||3),range:agenda?.range||null,days:(agenda?.days||[]).map(d=>({
-      date:d.date,weekend:!!d.weekend,status:d.status||'READY',items:(d.items||[]).map(i=>({time:i.time||'',title:i.title||'',meta:i.meta||'',location:i.location||'',child:i.child||'',source:i.source||''})),summary:d.summary||{}
-    }))
-  };
-}
 function buildNonzeroAgenda(){
-  const date=todayIsoLocal(),updatedAt=Date.now(),horizonDays=14;
-  const allPlans=(typeof plans!=='undefined'&&Array.isArray(plans)?plans:(Array.isArray(window.plans)?window.plans:[])).filter(Boolean);
-  let allActs=[],allAdhoc=[];try{allActs=typeof getActivities==='function'?getActivities():[]}catch{}try{allAdhoc=typeof getAdhoc==='function'?getAdhoc():[]}catch{}
-  const required=allActs.filter(a=>a.transportClass==='required'),context=allActs.filter(a=>a.transportClass!=='required');
-  const byDate=new Map(allPlans.map(p=>[p.dateStr||iso(p.date),p]));
-  const days=[];
-  for(let i=0;i<horizonDays;i++){
-    const ds=nonzeroDateAddIso(date,i),existing=byDate.get(ds);
-    const synthetic=existing||{dateStr:ds,date:new Date(ds+'T12:00:00'),weekend:[0,6].includes(new Date(ds+'T12:00:00').getDay()),activities:required.filter(a=>a.date===ds),contextActivities:context.filter(a=>a.date===ds),adhoc:allAdhoc.filter(a=>a.date===ds),assignments:[],status:'ready'};
-    days.push(buildNonzeroAgendaDay(synthetic,ds,updatedAt));
-  }
-  const current=days[0]||buildNonzeroAgendaDay(null,date,updatedAt);
-  const out={...current,schema:3,updatedAt,days,range:{start:date,end:nonzeroDateAddIso(date,horizonDays-1)},horizonDays,source:'autopilot-v52.2'};
-  out.contentHash=nonzeroStableHash(nonzeroMaterialSignature(out));
-  return out;
+  const date=todayIsoLocal(),updatedAt=Date.now();
+  const all=(typeof plans!=='undefined'&&Array.isArray(plans)?plans:(Array.isArray(window.plans)?window.plans:[])).filter(Boolean);
+  const days=all.map(p=>buildNonzeroAgendaDay(p,p.dateStr||date,updatedAt)).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));
+  const current=days.find(d=>d.date===date)||buildNonzeroAgendaDay(null,date,updatedAt);
+  return {...current,schema:2,updatedAt,days,range:days.length?{start:days[0].date,end:days[days.length-1].date}:null,source:'autopilot-v52.1'};
 }
 async function nonzeroCloudRequest(path,opts={}){
   const cfg=nonzeroIntegrationConfig();
@@ -4733,7 +4710,7 @@ async function testNonzeroIntegration(){
     return true;
   }catch(e){nonzeroStatus(`<strong>Connection failed:</strong> ${esc(e.message)}`,'warn');return false}
 }
-async function publishNonzeroAgenda({silent=false,forceFreshness=false}={}){
+async function publishNonzeroAgenda({silent=false}={}){
   if(__nonzeroPublishing)return false;
   const cfg=nonzeroIntegrationConfig();
   if(!/^https:\/\//i.test(cfg.endpoint)||cfg.key.length<16){if(!silent)nonzeroStatus('<strong>Not configured.</strong> Add the NONZERO Worker URL and private sync key first.','warn');return false}
@@ -4744,38 +4721,21 @@ async function publishNonzeroAgenda({silent=false,forceFreshness=false}={}){
       const current=await nonzeroCloudRequest('/state');
       const state=(current.state&&typeof current.state==='object')?current.state:{};
       if(!Array.isArray(state.sessions))state.sessions=[];
-      const existing=state.autopilotAgenda&&typeof state.autopilotAgenda==='object'?state.autopilotAgenda:null;
-      const existingHash=existing?.contentHash||nonzeroStableHash(nonzeroMaterialSignature(existing||{}));
-      const age=existing&&Number(existing.updatedAt)>0?Date.now()-Number(existing.updatedAt):Infinity;
-      const dailyFreshnessDue=age>=20*60*60*1000;
-      if(existing&&existingHash===agenda.contentHash&&!forceFreshness&&!dailyFreshnessDue){
-        if(!silent)nonzeroStatus(`<strong>Already current.</strong> The 14-day NONZERO agenda cache is unchanged, so no Cloudflare write was needed.`,'good');
-        return true;
-      }
       const baseRevision=Number(current.revision||state._meta?.revision||0);
       const nextState={...state,autopilotAgenda:agenda};
       try{
         const written=await nonzeroCloudRequest('/state',{method:'PUT',body:JSON.stringify({state:nextState,baseRevision})});
-        try{localStorage.setItem('autopilot.nonzero.lastPublishAt',String(Date.now()));localStorage.setItem('autopilot.nonzero.lastHash',agenda.contentHash)}catch{}
-        if(!silent)nonzeroStatus(`<strong>Synced.</strong> Rolling ${agenda.horizonDays}-day agenda cache · through ${agenda.range.end} · NONZERO revision ${written.revision||'updated'}.`,'good');
+        if(!silent)nonzeroStatus(`<strong>Published.</strong> ${agenda.date} · ${agenda.items.length} agenda item${agenda.items.length===1?'':'s'} · NONZERO revision ${written.revision||'updated'}.`,'good');
         return true;
       }catch(e){if(e.status!==409||attempt===2)throw e}
     }
-  }catch(e){if(!silent)nonzeroStatus(`<strong>Sync failed:</strong> ${esc(e.message)}. The last-known-good NONZERO agenda cache was preserved.`,'warn');return false}
+  }catch(e){if(!silent)nonzeroStatus(`<strong>Publish failed:</strong> ${esc(e.message)}. Existing NONZERO state was left intact.`,'warn');return false}
   finally{__nonzeroPublishing=false}
 }
-function scheduleNonzeroAgendaPublish(delay=1200){
-  const cfg=nonzeroIntegrationConfig();if(!cfg.auto)return;
-  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),Math.max(250,Number(delay)||1200));
+function scheduleNonzeroAgendaPublish(){
+  const cfg=nonzeroIntegrationConfig(); if(!cfg.auto||!plans.length)return;
+  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),1200);
 }
-function installNonzeroAutonomousSync(){
-  const run=()=>{try{if(nonzeroIntegrationConfig().auto)scheduleNonzeroAgendaPublish(1800)}catch{}};
-  // Opening AutoPilot silently reconciles the rolling cache; returning to the tab does the same.
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,2200),{once:true});else setTimeout(run,2200);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)run()});
-  window.addEventListener('online',run);
-}
-installNonzeroAutonomousSync();
 $('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();scheduleNonzeroAgendaPublish();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
 $('exportBackupBtn').onclick=exportBackup;
@@ -5862,7 +5822,7 @@ async function publishNonzeroFromFinal(testOnly=false){
   }catch(e){console.error(e);set(`<b>Publish failed.</b> ${esc(e.message)} Existing NONZERO state was left intact.`,'warn');return false}
 }
 async function v515Paint(){await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(resolve,0))))}
-async function refreshPlan(){let b=$('v500Refresh');if(b)b.disabled=true;v512Clock(true);v512Load(1,'Refreshing calendars…',`Pulling the latest events for this ${window.__apCycleDays||10}-day cycle.`);await v515Paint();try{let sd=$('v500StartDate').value,legacy=$('startDate');if(legacy)legacy.value=sd;try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');let r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});v512Load(2,'Applying family rules…',`${r.ok||0}${r.total?'/'+r.total:''} calendar sources refreshed. Applying saved locations, work patterns, and transportation rules.`);await v515Paint();v512Load(3,'Building recommendations…','Calculating work sites, commute timing, drop-offs, pickups, and departure guidance.');await v515Paint();if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==(window.__apCycleDays||10))throw new Error(`AutoPilot built ${ps.length} workdays instead of ${window.__apCycleDays||10}.`);v512Load(4,'Preparing your review…',`${ps.length} workdays built successfully. Formatting the recommended plan.`);await v515Paint();dayIndex=0;view='10';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Review the recommendations and change only exceptions.`;v512Clock(false);stage(3);v504SetToolbarState('<b>Plan ready.</b> Edit, refresh, print, or finalize at any time.','good');scheduleNonzeroAgendaPublish(400)}catch(e){console.error(e);v512Clock(false);const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML='<div><b>Plan build stopped.</b>'+esc(e.message)+'<br><span style="font-size:11px;color:#6d655c">Use RETRY or open Backstage → Calendar connections if a feed needs attention.</span></div>'}if(b){b.style.display='inline-flex'}}finally{if(b)b.disabled=false}}
+async function refreshPlan(){let b=$('v500Refresh');if(b)b.disabled=true;v512Clock(true);v512Load(1,'Refreshing calendars…',`Pulling the latest events for this ${window.__apCycleDays||10}-day cycle.`);await v515Paint();try{let sd=$('v500StartDate').value,legacy=$('startDate');if(legacy)legacy.value=sd;try{if(typeof buildKiraRows==='function')buildKiraRows();if(typeof applyCachedKiraSchedule==='function')applyCachedKiraSchedule();if(typeof saveCycle==='function')saveCycle()}catch(e){}if(typeof refreshAllCalendarsCore!=='function')throw new Error('Calendar refresh engine is unavailable.');let r=await refreshAllCalendarsCore({quiet:true,reason:'v500'});v512Load(2,'Applying family rules…',`${r.ok||0}${r.total?'/'+r.total:''} calendar sources refreshed. Applying saved locations, work patterns, and transportation rules.`);await v515Paint();v512Load(3,'Building recommendations…','Calculating work sites, commute timing, drop-offs, pickups, and departure guidance.');await v515Paint();if(typeof generateCore==='function')await generateCore();else if(typeof generate==='function')await generate();else throw new Error('Plan generator is unavailable.');captureWorkingPlans();let ps=workPlans();if(ps.length!==(window.__apCycleDays||10))throw new Error(`AutoPilot built ${ps.length} workdays instead of ${window.__apCycleDays||10}.`);v512Load(4,'Preparing your review…',`${ps.length} workdays built successfully. Formatting the recommended plan.`);await v515Paint();dayIndex=0;view='10';renderReview();$('v500Raw').value=localStorage.getItem(RAW)||'';$('v500ReviewStatus').className='v500-status good';$('v500ReviewStatus').innerHTML=`<b>Plan loaded.</b> ${ps.length} workdays are ready. Review the recommendations and change only exceptions.`;v512Clock(false);stage(3);v504SetToolbarState('<b>Plan ready.</b> Edit, refresh, print, or finalize at any time.','good')}catch(e){console.error(e);v512Clock(false);const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML='<div><b>Plan build stopped.</b>'+esc(e.message)+'<br><span style="font-size:11px;color:#6d655c">Use RETRY or open Backstage → Calendar connections if a feed needs attention.</span></div>'}if(b){b.style.display='inline-flex'}}finally{if(b)b.disabled=false}}
 
 function v500Clock(raw){const m=String(raw||'').toLowerCase().match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/);if(!m)return null;let h=+m[1],mi=+(m[2]||0),ap=m[3]||'';if(mi>59||h>23)return null;if(ap){if(h<1||h>12)return null;if(h===12)h=0;if(ap==='pm')h+=12}else if(h<=7)h+=12;return h*60+mi}
 function v500EventMatch(p,line){const list=acts(p),t=String(line||'').toLowerCase();if(!list.length)return null;const owner=(String(line).match(/^\s*([A-Za-z][A-Za-z'-]+)\s+will\s+ride\b/i)||[])[1]||'';let scored=list.map(a=>{let score=0,title=String(a.title||'').toLowerCase();if(/\bsoccer\b/.test(t)&&/\bsoccer\b/.test(title))score+=5;for(const tok of title.split(/[^a-z0-9]+/).filter(x=>x.length>=4&&!['practice','game','event'].includes(x)))if(t.includes(tok))score++;if(owner&&String(safeOwner(a)||'').toLowerCase()===owner.toLowerCase())score+=4;return {a,score}}).sort((a,b)=>b.score-a.score);return scored[0]&&scored[0].score>0&&(scored.length===1||scored[0].score>scored[1].score)?scored[0].a:null}
@@ -6234,7 +6194,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v52.2';
+   document.title='AutoPilot — Family Logistics Planner v52.0';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6255,7 +6215,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v52.2';
+   document.title='AutoPilot — Family Logistics Planner v52.0';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6309,6 +6269,80 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  renderPhone=function(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;let action='';if(d.leaveHome)action+=`<hr><b>Leave home by:</b> ${esc(d.leaveHome.time)} <span class="muted">${esc(d.leaveHome.reason||'')}</span>`;if(d.leaveWork)action+=`<br><b>Leave work by:</b> ${esc(d.leaveWork.time)} <span class="muted">${esc(d.leaveWork.reason||'')}</span>`;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${action}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`};
  phoneHtml=function(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}.deadline{background:#faf7ef;border:1px solid #e2d9ca;border-radius:8px;padding:7px;margin:7px 0;font-size:12px}</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+
+<style id="v526PlanningSprintStyle">
+#v526PlanningSprint{margin:0 0 16px;border:1px solid #d9d1c6;border-radius:14px;background:#fbfaf7;overflow:hidden}
+.v526-sprint-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:14px 16px;border-bottom:1px solid #e2dbd1;background:#fff}
+.v526-sprint-head h2{margin:0;font-size:18px;line-height:1.15}.v526-sprint-head p{margin:4px 0 0;font-size:10.5px;color:#6d655c;line-height:1.4}
+.v526-target{font-size:11px;font-weight:950;border:1px solid #cabfaa;border-radius:999px;padding:7px 10px;background:#f2eee5;white-space:nowrap}
+.v526-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}.v526-step{padding:13px 14px;border-right:1px solid #e2dbd1;min-width:0}.v526-step:last-child{border-right:0}
+.v526-step small{display:block;text-transform:uppercase;letter-spacing:.055em;font-size:8.5px;font-weight:950;color:#847a6d}.v526-step strong{display:block;font-size:13px;margin-top:3px;color:#28241f}.v526-step span{display:block;font-size:9.5px;color:#70685f;margin-top:3px;line-height:1.35}
+.v526-step button{margin-top:8px;min-height:34px;font-size:9px;font-weight:950;width:100%}
+#v524MealHQ.v526-simple .v525-week{display:none}.v526-meal-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:0 14px 14px}.v526-meal-pill{border:1px solid #ddd5ca;border-radius:9px;padding:8px;background:#fff;min-width:0}.v526-meal-pill b{display:block;font-size:8.5px;color:#7b7268;text-transform:uppercase}.v526-meal-pill span{display:block;font-size:10px;font-weight:900;line-height:1.25;margin-top:3px;overflow-wrap:anywhere}.v526-meal-pill em{display:block;font-style:normal;font-size:8.5px;color:#756d63;margin-top:3px}
+.v526-meal-actions{display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 14px}.v526-meal-actions button{min-height:40px;font-weight:950}.v526-meal-actions .primary{flex:1;min-width:230px}.v526-change-panel{margin:0 14px 14px;border:1px solid #ddd5ca;border-radius:10px;padding:12px;background:#fff}.v526-change-panel .v524-grid{margin-top:8px}
+.v526-hidden-advanced{display:none!important}.v526-grocery-ready{border:2px solid #9eb599!important}.v526-grocery-ready .v524-grocery-head{background:#f2f7ef}
+@media(max-width:900px){.v526-meal-strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){.v526-sprint-head{align-items:flex-start;flex-direction:column}.v526-steps{grid-template-columns:1fr}.v526-step{border-right:0;border-bottom:1px solid #e2dbd1}.v526-step:last-child{border-bottom:0}.v526-meal-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script id="v526PlanningSprintPatch">
+(function(){
+ const $=id=>document.getElementById(id);
+ function scrollToEl(el){if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+ function countIssues(){return document.querySelectorAll('#simpleEyeballList .verify-needed').length;}
+ function buildSprint(){
+   const stage=$('v500StageReview'), card=stage?.querySelector('.v500-card');
+   if(!card)return;
+   let host=$('v526PlanningSprint');
+   if(!host){
+     host=document.createElement('section'); host.id='v526PlanningSprint';
+     const intro=card.querySelector('.v510-reviewintro');
+     if(intro)intro.insertAdjacentElement('afterend',host); else card.prepend(host);
+   }
+   const issues=countIssues();
+   host.innerHTML=`<div class="v526-sprint-head"><div><h2>10–15 minute weekly planning sprint</h2><p>AutoPilot proposes the week. You and Kira only resolve exceptions, approve dinners, and take the grocery list.</p></div><div class="v526-target">TARGET ≤ 15 MIN</div></div>
+   <div class="v526-steps">
+    <div class="v526-step"><small>Step 1 · ~5–7 min</small><strong>Logistics exceptions</strong><span>${issues?issues+' item'+(issues===1?'':'s')+' need a decision.':'No unresolved event setup detected.'} Review the full calendar, but touch only exceptions.</span><button id="v526GoLogistics">REVIEW LOGISTICS</button></div>
+    <div class="v526-step"><small>Step 2 · ~3–4 min</small><strong>Approve dinners</strong><span>AutoPilot preselects realistic meals based on schedule difficulty and family preferences.</span><button id="v526GoMeals">REVIEW DINNERS</button></div>
+    <div class="v526-step"><small>Step 3 · ~1–2 min</small><strong>Take the grocery list</strong><span>One list generated directly from the approved dinner plan and automatic lunches.</span><button id="v526GoGroceries">GROCERY LIST</button></div>
+   </div>`;
+   $('v526GoLogistics')?.addEventListener('click',()=>scrollToEl($('simpleEyeballList')?.parentElement||$('simpleEyeballList')));
+   $('v526GoMeals')?.addEventListener('click',()=>scrollToEl($('v524MealHQ')));
+   $('v526GoGroceries')?.addEventListener('click',()=>{const b=$('v526ApproveMeals'); if(b)b.click(); else $('v524Grocery')?.click();});
+ }
+ function simplifyMeals(){
+   const host=$('v524MealHQ'); if(!host||host.dataset.v526==='1')return;
+   host.dataset.v526='1'; host.classList.add('v526-simple');
+   const header=host.querySelector('.v524-head');
+   if(header){const h=header.querySelector('h3'),p=header.querySelector('p'); if(h)h.textContent='Dinner plan + grocery list'; if(p)p.textContent='AutoPilot has already made the first pass. Approve the week or change only the meals that clearly will not work.';}
+   const oldActions=header?.querySelector('.v524-actions'); if(oldActions)oldActions.classList.add('v526-hidden-advanced');
+   const week=host.querySelector('.v525-week');
+   const cards=[...host.querySelectorAll('.v525-week .v524-card')];
+   const strip=document.createElement('div'); strip.className='v526-meal-strip';
+   cards.slice(0,7).forEach(c=>{
+      const d=c.querySelector('.v524-date')?.textContent||''; const n=c.querySelector('.v525-mealname')?.textContent||''; const m=c.querySelector('.v525-simplemeta span')?.textContent||'';
+      const x=document.createElement('div');x.className='v526-meal-pill';x.innerHTML=`<b>${d}</b><span>${n}</span><em>${m}</em>`;strip.appendChild(x);
+   });
+   if(week)week.insertAdjacentElement('beforebegin',strip);
+   const actions=document.createElement('div');actions.className='v526-meal-actions';actions.innerHTML='<button type="button" id="v526ApproveMeals" class="primary">DINNERS LOOK GOOD → BUILD GROCERY LIST</button><button type="button" id="v526ChangeMeals">CHANGE A DINNER</button><button type="button" id="v526MealSetup">MEAL SETTINGS</button>';
+   strip.insertAdjacentElement('afterend',actions);
+   const change=document.createElement('div');change.id='v526ChangePanel';change.className='v526-change-panel';change.style.display='none';change.innerHTML='<b>Change only what will not work</b><div class="v526-change-body"></div>';
+   actions.insertAdjacentElement('afterend',change);
+   if(week){const body=change.querySelector('.v526-change-body');body.appendChild(week);week.style.display='block';}
+   $('v526ChangeMeals')?.addEventListener('click',()=>{const open=change.style.display!=='block';change.style.display=open?'block':'none';$('v526ChangeMeals').textContent=open?'DONE CHANGING':'CHANGE A DINNER';});
+   $('v526MealSetup')?.addEventListener('click',()=>{const t=$('v524Taste'); if(t){t.click(); const panel=$('v524TastePanel'); if(panel)scrollToEl(panel);}});
+   $('v526ApproveMeals')?.addEventListener('click',()=>{
+      const wrap=$('v524GroceryWrap'); if(wrap)wrap.style.display='block';
+      const txt=$('v524GroceryText'); if(txt && typeof groceryText==='function') try{txt.textContent=groceryText();}catch(e){}
+      $('v524Grocery')?.click();
+      if(wrap){wrap.style.display='block';wrap.classList.add('v526-grocery-ready');scrollToEl(wrap);}
+   });
+ }
+ function refresh(){buildSprint();simplifyMeals();}
+ const mo=new MutationObserver(()=>setTimeout(refresh,0));
+ function init(){refresh();const st=$('v500StageReview');if(st)mo.observe(st,{childList:true,subtree:true,attributes:true});setTimeout(refresh,500);setTimeout(refresh,1500);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>`};
  // One-page review/fridge output gets the same operational deadlines.
  v504PrintCard=function(p){
@@ -6319,7 +6353,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  // NONZERO daily agenda begins with the critical leave action so the Wall can surface it.
  const oldBuildNz=buildNonzeroAgenda;
  buildNonzeroAgenda=function(){const out=oldBuildNz();try{const p=plans.find(x=>x.dateStr===out.date);const g=guidance(p);const a=g.evening||g.morning;if(a){const title=`${a.label} ${fmt513(a.time)}`;out.items=[{time:fmt513(a.time),title,meta:a.reason||'',location:'',child:'',source:'AutoPilot timing'},...(out.items||[])];out.nextCriticalAction={time:fmt513(a.time),text:title+' '+(a.reason||'')};out.summary=out.summary||{};out.summary.eventCount=(out.items||[]).length}out.source='autopilot-v52.0'}catch{}return out};
- function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v52.2';document.title='AutoPilot — Family Logistics Planner v52.2';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
+ function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v52.0';document.title='AutoPilot — Family Logistics Planner v52.0';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -6398,7 +6432,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function updateCopy(){const n=selected(),app=$('v500App');if(!app)return;const startSub=$('v500StageStart')?.querySelector('.v500-sub');if(startSub)startSub.textContent=`Choose the first day. AutoPilot will refresh every saved calendar, build the next ${n} workdays, and open one recommended plan for review. Your permanent setup stays backstage.`;if($('v500StartNext'))$('v500StartNext').textContent=`BUILD MY ${n}-DAY PLAN`;const h=$('v500StageReview')?.querySelector('.v510-reviewintro h1');if(h)h.textContent=`Review the ${n}-day family plan`;if($('v500ViewTen'))$('v500ViewTen').textContent=`ALL ${n} DAYS`;const rawHelp=$('v500Raw')?.nextElementSibling;if(rawHelp)rawHelp.textContent=`Use this only for unusual exceptions. The ${n}-day plan is already recommended from your normal work pattern and family transportation rules.`;document.querySelectorAll('[data-v510-cycle-label]').forEach(el=>el.textContent=String(n));}
   function phase(){if($('v500StageFinal')?.classList.contains('on'))return 3;if($('v500StageReview')?.classList.contains('on'))return 2;return 1}
   function syncJourney(){const p=phase();document.querySelectorAll('.v510-step').forEach((e,i)=>{e.classList.toggle('on',i+1===p);e.classList.toggle('done',i+1<p)});const status=$('v510JourneyStatus');if(status){const n=selected();status.textContent=p===1?`Choose a ${n}-day cycle and start date.`:p===2?`${n}-day working plan · review recommendations and change only exceptions.`:`${n}-day final plan · one source for print, calendar, phone, Phil, and NonZero.`}const edit=$('v510Edit'),fin=$('v510Finalize');if(edit)edit.disabled=p===1;if(fin)fin.disabled=p!==2;}
-  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v52.0 consolidated</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
+  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v52.7</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildStart(){const st=$('v500StageStart');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<h1 class="v500-q">Build the next family planning cycle</h1><p class="v500-sub"></p><div class="v510-cyclechoice"><button type="button" class="v510-cycle" data-days="5"><strong>5 workdays</strong><span>Use for a one-week planning pass or a shorter reset.</span></button><button type="button" class="v510-cycle" data-days="10"><strong>10 workdays</strong><span>Use for the full two-week family operating cycle.</span></button></div><div class="v510-startrow"><label>Cycle starts<input id="v500StartDate" type="date" aria-label="First day of plan"></label><button id="v500StartNext" type="button" class="v500-btn primary">BUILD MY PLAN</button></div><div class="v510-promise"><strong>What happens next:</strong> AutoPilot refreshes your connected schedules, applies the normal work-site pattern and transportation logic, and gives you one recommended plan. You only change exceptions.</div>`;document.querySelectorAll('.v510-cycle').forEach(b=>b.onclick=()=>setCycle(Number(b.dataset.days)));}
   function buildLoading(){const st=$('v500StageCalendars');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<div class="v510-loader"></div><h1 class="v500-q">Building the family plan</h1><p class="v500-sub">AutoPilot is actively working. Keep this screen open while it refreshes schedules and builds recommendations.</p><div class="v512-progress"><div class="v512-step active" data-loadstep="1">Refresh calendars</div><div class="v512-step" data-loadstep="2">Apply family rules</div><div class="v512-step" data-loadstep="3">Build recommendations</div><div class="v512-step" data-loadstep="4">Prepare review</div></div><div id="v500RefreshStatus" class="v512-live"><div><b><span class="v512-dot"></span>Starting planning cycle…</b>Connecting to saved schedules.</div></div><div id="v512Elapsed" class="v512-elapsed">Working · 0s</div><button id="v500Refresh" type="button" class="v500-btn primary" style="display:none">RETRY</button>`;}
   let __v512Timer=null,__v512Started=0;
@@ -6410,10 +6444,227 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This refresh is taking longer than expected.</b> AutoPilot is still waiting on a calendar connection. You can keep waiting, or use Backstage → Calendar connections to identify the slow feed.'}},25000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Unified Family Planning v52.2';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Planning v52.7';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
 <!-- AutoPilot v51.2: adds explicit animated loading acknowledgement and real build-stage progress. -->
 <!-- AutoPilot v51.3: repairs Backstage visibility, adds editable weekday work-pattern rules, and enlarges app typography. -->
 <!-- AutoPilot v51.5: forces browser paint before calendar/planning work so Build/Refresh visibly acknowledge immediately; retains v51.4 event visibility + sports venue badges. -->
+<!-- AutoPilot v52.4: Meal HQ — schedule-aware dinners + packable lunches + family learning + web recipe discovery + weekly grocery lists. -->
+<style id="v524MealHQStyle">
+#v524MealHQ{margin:14px 0 16px;border:1px solid #d8d0c4;background:#fff;border-radius:14px;overflow:hidden}
+.v524-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:16px 18px 13px;background:linear-gradient(180deg,#fffdf8,#f8f5ee);border-bottom:1px solid #e4ddd3}.v524-head h3{margin:0;font-size:20px;letter-spacing:-.02em}.v524-head p{margin:4px 0 0;color:#6d655c;font-size:12px;line-height:1.4}.v524-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.v524-actions button,.v524-card button,.v524-panel button{min-height:34px;border:1px solid #aaa196;background:#fff;border-radius:8px;padding:6px 10px;font-weight:850;font-size:10px;cursor:pointer}.v524-actions .primary,.v524-panel button.primary{background:#211f1b;color:#fff;border-color:#211f1b}
+.v524-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 14px}.v524-summary-card{border:1px solid #e0d9cf;border-radius:10px;padding:11px 12px;background:#fbfaf7}.v524-summary-card small{display:block;text-transform:uppercase;font-size:8px;font-weight:950;color:#786f65;letter-spacing:.05em}.v524-summary-card strong{display:block;margin-top:3px;font-size:17px}.v524-summary-card span{display:block;margin-top:3px;font-size:9.5px;line-height:1.3;color:#655e55}
+.v524-banner{margin:0 14px 10px;padding:11px 13px;border-radius:10px;background:#f8f5ea;border-left:4px solid #d8ad16;font-size:10.5px;line-height:1.4;color:#4e4942}.v524-banner b{color:#221f1b}
+.v524-section{border-top:1px solid #ebe5dc;padding:13px 14px}.v524-sectionhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:9px}.v524-sectionhead h4{margin:0;font-size:14px}.v524-sectionhead p{margin:2px 0 0;color:#6d655c;font-size:9.5px}.v524-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.v524-card{border:1px solid #ded7cd;border-radius:11px;padding:12px;background:#fff}.v524-card.busy{border-left:5px solid #b46b25}.v524-card.challenging{border-left:5px solid #a64035}.v524-card.easy{border-left:5px solid #3d6d47}.v524-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.v524-date{font-size:13px;font-weight:950}.v524-load{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#756d63}.v524-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.v524-card select{width:100%;min-height:39px;border:1px solid #bcb4a8;border-radius:8px;background:#fff;padding:7px 9px;font-size:12px;font-weight:800;color:#26231f}.v524-reroll{min-width:37px!important;padding:6px!important;font-size:16px!important}.v524-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}.v524-chip{display:inline-flex;align-items:center;min-height:22px;border-radius:999px;padding:2px 7px;background:#f3f0ea;font-size:9px;font-weight:850;color:#5e574e}.v524-chip.good{background:#e9f3eb;color:#285735}.v524-chip.mixed{background:#f7eed2;color:#705a17}.v524-chip.bad{background:#f5e5e2;color:#8a342c}.v524-prep{font-size:10.5px;line-height:1.4;margin-top:7px;color:#514b43}.v524-feedback{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}.v524-feedback button{min-height:29px!important;padding:4px 7px!important;font-size:8.5px!important}.v524-feedback button.on{background:#e8f2e9;border-color:#9cbc9f}.v524-feedback button.fail{background:#f3e4e1;border-color:#c88c83}.v524-source{margin-top:7px;font-size:9px;color:#756d63}.v524-source a{color:#5a4a1a;text-decoration:none;font-weight:850}
+#v524TastePanel,#v524DiscoverPanel,#v524GroceryWrap{display:none;margin:0 14px 14px;border:1px solid #d8d0c4;border-radius:12px;background:#fbfaf7;overflow:hidden}.v524-panelhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:13px 14px;border-bottom:1px solid #ddd5ca;background:#fff}.v524-panelhead h4{margin:0;font-size:15px}.v524-panelhead p{margin:4px 0 0;color:#6d655c;font-size:10.5px;line-height:1.35}.v524-panelbody{padding:12px 14px}.v524-family{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.v524-family label,.v524-guard label{font-size:8px;font-weight:900;text-transform:uppercase;color:#756d63}.v524-family input,.v524-guard input,.v524-importrow input{width:100%;box-sizing:border-box;margin-top:4px;border:1px solid #bbb2a6;border-radius:7px;padding:7px 8px;font-size:10px;font-weight:750}.v524-guard{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}.v524-rule{margin-top:10px;font-size:10px;font-weight:800;color:#4f4941}.v524-matrix-wrap{overflow:auto;max-height:370px;margin-top:10px;border-top:1px solid #e4ddd3}.v524-matrix{width:100%;border-collapse:separate;border-spacing:0;min-width:650px}.v524-matrix th,.v524-matrix td{border-bottom:1px solid #eee8df;padding:7px 6px;text-align:center;font-size:9px}.v524-matrix th{position:sticky;top:0;background:#f7f4ee;z-index:2;font-weight:950}.v524-matrix th:first-child,.v524-matrix td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1;min-width:210px}.v524-matrix th:first-child{z-index:3;background:#f7f4ee}.v524-rate{min-width:58px!important;min-height:30px!important;border:1px solid #c8c0b5!important;border-radius:7px!important;background:#fff!important;padding:4px 6px!important;font-size:9px!important;font-weight:900!important}.v524-rate[data-v="love"]{background:#f8e5e8!important}.v524-rate[data-v="like"]{background:#e8f2e9!important}.v524-rate[data-v="ok"]{background:#f5f0df!important}.v524-rate[data-v="no"]{background:#f3e4e1!important}
+.v524-importrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.v524-sources{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.v524-sources a{display:inline-flex;border:1px solid #c8c0b5;border-radius:999px;padding:5px 8px;background:#fff;font-size:9px;font-weight:850;color:#3f3a34;text-decoration:none}.v524-discovery-status{margin-top:9px;font-size:9.5px;line-height:1.35;color:#655e55}.v524-discovered{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.v524-discovered-card{border:1px solid #ded7cd;background:#fff;border-radius:9px;padding:9px}.v524-discovered-card strong{font-size:10.5px}.v524-discovered-card small{display:block;margin-top:3px;color:#756d63}.v524-discovered-card button{margin-top:7px}.v524-warning{padding:9px 10px;background:#fff5df;border:1px solid #ead7a3;border-radius:8px;font-size:9.5px;line-height:1.35;color:#5f512a}
+.v524-grocery-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid #ddd5ca;background:#fff}.v524-grocery{padding:12px 14px;white-space:pre-wrap;font-family:var(--ap-body-font);font-size:11px;line-height:1.5;color:#38342f}.v524-batch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}.v524-batch div{font-size:10.5px;line-height:1.35}.ap-meal-output{margin-top:7px;padding-top:7px;border-top:1px dotted #d2cabd;font-size:10px;line-height:1.35}.ap-meal-output b{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#756d63}.ap-meal-output .meal-name{font-weight:900;color:#292620;font-size:11px}.ap-meal-output .meal-prep{color:#6b6358}
+@media(max-width:760px){.v524-head{flex-direction:column}.v524-actions{justify-content:flex-start}.v524-summary{grid-template-columns:repeat(2,1fr)}.v524-grid,.v524-discovered,.v524-batch{grid-template-columns:1fr}.v524-family,.v524-guard{grid-template-columns:repeat(2,1fr)}}
+
+.v525-head .v524-actions{align-items:center}.v525-oneglance{margin:0 14px 14px;padding:12px 14px;border:1px solid #d8d0c4;border-radius:10px;background:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px}.v525-oneglance b{font-size:13px}.v525-oneglance span{color:#6d655c;font-weight:750}.v525-simplecard{padding:12px!important}.v525-mealname{font-size:14px;font-weight:950;line-height:1.18;margin-top:3px;color:#27231f}.v525-simplemeta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.v525-simplemeta span{font-size:9px;font-weight:850;border:1px solid #ddd5ca;border-radius:999px;padding:4px 7px;background:#fff}.v525-simplemeta .good{background:#edf5ea}.v525-simplemeta .bad{background:#f8e7e3}.v525-simplemeta .mixed{background:#f5f0df}.v525-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.v525-actions button{min-height:34px;font-size:9px;font-weight:950}.v525-actions button.on{background:#e7f3e6;border-color:#99b995}.v525-actions button.fail{background:#f6e5e2;border-color:#caa49d}.v525-prep{background:#faf8f4}.v525-details{margin:0 14px 14px;border:1px solid #ddd5ca;border-radius:10px;background:#fff;overflow:hidden}.v525-details>summary{cursor:pointer;padding:11px 13px;font-size:10px;font-weight:900;color:#5c554d}.v525-detailbody{padding:0 0 12px}.v525-advanced{padding:0 14px 4px}.v525-small{font-size:9px;color:#756d63;margin-top:2px}
+@media(max-width:760px){.v525-oneglance{align-items:flex-start;flex-direction:column}.v525-head .v524-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.v525-head .v524-actions button:first-child{grid-column:1/-1}.v525-actions button{flex:1}.v525-mealname{font-size:15px}}
+@media print{#v524MealHQ{display:none!important}.ap-meal-output{display:block!important}}
+</style>
+<script id="v524MealHQPatch">
+(function(){
+ const KEY='autopilot.mealHQ.v1',OLD='autopilot.dinnerPlanner.v2';
+ const TASTE_VALUES=['unknown','love','like','ok','no'];
+ const TASTE_LABELS={unknown:'? Unknown',love:'❤️ Love',like:'👍 Like',ok:'😐 Will eat',no:'🚫 No'};
+ const DEFAULT_PEOPLE=['Chris','Kira','Sam','Whitney','Will'];
+ const $=id=>document.getElementById(id); const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const DINNERS=[
+  {id:'fajitas',name:'Sheet-pan chicken fajitas',mins:30,mode:'sheet pan',prep:'10-minute assembly; slice peppers ahead if helpful.',advance:'Optional: slice peppers + onions the night before.',ingredients:['chicken breast','bell peppers','onions','fajita seasoning','whole-wheat tortillas','salsa','Greek yogurt'],health:4},
+  {id:'tacobowls',name:'Turkey taco bowls',mins:25,mode:'one pan',prep:'Brown turkey while rice cooks; toppings buffet-style.',advance:'Cook rice ahead on a very busy day.',ingredients:['lean ground turkey','rice','black beans','corn','salsa','shredded cheese','lettuce','avocado'],health:4},
+  {id:'salsachicken',name:'Slow-cooker salsa chicken tacos',mins:10,mode:'slow cooker',prep:'Morning: chicken + salsa into slow cooker.',advance:'Tonight: thaw chicken. Morning: load slow cooker.',ingredients:['chicken breasts','salsa','taco seasoning','tortillas','black beans','shredded cheese','lettuce'],health:4},
+  {id:'meatballs',name:'Turkey meatballs, pasta & broccoli',mins:30,mode:'stovetop',prep:'Use refrigerated/frozen turkey meatballs.',advance:'Optional: portion broccoli and meatballs.',ingredients:['turkey meatballs','pasta','marinara sauce','broccoli','parmesan'],health:4},
+  {id:'rotisseriewraps',name:'Rotisserie chicken wraps + fruit',mins:15,mode:'no-fuss',prep:'Shred chicken and let everyone build their own.',advance:'No advance prep needed.',ingredients:['rotisserie chicken','whole-wheat wraps','lettuce','tomatoes','shredded cheese','fruit'],health:4},
+  {id:'greekpitas',name:'Greek chicken pitas',mins:25,mode:'skillet',prep:'Chicken + pita + cucumber + tomato + tzatziki.',advance:'Optional: chop cucumber + tomato ahead.',ingredients:['chicken breast','pitas','cucumber','tomatoes','tzatziki','feta','bagged salad'],health:5},
+  {id:'pestopasta',name:'Chicken pesto pasta + peas',mins:20,mode:'one pot',prep:'Rotisserie chicken + pesto + peas into hot pasta.',advance:'No advance prep needed.',ingredients:['pasta','rotisserie chicken','pesto','frozen peas','parmesan'],health:4},
+  {id:'sausagepeppers',name:'Chicken sausage, peppers & potatoes',mins:35,mode:'sheet pan',prep:'One pan; use baby potatoes to avoid chopping.',advance:'Optional: slice peppers + sausage ahead.',ingredients:['chicken sausage','bell peppers','baby potatoes','onion','olive oil','Italian seasoning'],health:4},
+  {id:'breakfast',name:'Breakfast-for-dinner',mins:20,mode:'quick',prep:'Eggs + turkey sausage + toast + fruit.',advance:'No advance prep needed.',ingredients:['eggs','turkey sausage','whole-grain bread','fruit','Greek yogurt'],health:4},
+  {id:'flatbread',name:'Build-your-own flatbread pizzas + salad',mins:20,mode:'oven',prep:'Set out toppings and let everyone build one.',advance:'No advance prep needed.',ingredients:['naan or flatbreads','pizza sauce','mozzarella','chicken or pepperoni','vegetable toppings','bagged salad'],health:3},
+  {id:'quesadilla',name:'Chicken & black-bean quesadillas',mins:20,mode:'skillet',prep:'Rotisserie chicken + beans + cheese; salsa and fruit.',advance:'No advance prep needed.',ingredients:['whole-wheat tortillas','rotisserie chicken','black beans','shredded cheese','salsa','fruit'],health:4},
+  {id:'ricebowls',name:'Teriyaki chicken rice bowls',mins:25,mode:'skillet',prep:'Chicken + rice + steamed broccoli.',advance:'Optional: cut chicken ahead.',ingredients:['chicken breast','rice','broccoli','teriyaki sauce'],health:4},
+  {id:'burgers',name:'Turkey burgers + oven fries + fruit',mins:30,mode:'grill/skillet',prep:'Cook burgers while oven fries bake.',advance:'Form patties ahead if needed.',ingredients:['turkey burgers','whole-grain buns','oven fries','lettuce','tomato','fruit'],health:3},
+  {id:'ziti',name:'Turkey-spinach baked ziti',mins:40,mode:'bake',prep:'Good lighter-chaos night; makes leftovers.',advance:'Can assemble the night before.',ingredients:['ziti','lean ground turkey','marinara sauce','spinach','ricotta','mozzarella'],health:3},
+  {id:'salmon',name:'Honey-garlic salmon rice bowls',mins:25,mode:'oven',prep:'Roast salmon while rice and green beans cook.',advance:'Thaw salmon in refrigerator if frozen.',ingredients:['salmon fillets','rice','green beans','honey-garlic sauce','lemon'],health:5},
+  {id:'chili',name:'Slow-cooker turkey chili',mins:12,mode:'slow cooker',prep:'Morning dump-and-go.',advance:'Set canned ingredients together the night before.',ingredients:['lean ground turkey','kidney beans','black beans','crushed tomatoes','chili seasoning','shredded cheese'],health:5},
+  {id:'soupsandwich',name:'Chicken soup + grilled cheese',mins:20,mode:'comfort',prep:'Prepared chicken soup + sandwich + fruit/raw veg.',advance:'No advance prep needed.',ingredients:['chicken soup','whole-grain bread','cheese','fruit','raw vegetables'],health:3},
+  {id:'leftovers',name:'Leftovers / clean-out-the-fridge',mins:5,mode:'reset',prep:'Use planned leftovers before adding another cooking night.',advance:'Put leftovers front-and-center.',ingredients:[],health:4},
+  {id:'takeout',name:'Planned takeout',mins:5,mode:'off night',prep:'Choose/order before the afternoon rush.',advance:'Decide restaurant/order earlier in the day.',ingredients:[],health:2}
+ ];
+ const LUNCHES=[
+  {id:'l-leftovers',name:'Dinner leftovers',mins:3,mode:'packable',ingredients:[],prep:'Pack immediately after dinner so lunch is automatic.'},
+  {id:'l-wrap',name:'Turkey + hummus wrap, fruit & yogurt',mins:6,mode:'packable',ingredients:['whole-wheat wraps','deli turkey','hummus','spinach','fruit','Greek yogurt'],prep:'Assemble the night before.'},
+  {id:'l-chickenbowl',name:'Chicken grain bowl',mins:8,mode:'prep-ahead',ingredients:['rotisserie chicken','microwave brown rice','cucumber','cherry tomatoes','feta','Greek dressing'],prep:'Prep 2–3 bowls at once.'},
+  {id:'l-salad',name:'Salad kit + chicken + fruit',mins:5,mode:'onsite easy',ingredients:['salad kit','rotisserie chicken','fruit'],prep:'Keep dressing separate until lunch.'},
+  {id:'l-proteinbox',name:'Protein snack box',mins:7,mode:'no-reheat',ingredients:['hard-boiled eggs','cheese sticks','whole-grain crackers','grapes','baby carrots','hummus'],prep:'Build 2 boxes at once.'},
+  {id:'l-greek',name:'Greek yogurt power bowl + turkey roll-ups',mins:5,mode:'no-reheat',ingredients:['Greek yogurt','berries','granola','deli turkey','cheese'],prep:'Portion berries/granola in advance.'},
+  {id:'l-soup',name:'Soup + half sandwich + fruit',mins:8,mode:'thermos',ingredients:['prepared soup','whole-grain bread','deli turkey','cheese','fruit'],prep:'Pack sandwich at night; heat soup in morning.'}
+ ];
+ const SOURCES=[
+  {name:'Skinnytaste',url:'https://www.skinnytaste.com/recipes/dinner-recipes/'},
+  {name:'Budget Bytes',url:'https://www.budgetbytes.com/category/recipes/meat-recipes/chicken-recipes/'},
+  {name:'EatingWell',url:'https://www.eatingwell.com/recipes/17947/mealtimes/dinner/'},
+  {name:'Well Plated',url:'https://www.wellplated.com/category/recipes-by-meal/dinner/'},
+  {name:'Pinch of Yum',url:'https://pinchofyum.com/recipes/dinner'},
+  {name:'Pinterest',url:'https://www.pinterest.com/search/pins/?q=healthy%20family%20dinner'},
+  {name:'Instagram',url:'https://www.instagram.com/explore/tags/healthyfamilymeals/'}
+ ];
+ function defaultState(){return {byDate:{},lunchByDate:{},favorites:[],hidden:[],history:[],people:[...DEFAULT_PEOPLE],tastes:{},ingredientNo:{},requireAll:true,feedback:{},customRecipes:[],discoveryCache:{items:[],fetchedAt:0},autoDiscovery:true}}
+ function load(){try{let raw=localStorage.getItem(KEY);let s=Object.assign(defaultState(),JSON.parse(raw||'{}'));if(!raw){const old=JSON.parse(localStorage.getItem(OLD)||'{}');s=Object.assign(s,old)}if(!Array.isArray(s.people)||s.people.length!==5)s.people=[...DEFAULT_PEOPLE];s.people=s.people.map((n,i)=>String(n||DEFAULT_PEOPLE[i]).trim()==='Youngest'?'Will':String(n||DEFAULT_PEOPLE[i]).trim());return s}catch{return defaultState()}}
+ function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
+ function allDinners(s){return [...DINNERS,...(s.customRecipes||[])]}
+ function meal(id,s){return allDinners(s).find(m=>m.id===id)||DINNERS[0]}
+ function lunch(id){return LUNCHES.find(x=>x.id===id)||LUNCHES[0]}
+ function cycleDays(){const n=Number(localStorage.getItem('autopilot.cycleDays')||10)===5?5:10,all=(window.plans||plans||[]);let seen=0,last='';for(const p of all){if(!p.weekend){seen++;last=p.dateStr;if(seen>=n)break}}return all.filter(p=>!last||p.dateStr<=last)}
+ function loadLevel(p){if(p.weekend)return (p.activities?.length||0)+(p.contextActivities?.length||0)>=2?'Busy':'Flexible';try{const x=typeof dayChallengeLevel==='function'?dayChallengeLevel(p):'';return x==='challenge-high'?'Challenging':x==='challenge-med'?'Busy':'Normal'}catch{return 'Normal'}}
+ function maxMinutes(level){return level==='Challenging'?20:level==='Busy'?30:45}
+ function isOnsite(p){return !p.weekend && !/remote/i.test(String(p.workSite||p.site||p.recommendation||p.workMode||''))}
+ function tasteStats(m,s){const vals=(s.people||DEFAULT_PEOPLE).map((_,i)=>s.tastes?.[m.id]?.[i]||'unknown');return {vals,known:vals.filter(v=>v!=='unknown').length,no:vals.filter(v=>v==='no').length,love:vals.filter(v=>v==='love').length,like:vals.filter(v=>v==='like').length,ok:vals.filter(v=>v==='ok').length}}
+ function ingredientRisk(m,s){let hits=[];(s.people||DEFAULT_PEOPLE).forEach((person,i)=>{const terms=String(s.ingredientNo?.[i]||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);for(const t of terms){if((m.ingredients||[]).some(x=>String(x).toLowerCase().includes(t)))hits.push(person+': '+t)}});return [...new Set(hits)]}
+ function familyFit(m,s){if(['leftovers','takeout'].includes(m.id))return {label:'Flexible',cls:'mixed'};const t=tasteStats(m,s),risk=ingredientRisk(m,s);if(t.no||risk.length)return {label:`${Math.max(0,t.vals.length-t.no)}/${t.vals.length} likely`,cls:'bad'};if(t.known===t.vals.length)return {label:`${t.vals.length}/${t.vals.length} eat it`,cls:'good'};if(t.known>=3)return {label:`${t.known}/${t.vals.length} rated`,cls:'good'};return {label:'Taste ?',cls:'mixed'}}
+ function feedbackScore(id,s){const f=s.feedback?.[id]||{};return (f.winner||0)*18+(f.majority||0)*9-(f.mixed||0)*10-(f.fail||0)*40}
+ function visibleMeals(s){const hidden=new Set(s.hidden||[]);return allDinners(s).filter(m=>!hidden.has(m.id)||['leftovers','takeout'].includes(m.id))}
+ function scoreMeal(m,p,s,history){let score=0,level=loadLevel(p),max=maxMinutes(level);score+=(m.mins<=max?35:-Math.min(45,(m.mins-max)*2));if(level==='Challenging'&&['slow cooker','no-fuss','quick','reset','off night'].includes(m.mode))score+=28;if(level==='Busy'&&['sheet pan','one pan','one pot','quick','slow cooker','no-fuss'].includes(m.mode))score+=15;score+=(Number(m.health||3)-3)*5;if((s.favorites||[]).includes(m.id))score+=22;if(history.includes(m.id))score-=35;if(m.id==='takeout')score-=12;if(m.id==='leftovers')score-=4;const t=tasteStats(m,s),risk=ingredientRisk(m,s);score+=t.love*12+t.like*8+t.ok*3-(t.vals.length-t.known);if(t.no)score-=s.requireAll?180:t.no*45;if(risk.length)score-=s.requireAll?160:risk.length*35;if(t.known===t.vals.length&&!t.no)score+=25;score+=feedbackScore(m.id,s);if(m.sourceUrl&&t.known===0)score-=55;return score}
+ function recommend(p,s,offset=0){const history=[...(s.history||[]).slice(-5),...Object.values(s.byDate||{}).map(x=>x.mealId).filter(Boolean)].slice(-8);const ranked=visibleMeals(s).map(m=>({m,score:scoreMeal(m,p,s,history)})).sort((a,b)=>b.score-a.score||a.m.name.localeCompare(b.m.name));return ranked[Math.min(offset,Math.max(0,ranked.length-1))]?.m||DINNERS[0]}
+ function recommendLunch(p,s){if(p.weekend)return null;const ids=isOnsite(p)?['l-wrap','l-salad','l-proteinbox','l-leftovers','l-chickenbowl']:['l-leftovers','l-chickenbowl','l-greek','l-soup','l-wrap'];const recent=Object.values(s.lunchByDate||{}).slice(-3);return lunch(ids.find(id=>!recent.includes(id))||ids[0])}
+ function ensure(){const s=load();for(const p of cycleDays()){if(!s.byDate[p.dateStr]?.mealId)s.byDate[p.dateStr]={mealId:recommend(p,s).id,auto:true};if(!p.weekend&&!s.lunchByDate[p.dateStr])s.lunchByDate[p.dateStr]=recommendLunch(p,s).id}save(s);return s}
+ function dateLabel(p){return p.date.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
+ function dinnerOptions(selected,s){return visibleMeals(s).map(m=>`<option value="${esc(m.id)}"${m.id===selected?' selected':''}>${esc(m.name)}</option>`).join('')}
+ function lunchOptions(selected){return LUNCHES.map(m=>`<option value="${m.id}"${m.id===selected?' selected':''}>${m.name}</option>`).join('')}
+ function feedbackState(id,s){const f=s.feedback?.[id]||{};return Object.keys(f).sort((a,b)=>(f[b]||0)-(f[a]||0))[0]||''}
+ function dinnerCard(p,s){const id=s.byDate[p.dateStr]?.mealId||recommend(p,s).id,m=meal(id,s),level=loadLevel(p),fit=familyFit(m,s),fb=feedbackState(m.id,s),cls=level==='Challenging'?'challenging':level==='Busy'?'busy':'easy';return `<div class="v524-card v525-simplecard ${cls}" data-date="${p.dateStr}"><div class="v524-top"><div><div class="v524-date">${dateLabel(p)}</div><div class="v525-mealname">${esc(m.name)}</div></div><div class="v524-load">${level==='Challenging'?'Protect this night':level==='Busy'?'Keep it easy':'Normal'}</div></div><select class="v524-dinner" style="display:none">${dinnerOptions(id,s)}</select><div class="v525-simplemeta"><span>~${m.mins} min</span><span>${esc(m.mode)}</span><span class="${fit.cls}">${fit.label}</span></div><div class="v524-prep"><b>${m.advance&&m.advance!=='None.'?'Do ahead:':'Prep:'}</b> ${esc((m.advance&&m.advance!=='None.')?m.advance:(m.prep||'No special prep.'))}</div><div class="v525-actions"><button class="v524-reroll">CHANGE</button><button data-fb="majority" class="${fb==='majority'||fb==='winner'?'on':''}">👍 WORKED</button><button data-fb="fail" class="${fb==='fail'?'fail':''}">👎 NOT AGAIN</button></div></div>`}
+ function lunchCard(p,s){const id=s.lunchByDate[p.dateStr]||recommendLunch(p,s)?.id||'l-leftovers',m=lunch(id),level=isOnsite(p)?'Pack for onsite':'Home / flexible';return `<div class="v524-card" data-lunch-date="${p.dateStr}"><div class="v524-top"><div class="v524-date">${dateLabel(p)}</div><div class="v524-load">${level}</div></div><div class="v524-row"><select class="v524-lunch">${lunchOptions(id)}</select><button class="v524-lunchroll v524-reroll">↻</button></div><div class="v524-meta"><span class="v524-chip">~${m.mins} min</span><span class="v524-chip">${m.mode}</span></div><div class="v524-prep"><b>Prep:</b> ${m.prep}</div></div>`}
+ function batchPrep(s,days){const picks=[];const dinners=days.map(p=>meal(s.byDate[p.dateStr]?.mealId,s));const lunches=days.filter(p=>!p.weekend).map(p=>lunch(s.lunchByDate[p.dateStr]));if([...dinners,...lunches].some(m=>(m.ingredients||[]).some(x=>/rice/i.test(x))))picks.push('Cook a batch of rice/grain once for bowls and sides.');if([...dinners,...lunches].some(m=>(m.ingredients||[]).some(x=>/rotisserie chicken/i.test(x))))picks.push('Shred one rotisserie chicken when groceries come home.');if(dinners.some(m=>/pepper|fajita/i.test(m.name)))picks.push('Slice peppers/onions once; store ready to cook.');if(lunches.filter(m=>m.id==='l-proteinbox'||m.id==='l-chickenbowl').length>=2)picks.push('Build 2–3 lunches at once instead of nightly.');if(!picks.length)picks.push('No major batch prep needed — keep this week light.');return picks.slice(0,4)}
+ function summaryHtml(s,days){const hard=days.filter(p=>['Busy','Challenging'].includes(loadLevel(p))).length,web=days.filter(p=>meal(s.byDate[p.dateStr]?.mealId,s).sourceUrl).length,lunches=days.filter(p=>!p.weekend).length,prep=batchPrep(s,days);return `<div class="v524-summary"><div class="v524-summary-card"><small>Hard logistics days</small><strong>${hard}</strong><span>AutoPilot biases these toward faster dinners.</span></div><div class="v524-summary-card"><small>Dinners planned</small><strong>${days.length}</strong><span>${web?web+' discovered recipe'+(web===1?'':'s')+' in rotation.':'Built from known family options.'}</span></div><div class="v524-summary-card"><small>Lunches covered</small><strong>${lunches}</strong><span>Packable options follow work-site days.</span></div><div class="v524-summary-card"><small>Batch-prep moves</small><strong>${prep.length}</strong><span>Only the prep worth doing ahead.</span></div></div><div class="v524-banner"><b>AutoPilot’s job:</b> make the decisions once. Transport + worksite difficulty sets the meal effort ceiling; family feedback sets the taste floor; groceries consolidate after you approve the plan.</div>`}
+ function renderMealHQ(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||!(window.plans||plans||[]).length)return;let host=$('v524MealHQ');if(!host){host=document.createElement('section');host.id='v524MealHQ';const old=$('v522DinnerPlanner');if(old)old.remove();const foot=card.querySelector('.v510-review-footer');if(foot)card.insertBefore(host,foot);else card.appendChild(host)}const s=ensure(),days=cycleDays(),work=days.filter(p=>!p.weekend),hard=days.filter(p=>['Busy','Challenging'].includes(loadLevel(p))).length,prep=batchPrep(s,days);host.innerHTML=`<div class="v524-head v525-head"><div><h3>Meals & Groceries</h3><p>AutoPilot already picked the easiest realistic meals around your family schedule. Change only what looks wrong.</p></div><div class="v524-actions"><button id="v524Replan" class="primary">BUILD / REFRESH WEEK</button><button id="v524Grocery">GROCERY LIST</button><button id="v524Taste">TASTE SETUP</button></div></div><div class="v525-oneglance"><b>${days.length} dinners + ${work.length} workday lunches planned</b><span>${hard} busy night${hard===1?'':'s'} protected · ${prep.length} prep move${prep.length===1?'':'s'}</span></div><div id="v524TastePanel" class="v524-panel"></div><div class="v524-section v525-week"><div class="v524-sectionhead"><div><h4>This week</h4><p>Use 👍 WORKED or 👎 NOT AGAIN. That is enough for AutoPilot to learn.</p></div></div><div class="v524-grid">${days.map(p=>dinnerCard(p,s)).join('')}</div></div><div class="v524-section v525-prep"><div class="v524-sectionhead"><div><h4>Prep only what matters</h4><p>These are the few actions most likely to make the week easier.</p></div></div><div class="v524-batch">${prep.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div></div><details class="v525-details"><summary>Lunch plan & optional meal controls</summary><div class="v525-detailbody"><div class="v524-section"><div class="v524-sectionhead"><div><h4>Workday lunches — automatic</h4><p>You do not need to review these unless something looks wrong.</p></div></div><div class="v524-grid">${work.map(p=>lunchCard(p,s)).join('')}</div></div><div class="v525-advanced"><button id="v524Discover">FIND NEW RECIPE IDEAS</button><div id="v524DiscoverPanel" class="v524-panel"></div></div></div></details><div id="v524GroceryWrap"><div class="v524-grocery-head"><div><strong>Weekly grocery list</strong><div class="v525-small">Generated from the meals above. Copy it and go.</div></div><button id="v524CopyGrocery">COPY LIST</button></div><div class="v524-grocery" id="v524GroceryText"></div></div>`;wire();annotate()}
+ function setFeedback(id,type){const s=load();s.feedback[id]=s.feedback[id]||{};s.feedback[id][type]=(s.feedback[id][type]||0)+1;if(type==='fail'&&!['leftovers','takeout'].includes(id)){if(!s.hidden.includes(id))s.hidden.push(id)}if(type==='winner'&&!s.favorites.includes(id))s.favorites.push(id);save(s);renderMealHQ()}
+ function renderTaste(){const p=$('v524TastePanel');if(!p)return;const s=load(),people=s.people;p.innerHTML=`<div class="v524-panelhead"><div><h4>Family taste setup</h4><p>Set this up once. Focus especially on Whitney and Will. AutoPilot will use it quietly in the background.</p></div><button id="v524TasteDone">DONE</button></div><div class="v524-panelbody"><div class="v524-family">${people.map((n,i)=>`<label>Person ${i+1}<input class="v524-name" data-i="${i}" value="${esc(n)}"></label>`).join('')}</div><div class="v524-guard">${people.map((n,i)=>`<label>${esc(n)} won't eat ingredients<input class="v524-no" data-i="${i}" placeholder="e.g. mushrooms, olives" value="${esc(s.ingredientNo?.[i]||'')}"></label>`).join('')}</div><label class="v524-rule"><input id="v524RequireAll" type="checkbox" ${s.requireAll?'checked':''}> Do not recommend meals when anyone has a hard “No” or ingredient conflict.</label><div class="v524-matrix-wrap"><table class="v524-matrix"><thead><tr><th>Meal</th>${people.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead><tbody>${allDinners(s).filter(m=>!['leftovers','takeout'].includes(m.id)).map(m=>`<tr><td><b>${esc(m.name)}</b></td>${people.map((_,i)=>{const v=s.tastes?.[m.id]?.[i]||'unknown';return `<td><button class="v524-rate" data-meal="${esc(m.id)}" data-person="${i}" data-v="${v}">${TASTE_LABELS[v]}</button></td>`}).join('')}</tr>`).join('')}</tbody></table></div></div>`;p.querySelectorAll('.v524-rate').forEach(b=>b.onclick=()=>{const st=load(),mid=b.dataset.meal,i=+b.dataset.person,cur=b.dataset.v,next=TASTE_VALUES[(TASTE_VALUES.indexOf(cur)+1)%TASTE_VALUES.length];st.tastes[mid]=st.tastes[mid]||{};st.tastes[mid][i]=next;save(st);b.dataset.v=next;b.textContent=TASTE_LABELS[next]});p.querySelectorAll('.v524-name').forEach(inp=>inp.onchange=()=>{const st=load();st.people[+inp.dataset.i]=(inp.value||DEFAULT_PEOPLE[+inp.dataset.i]).trim();save(st)});p.querySelectorAll('.v524-no').forEach(inp=>inp.onchange=()=>{const st=load();st.ingredientNo[+inp.dataset.i]=inp.value.trim();save(st)});$('v524RequireAll').onchange=e=>{const st=load();st.requireAll=e.target.checked;save(st)};$('v524TasteDone').onclick=()=>{p.style.display='none';render()}}
+ function parseDuration(s){const m=String(s||'').match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);return m?(+(m[1]||0)*60+ +(m[2]||0)):30}
+ function normalizeRecipe(obj,url){if(!obj)return null;const type=Array.isArray(obj['@type'])?obj['@type']:[obj['@type']];if(!type.some(x=>String(x).toLowerCase()==='recipe'))return null;const ing=(obj.recipeIngredient||[]).map(x=>String(x).replace(/\s+/g,' ').trim()).filter(Boolean);if(!obj.name||ing.length<3)return null;let host='web';try{host=new URL(url).hostname.replace(/^www\./,'')}catch{};return {id:'web-'+Math.random().toString(36).slice(2,10),name:String(obj.name).slice(0,120),mins:Math.max(10,Math.min(90,parseDuration(obj.totalTime||obj.cookTime||obj.prepTime))),mode:'web recipe',prep:'Open the source recipe for full method. AutoPilot uses ingredients, time and family feedback for planning.',advance:'Review recipe once before prep day.',ingredients:ing.slice(0,30),health:4,source:host,sourceUrl:url}}
+ function extractRecipes(html,url){const doc=new DOMParser().parseFromString(html,'text/html'),found=[];doc.querySelectorAll('script[type="application/ld+json"]').forEach(s=>{try{const j=JSON.parse(s.textContent),walk=x=>{if(Array.isArray(x))x.forEach(walk);else if(x&&typeof x==='object'){const r=normalizeRecipe(x,url);if(r)found.push(r);if(x['@graph'])walk(x['@graph']);if(x.itemListElement)walk(x.itemListElement)}};walk(j)}catch{}});return found}
+ async function fetchHtml(url){const tries=[url];const g=typeof getCalendarProxyUrl==='function'?getCalendarProxyUrl():'';if(g)tries.push(g.replace(/\/+$/,'')+'?url='+encodeURIComponent(url)+'&mode=recipe');let err;for(const u of tries){try{const r=await fetch(u,{cache:'no-store',headers:{Accept:'text/html,application/xhtml+xml'}});if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();if(t.length<200)throw new Error('Empty page');return t}catch(e){err=e}}throw err||new Error('Could not fetch page')}
+ async function importUrl(url){url=String(url||'').trim();if(!/^https:\/\//i.test(url))throw new Error('Paste a full https:// recipe, Pinterest, or Instagram link.');const html=await fetchHtml(url),recipes=extractRecipes(html,url);if(recipes.length)return recipes[0];const doc=new DOMParser().parseFromString(html,'text/html');const title=doc.querySelector('meta[property="og:title"]')?.content||doc.title;const desc=doc.querySelector('meta[property="og:description"]')?.content||'';if(/pinterest|instagram/i.test(new URL(url).hostname)&&title){return {id:'web-'+Math.random().toString(36).slice(2,10),name:title.replace(/\s*[|•].*$/,'').slice(0,120),mins:30,mode:'social find',prep:'Open the original post for the method. Add/adjust ingredients after you decide to keep it.',advance:'Review the post once before assigning it to a day.',ingredients:[],health:3,source:new URL(url).hostname.replace(/^www\./,''),sourceUrl:url,note:desc.slice(0,240)}}throw new Error('No structured recipe data found. Try the original recipe website linked from the post.')}
+ async function discoverWeb(){const p=$('v524DiscoverPanel'),status=$('v524DiscoveryStatus');if(!p)return;status.textContent='Scanning a small set of public recipe sources…';const s=load(),items=[];for(const source of SOURCES.slice(0,5)){try{const html=await fetchHtml(source.url);const doc=new DOMParser().parseFromString(html,'text/html');const links=[...doc.querySelectorAll('a[href]')].map(a=>a.href).filter(h=>{try{const u=new URL(h,source.url);return u.hostname.includes(new URL(source.url).hostname.replace(/^www\./,''))&&/recipe|recipes|chicken|dinner|meal|pasta|taco|bowl|sheet|slow/i.test(u.pathname)}catch{return false}});for(const href of [...new Set(links)].slice(0,2)){try{const rh=await fetchHtml(href);const r=extractRecipes(rh,href)[0];if(r&&!items.some(x=>x.name===r.name))items.push(r)}catch{}if(items.length>=8)break}}catch{}if(items.length>=8)break}s.discoveryCache={items,fetchedAt:Date.now()};save(s);status.textContent=items.length?`Found ${items.length} candidate recipes. Add only the ones that look realistic for your family.`:'No recipe pages could be read automatically. Your gateway may still be calendar-only; paste a specific recipe URL below or deploy the companion Meal Web Gateway.';renderDiscoveryCards(items)}
+ function renderDiscoveryCards(items){const box=$('v524Discovered');if(!box)return;box.innerHTML=(items||[]).map((r,i)=>`<div class="v524-discovered-card"><strong>${esc(r.name)}</strong><small>~${r.mins} min · ${esc(r.source||'web')}</small><button data-add-discovered="${i}">ADD TO ROTATION</button></div>`).join('')||'<div class="v524-warning">Nothing in the discovery queue yet. AutoPilot does not need web discovery to build the week; it is a source of new ideas, not another required planning task.</div>';box.querySelectorAll('[data-add-discovered]').forEach(b=>b.onclick=()=>{const st=load(),r=(st.discoveryCache.items||[])[+b.dataset.addDiscovered];if(r&&!st.customRecipes.some(x=>x.sourceUrl===r.sourceUrl)){st.customRecipes.push(r);save(st);renderMealHQ();const p=$('v524DiscoverPanel');if(p){p.style.display='block';renderDiscover()}}})}
+ function renderDiscover(){const p=$('v524DiscoverPanel');if(!p)return;const s=load();p.innerHTML=`<div class="v524-panelhead"><div><h4>Recipe discovery</h4><p>Use the web for variety, but AutoPilot keeps the decision rule strict: reasonable time, ingredient guardrails, and family feedback.</p></div><button id="v524DiscoverDone">DONE</button></div><div class="v524-panelbody"><div class="v524-warning"><b>Pinterest / Instagram:</b> those sites often block automated background access. Paste a post or recipe link here; AutoPilot will try to extract it through the same gateway. If the post links to a recipe site, the original recipe URL works best.</div><div class="v524-importrow" style="margin-top:10px"><label style="font-size:9px;font-weight:900">IMPORT A RECIPE / PIN / POST URL<input id="v524RecipeUrl" placeholder="https://…"></label><button id="v524ImportRecipe" class="primary">IMPORT</button></div><div class="v524-sources">${SOURCES.map(x=>`<a href="${x.url}" target="_blank" rel="noopener">${x.name}</a>`).join('')}</div><div style="margin-top:10px"><button id="v524ScanWeb">SCAN HEALTHY RECIPE SITES</button></div><div id="v524DiscoveryStatus" class="v524-discovery-status">Discovery is cached. You do not need to run it every planning session.</div><div id="v524Discovered" class="v524-discovered"></div></div>`;renderDiscoveryCards(s.discoveryCache.items||[]);$('v524DiscoverDone').onclick=()=>p.style.display='none';$('v524ScanWeb').onclick=discoverWeb;$('v524ImportRecipe').onclick=async()=>{const st=$('v524DiscoveryStatus');st.textContent='Importing…';try{const r=await importUrl($('v524RecipeUrl').value);const s2=load();if(!s2.customRecipes.some(x=>x.sourceUrl===r.sourceUrl))s2.customRecipes.push(r);save(s2);st.textContent=`Added “${r.name}” to the rotation. Rate it after the family tries it.`;renderMealHQ()}catch(e){st.textContent=e.message||'Could not import that page.'}}}
+ function category(item){const x=item.toLowerCase();if(/chicken|turkey|salmon|egg|sausage|meatball|deli|rotisserie/.test(x))return'PROTEIN';if(/lettuce|tomato|pepper|onion|broccoli|cucumber|spinach|fruit|avocado|berries|grapes|carrot|lemon|corn|green bean/.test(x))return'PRODUCE';if(/yogurt|cheese|feta|parmesan|ricotta|mozzarella/.test(x))return'DAIRY';if(/bread|wrap|tortilla|pita|naan|bun|cracker/.test(x))return'BAKERY / BREAD';if(/frozen|oven fries|peas/.test(x))return'FROZEN';return'PANTRY / OTHER'}
+ function weekKey(p){const d=new Date(p.date);d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());return d.toISOString().slice(0,10)}
+ function groceryText(){const s=load(),weeks={};for(const p of cycleDays()){const k=weekKey(p);weeks[k]=weeks[k]||[];weeks[k].push(...(meal(s.byDate[p.dateStr]?.mealId,s).ingredients||[]));if(!p.weekend)weeks[k].push(...(lunch(s.lunchByDate[p.dateStr]).ingredients||[]))}let out=[];for(const [k,items] of Object.entries(weeks)){const d=new Date(k+'T12:00:00');out.push(`WEEK OF ${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}`);const groups={};for(const raw of items){const item=String(raw).trim();if(!item)continue;const c=category(item);groups[c]=groups[c]||new Map();const key=item.toLowerCase();groups[c].set(key,{name:item,n:(groups[c].get(key)?.n||0)+1})}for(const c of ['PRODUCE','PROTEIN','DAIRY','BAKERY / BREAD','FROZEN','PANTRY / OTHER']){if(!groups[c]?.size)continue;out.push(`\n${c}`);[...groups[c].values()].sort((a,b)=>a.name.localeCompare(b.name)).forEach(x=>out.push(`☐ ${x.name}${x.n>1?`  (${x.n} uses)`:''}`))}out.push('')}return out.join('\n').trim()}
+ function wire(){const s=load();$('v524Taste').onclick=()=>{const p=$('v524TastePanel');const open=p.style.display!=='block';p.style.display=open?'block':'none';if(open)renderTaste()};$('v524Discover').onclick=()=>{const p=$('v524DiscoverPanel');const open=p.style.display!=='block';p.style.display=open?'block':'none';if(open)renderDiscover()};$('v524Replan').onclick=()=>{const st=load();for(const p of cycleDays()){st.byDate[p.dateStr]={mealId:recommend(p,st,0).id,auto:true};if(!p.weekend)st.lunchByDate[p.dateStr]=recommendLunch(p,st).id}save(st);render()};$('v524Grocery').onclick=()=>{const w=$('v524GroceryWrap');w.style.display=w.style.display==='block'?'none':'block';if(w.style.display==='block')$('v524GroceryText').textContent=groceryText()};$('v524CopyGrocery').onclick=async()=>{try{await navigator.clipboard.writeText($('v524GroceryText').textContent);$('v524CopyGrocery').textContent='COPIED'}catch{}};document.querySelectorAll('[data-date]').forEach(row=>{const date=row.dataset.date,sel=row.querySelector('.v524-dinner');sel.onchange=()=>{const st=load();st.byDate[date]={mealId:sel.value,auto:false};st.history=[...(st.history||[]),sel.value].slice(-30);save(st);renderMealHQ()};row.querySelector('.v524-reroll').onclick=()=>{const st=load(),p=cycleDays().find(x=>x.dateStr===date),cur=sel.value,c=visibleMeals(st).filter(x=>x.id!==cur).map(m=>({m,sc:scoreMeal(m,p,st,[cur])})).sort((a,b)=>b.sc-a.sc);st.byDate[date]={mealId:(c[0]?.m.id||cur),auto:true};save(st);renderMealHQ()};row.querySelectorAll('[data-fb]').forEach(b=>b.onclick=()=>setFeedback(sel.value,b.dataset.fb))});document.querySelectorAll('[data-lunch-date]').forEach(row=>{const date=row.dataset.lunchDate,sel=row.querySelector('.v524-lunch');sel.onchange=()=>{const st=load();st.lunchByDate[date]=sel.value;save(st);renderMealHQ()};row.querySelector('.v524-lunchroll').onclick=()=>{const st=load(),idx=LUNCHES.findIndex(x=>x.id===sel.value);st.lunchByDate[date]=LUNCHES[(idx+1)%LUNCHES.length].id;save(st);renderMealHQ()}})}
+ function annotate(){const s=load(),work=(window.plans||plans||[]).filter(p=>!p.weekend);['calendarPreview','printCalendar'].forEach(id=>{const host=$(id);if(!host)return;[...host.children].forEach((box,i)=>{const p=work[i];if(!p)return;box.querySelectorAll('.ap-meal-output').forEach(x=>x.remove());const d=meal(s.byDate[p.dateStr]?.mealId,s),l=lunch(s.lunchByDate[p.dateStr]);const div=document.createElement('div');div.className='ap-meal-output';div.innerHTML=`<b>Meals</b><div class="meal-name">Lunch: ${esc(l.name)}</div><div class="meal-name">Dinner: ${esc(d.name)}</div><div class="meal-prep">${esc(d.prep||'')}</div>`;box.appendChild(div)})})}
+ function hook(){try{if(typeof window.render==='function'&&!window.render.__v524){const base=window.render;const wrapped=function(...args){const o=base.apply(this,args);setTimeout(()=>{renderMealHQ();annotate()},0);return o};wrapped.__v524=true;window.render=wrapped}}catch(e){console.warn('Meal HQ hook',e)}}
+ function init(){hook();let n=0;const t=setInterval(()=>{n++;hook();if((window.plans||plans||[]).length){renderMealHQ();annotate()}if(n>30)clearInterval(t)},250)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<!-- AutoPilot v52.7: persistent Current Plan access from landing screen + toolbar. -->
+<style id="v527CurrentPlanStyle">
+.v527-current{margin:0 0 18px;border:2px solid #24211d;border-radius:14px;background:#fff;padding:16px 17px;display:none}
+.v527-current.on{display:block}.v527-current-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.v527-current-eyebrow{font-size:9px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:#766e64}.v527-current h2{margin:3px 0 3px;font-size:22px;line-height:1.08}.v527-current p{margin:0;color:#676057;font-size:11px;line-height:1.4}.v527-current-badge{white-space:nowrap;border-radius:999px;background:#edf4e9;border:1px solid #b7c9ae;color:#315337;padding:5px 8px;font-size:9px;font-weight:950}.v527-current-badge.old{background:#f5f1e7;border-color:#d8caa8;color:#65551f}.v527-current-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.v527-current-actions button{min-height:42px;border-radius:9px;border:1px solid #8f877d;background:#fff;padding:8px 13px;font-size:10px;font-weight:950}.v527-current-actions .primary{background:#211f1b;color:#fff;border-color:#211f1b}.v527-current-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid #e5ded4;font-size:9px;color:#756e64;font-weight:800}
+#v527CurrentPlanButton{border-color:#211f1b!important;font-weight:950!important}.v527-start-new{margin-top:18px;padding-top:16px;border-top:1px solid #e2dbd1}.v527-start-new-label{font-size:10px;color:#756e64;font-weight:850;margin-bottom:8px}
+.v527-readonly{position:fixed;inset:0;z-index:10050;background:rgba(25,23,20,.54);display:flex;align-items:flex-start;justify-content:center;padding:5vh 14px;overflow:auto}.v527-readonly-card{width:min(920px,100%);background:#fff;border-radius:16px;border:1px solid #cfc6ba;padding:18px}.v527-readonly-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.v527-readonly-head h2{margin:0;font-size:23px}.v527-readonly-head p{margin:4px 0 0;color:#6d655c;font-size:11px}.v527-readonly-head button{min-height:40px;border:1px solid #aaa197;border-radius:8px;background:#fff;font-weight:900}.v527-ro-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.v527-ro-day{border:1px solid #ded7cd;border-radius:10px;padding:11px}.v527-ro-day h3{margin:0 0 5px;font-size:13px}.v527-ro-day div{font-size:10px;line-height:1.4}.v527-ro-event{margin-top:7px;padding-top:7px;border-top:1px solid #eee7de}
+@media(max-width:700px){.v527-current-top{flex-direction:column}.v527-ro-grid{grid-template-columns:1fr}.v527-readonly{padding:12px}.v527-current-actions button{flex:1}}
+</style>
+<script id="v527CurrentPlanPatch">
+(()=>{
+ 'use strict';
+ const CURRENT='familyOptimizerV23.currentPlan.v1';
+ const CYCLE='familyOptimizerV23.cycle';
+ const FINAL='familyOptimizerV23.v500FinalSnapshot';
+ const $=id=>document.getElementById(id);
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const parse=raw=>{try{return raw?JSON.parse(raw):null}catch{return null}};
+ function isoDate(v){
+   if(!v)return''; const d=v instanceof Date?v:new Date(String(v).length===10?String(v)+'T12:00:00':v);
+   return isNaN(d)?'':`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ }
+ function planDate(p){return isoDate(p?.dateStr||p?.date)}
+ function currentCandidate(){
+   const cached=parse(localStorage.getItem(CURRENT));
+   if(cached?.plans?.length)return {...cached,kind:'working'};
+   const cyc=parse(localStorage.getItem(CYCLE));
+   if(cyc?.finalSnapshot?.plans?.length)return {plans:cyc.finalSnapshot.plans,savedAt:cyc.finalSnapshot.createdAt||'',cycleDays:Number(localStorage.getItem('autopilot.cycleDays')||10),kind:'final'};
+   const final=parse(localStorage.getItem(FINAL));
+   if(Array.isArray(final)&&final.length)return {finalData:final,savedAt:'',kind:'legacy-final'};
+   return null;
+ }
+ function rangeOf(c){
+   const arr=(c?.plans||[]).map(planDate).filter(Boolean).sort();
+   if(!arr.length&&c?.finalData?.length){const labels=c.finalData.map(x=>x.date).filter(Boolean).sort();return {start:labels[0]||'',end:labels.at(-1)||''}}
+   return {start:arr[0]||'',end:arr.at(-1)||''};
+ }
+ function prettyDate(iso){if(!iso)return'';const d=new Date(iso+'T12:00:00');return isNaN(d)?iso:d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
+ function currentStatus(c){
+   const r=rangeOf(c),today=isoDate(new Date());
+   if(r.start&&r.end&&today>=r.start&&today<=r.end)return {label:'CURRENT PLAN',old:false};
+   return {label:'LAST SAVED PLAN',old:true};
+ }
+ function describe(c){
+   const r=rangeOf(c),status=currentStatus(c),saved=c?.savedAt?new Date(c.savedAt):null;
+   const savedText=saved&&!isNaN(saved)?saved.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Saved locally';
+   return {r,status,savedText};
+ }
+ function snapshotWorking(){
+   try{
+     if(typeof plans==='undefined'||!Array.isArray(plans)||!plans.length)return;
+     const payload={version:1,savedAt:new Date().toISOString(),cycleDays:Number(localStorage.getItem('autopilot.cycleDays')||10),startDate:$('startDate')?.value||$('v500StartDate')?.value||'',plans:JSON.parse(JSON.stringify(plans))};
+     localStorage.setItem(CURRENT,JSON.stringify(payload));
+     refreshEntryPoints();
+   }catch(e){console.warn('Current plan snapshot skipped',e)}
+ }
+ function normalizePlans(raw){return (raw||[]).map(p=>{const q={...p};if(q.date&&!(q.date instanceof Date)){const d=new Date(String(q.date).length===10?String(q.date)+'T12:00:00':q.date);if(!isNaN(d))q.date=d}else if(!q.date&&q.dateStr){q.date=new Date(q.dateStr+'T12:00:00')}return q})}
+ function openWorking(c){
+   try{
+     if(!c?.plans?.length)return false;
+     plans=normalizePlans(c.plans);
+     window.captureWorkingPlans?.();
+     const r=rangeOf(c);if(r.start){const legacy=$('startDate'),fresh=$('v500StartDate');if(legacy)legacy.value=r.start;if(fresh)fresh.value=r.start}
+     const edit=$('v504EditPlan')||$('v510Edit');
+     if(edit){edit.click();return true}
+     window.renderReview?.();
+     return true;
+   }catch(e){console.error('Could not restore current plan',e);return false}
+ }
+ function openLegacy(finalData){
+   document.getElementById('v527ReadOnly')?.remove();
+   const root=document.createElement('div');root.id='v527ReadOnly';root.className='v527-readonly';
+   root.innerHTML=`<div class="v527-readonly-card"><div class="v527-readonly-head"><div><h2>Last finalized family plan</h2><p>This older saved plan can be viewed here. Newer v52.7 plans reopen directly in the normal Current Plan screen.</p></div><button id="v527CloseRO">CLOSE</button></div><div class="v527-ro-grid">${finalData.map(d=>`<div class="v527-ro-day"><h3>${esc(d.label||d.date||'Day')}</h3><div><b>Chris:</b> ${esc(d.chris||'')}<br><b>Kira:</b> ${esc(d.kira||'')}</div>${(d.events||[]).map(e=>`<div class="v527-ro-event"><b>${esc(e.start||'')} ${esc(e.person||'')} · ${esc(e.title||'')}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop: ${esc(e.drop||'')} · Pickup: ${esc(e.pickup||'')}</div>`).join('')}</div>`).join('')}</div></div>`;
+   document.body.appendChild(root);$('v527CloseRO').onclick=()=>root.remove();root.addEventListener('click',e=>{if(e.target===root)root.remove()});
+ }
+ function openCurrent(){const c=currentCandidate();if(!c)return false;if(c.plans?.length)return openWorking(c);if(c.finalData?.length){openLegacy(c.finalData);return true}return false}
+ function startCard(){
+   const card=$('v500StageStart')?.querySelector('.v500-card');if(!card)return;
+   let box=$('v527CurrentCard');if(!box){box=document.createElement('div');box.id='v527CurrentCard';box.className='v527-current';card.insertBefore(box,card.firstChild)}
+   const c=currentCandidate();
+   if(!c){box.classList.remove('on');return}
+   const d=describe(c),range=d.r.start?(prettyDate(d.r.start)+(d.r.end&&d.r.end!==d.r.start?' – '+prettyDate(d.r.end):'')):'Saved plan';
+   box.className='v527-current on';
+   box.innerHTML=`<div class="v527-current-top"><div><div class="v527-current-eyebrow">Your family operating plan</div><h2>${range}</h2><p>Jump straight back into the plan you were already using. You do not need to rebuild the cycle just to view it.</p></div><span class="v527-current-badge ${d.status.old?'old':''}">${d.status.label}</span></div><div class="v527-current-actions"><button type="button" class="primary" id="v527OpenCurrent">VIEW CURRENT PLAN</button><button type="button" id="v527RefreshCurrent">OPEN + REFRESH</button></div><div class="v527-current-meta"><span>${d.savedText}</span><span>${c.plans?.length||c.finalData?.length||0} plan days saved</span></div>`;
+   $('v527OpenCurrent').onclick=openCurrent;
+   $('v527RefreshCurrent').onclick=()=>{if(openCurrent())setTimeout(()=>$('v504RefreshPlan')?.click()||$('v510Refresh')?.click(),180)};
+   const chooser=card.querySelector('.v510-cyclechoice');if(chooser&&!chooser.closest('.v527-start-new')){
+     const wrap=document.createElement('div');wrap.className='v527-start-new';wrap.innerHTML='<div class="v527-start-new-label">Need to build a different planning cycle?</div>';
+     chooser.parentNode.insertBefore(wrap,chooser);wrap.appendChild(chooser);const row=card.querySelector('.v510-startrow');if(row)wrap.appendChild(row);
+   }
+ }
+ function toolbar(){
+   const actions=document.querySelector('#v510Journey .v510-actions');if(!actions)return;
+   let b=$('v527CurrentPlanButton');if(!b){b=document.createElement('button');b.id='v527CurrentPlanButton';b.type='button';b.textContent='CURRENT PLAN';const status=$('v510JourneyStatus');if(status)status.insertAdjacentElement('afterend',b);else actions.prepend(b);b.onclick=()=>{if(!openCurrent()){$('v500StageStart')?.scrollIntoView({behavior:'smooth',block:'start'})}}}
+   b.disabled=!currentCandidate();b.title=b.disabled?'No saved current plan yet':'Open the latest saved current plan';
+ }
+ function refreshEntryPoints(){startCard();toolbar()}
+ function init(){
+   setTimeout(refreshEntryPoints,80);
+   setTimeout(refreshEntryPoints,450);
+   setInterval(snapshotWorking,1500);
+   window.addEventListener('pagehide',snapshotWorking);
+   document.addEventListener('click',e=>{if(e.target.closest('#v502RestartCycle,#v510StartOver,.v504-newcycle'))setTimeout(refreshEntryPoints,250)},true);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
