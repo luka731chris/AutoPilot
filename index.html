@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v52.8</title>
+<title>AutoPilot — Family Logistics Planner v52.10</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1207,6 +1207,23 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 .ap-venue-badge.unknown{background:#fff8dc;border-color:#d0ad3d;color:#715b00}
 .ap-context-note{margin-top:8px;padding:8px 10px;border-radius:9px;background:#f3f5f8;border:1px solid #d8dde5;font-size:13px;font-weight:750;color:#4c5563}
 </style>
+
+<style id="v529WallVisibilityStyle">
+/* v52.9 — independent NonZero wall visibility controls */
+.wall-review-control{margin-top:8px;padding-top:7px;border-top:1px solid #ebe5da;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.wall-review-label{font-size:9px;font-weight:950;letter-spacing:.08em;color:#776f62}
+.wall-review-btn{min-height:30px!important;padding:5px 9px!important;border-radius:999px!important;font-size:10px!important;font-weight:900!important;border:1px solid #aaa196!important;background:#fff!important;color:#302c26!important}
+.wall-review-btn.on{background:#edf6ef!important;border-color:#8eaf95!important;color:#285c33!important}
+.wall-review-btn.off{background:#f4f1ec!important;border-color:#c9c0b5!important;color:#766e64!important}
+.wall-review-btn.series{margin-left:auto}
+.wall-hidden-note{font-size:9.5px;color:#786f64;line-height:1.3;width:100%}
+#v529WallExclusionsHost .v529-wall-empty{font-size:12px;color:#746c61;padding:8px 0}
+.v529-wall-rule{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #e9e2d8}
+.v529-wall-rule:last-child{border-bottom:0}.v529-wall-rule strong{font-size:12px}.v529-wall-rule small{display:block;color:#786f64;margin-top:2px;line-height:1.35}
+.v529-wall-rule button{min-height:32px;padding:6px 9px;border-radius:8px;border:1px solid #aaa196;background:#fff;font-size:10px;font-weight:900}
+@media (max-width:760px){.wall-review-btn.series{margin-left:0}.activity-review-card{grid-template-columns:1fr!important}}
+</style>
+
 </head>
 <body>
 <div id="v500App">
@@ -3467,7 +3484,9 @@ function renderQuickPlanningReview(){
       return `<div class="activity-review-card ${needs?'attention':'handled'}" data-quick-row="${index}">
         <div><div class="activity-review-title">${esc(event.start?displayTime12h(event.start)+' · ':'')}${esc(event.title)}</div><div class="activity-review-meta">${esc(source)}${event.end?` · ends ${esc(displayTime12h(event.end))}`:''}${needs?' · CHECK':''}</div><div class="activity-review-child"><label>Who<select data-review-child>${quickChildOptions(event.child)}</select></label></div></div>
         <div class="activity-review-controls"><label>Drop-off<select data-review-drop class="${drop==='yes'?'leg-yes':'leg-no'}"><option value="no"${drop==='no'?' selected':''}>No</option><option value="yes"${drop==='yes'?' selected':''}>Yes</option></select></label><label>Pickup<select data-review-pick class="${pick==='yes'?'leg-yes':'leg-no'}"><option value="no"${pick==='no'?' selected':''}>No</option><option value="yes"${pick==='yes'?' selected':''}>Yes</option></select></label></div>
-        <div class="activity-review-location"><label>Location / pickup point<input data-review-location value="${esc(event.location||'')}" placeholder="Venue, Central, or address"></label><div class="activity-review-status ${ls.cls}">${esc(ls.text)}</div></div>
+        <div class="activity-review-location"><label>Location / pickup point<input data-review-location value="${esc(event.location||'')}" placeholder="Venue, Central, or address"></label><div class="activity-review-status ${ls.cls}">${esc(ls.text)}</div>
+          <div class="wall-review-control"><span class="wall-review-label">GARAGE WALL</span><button type="button" class="wall-review-btn ${isWallEventVisible(event)?'on':'off'}" data-wall-occ>${isWallEventVisible(event)?'SHOWING ✓':'HIDDEN —'}</button><button type="button" class="wall-review-btn series ${wallSeriesExcluded(event)?'off':''}" data-wall-series>${wallSeriesExcluded(event)?'SHOW ALL LIKE THIS':'HIDE ALL LIKE THIS'}</button><div class="wall-hidden-note">${isWallEventVisible(event)?'Included in the NonZero daily agenda.':'Still used by AutoPilot planning; excluded only from the garage wall.'}</div></div>
+        </div>
       </div>`;
     }).join('')}</div>`;
   }).join('');
@@ -3477,6 +3496,8 @@ function renderQuickPlanningReview(){
     const bindLeg=(selector,mainClass)=>{const ctl=card.querySelector(selector);ctl.onchange=async()=>{setLastReviewChange(row);row.querySelector(mainClass).value=ctl.value;syncLegClassification(row);await refreshPlanAfterReviewEdit(row)}};
     bindLeg('[data-review-drop]','.a-drop');bindLeg('[data-review-pick]','.a-pick');
     const loc=card.querySelector('[data-review-location]');loc.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-loc');main.value=loc.value.trim();row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');await refreshPlanAfterReviewEdit(row)};
+    const wallOcc=card.querySelector('[data-wall-occ]');if(wallOcc)wallOcc.onclick=()=>{const ev=rowToCalendarEvent(row);setWallOccurrenceVisibility(ev,!isWallEventVisible(ev));renderQuickPlanningReview()};
+    const wallSeries=card.querySelector('[data-wall-series]');if(wallSeries)wallSeries.onclick=()=>{const ev=rowToCalendarEvent(row);setWallSeriesVisibility(ev,wallSeriesExcluded(ev));renderQuickPlanningReview()};
   });
   renderReviewedDecisions(rows);
 }
@@ -4639,9 +4660,80 @@ $('mobileNextBtn').onclick=()=>moveMobilePlan(1);
 $('mobileTodayBtn').onclick=()=>{const t=planDateOnly(new Date()),first=plans.length?planDateOnly(plans[0].date):t,last=plans.length?planDateOnly(plans[plans.length-1].date):t;mobilePlanDate=(t>=first&&t<=last)?t:first;renderMobilePlan()};
 
 
+
+// AutoPilot v52.9: independent garage-wall visibility rules.
+// These rules NEVER remove an event from AutoPilot planning; they only control NonZero publication.
+const STORAGE_WALL_VISIBILITY='familyOptimizerV23.wallVisibility.v1';
+function wallVisibilityStore(){
+  try{
+    const x=JSON.parse(localStorage.getItem(STORAGE_WALL_VISIBILITY)||'{}')||{};
+    return {series:(x.series&&typeof x.series==='object')?x.series:{},occurrence:(x.occurrence&&typeof x.occurrence==='object')?x.occurrence:{}};
+  }catch{return {series:{},occurrence:{}}}
+}
+function saveWallVisibilityStore(x){localStorage.setItem(STORAGE_WALL_VISIBILITY,JSON.stringify(x||{series:{},occurrence:{}}))}
+function wallNorm(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,' ')}
+function wallSeriesKey(a={}){
+  const cid=wallNorm(a.calendarId),uid=wallNorm(a.uid);
+  if(uid)return `uid|${cid}|${uid}`;
+  return `fallback|${wallNorm(a.source)}|${wallNorm(a.child)}|${wallNorm(a.title)}`;
+}
+function wallOccurrenceKey(a={}){
+  return `${wallSeriesKey(a)}|${wallNorm(a.date)}|${wallNorm(a.start)}|${wallNorm(a.end)}`;
+}
+function wallSeriesExcluded(a={}){
+  const s=wallVisibilityStore(),k=wallSeriesKey(a);
+  return s.series[k]?.visible===false;
+}
+function isWallEventVisible(a={}){
+  const s=wallVisibilityStore(),ok=wallOccurrenceKey(a),sk=wallSeriesKey(a);
+  if(Object.prototype.hasOwnProperty.call(s.occurrence,ok))return s.occurrence[ok]?.visible!==false;
+  if(Object.prototype.hasOwnProperty.call(s.series,sk))return s.series[sk]?.visible!==false;
+  return true;
+}
+function wallRuleMeta(a={},scope='occurrence',visible=false){
+  return {visible,scope,title:String(a.title||'Calendar event'),source:String(a.source||''),child:String(a.child||''),date:String(a.date||''),start:String(a.start||''),calendarId:String(a.calendarId||''),uid:String(a.uid||''),updatedAt:Date.now()};
+}
+function setWallOccurrenceVisibility(a={},visible=true){
+  const s=wallVisibilityStore(),k=wallOccurrenceKey(a);
+  if(visible){
+    if(wallSeriesExcluded(a))s.occurrence[k]=wallRuleMeta(a,'occurrence',true);
+    else delete s.occurrence[k];
+  }else s.occurrence[k]=wallRuleMeta(a,'occurrence',false);
+  saveWallVisibilityStore(s);
+  renderWallExclusionManager();
+  scheduleNonzeroAgendaPublish();
+}
+function setWallSeriesVisibility(a={},visible=true){
+  const s=wallVisibilityStore(),k=wallSeriesKey(a);
+  if(visible)delete s.series[k];
+  else s.series[k]=wallRuleMeta(a,'series',false);
+  saveWallVisibilityStore(s);
+  renderWallExclusionManager();
+  scheduleNonzeroAgendaPublish();
+}
+function renderWallExclusionManager(){
+  const host=$('v529WallExclusionsHost');if(!host)return;
+  const s=wallVisibilityStore();
+  const rules=[
+    ...Object.entries(s.series).filter(([,v])=>v?.visible===false).map(([key,v])=>({kind:'series',key,...v})),
+    ...Object.entries(s.occurrence).filter(([,v])=>v?.visible===false).map(([key,v])=>({kind:'occurrence',key,...v}))
+  ].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(!rules.length){host.innerHTML='<div class="v529-wall-empty">Nothing is hidden from the garage wall. Calendar events still remain fully available to AutoPilot planning.</div>';return}
+  host.innerHTML=rules.map((r,i)=>`<div class="v529-wall-rule" data-wall-rule="${i}"><div><strong>${esc(r.title||'Calendar event')}</strong><small>${r.kind==='series'?'Hidden for all matching occurrences':'Hidden for this occurrence only'}${r.date?' · '+esc(r.date):''}${r.source?' · '+esc(r.source.replace(/^Shared calendar:\s*/i,'')):''}</small></div><button type="button">RESTORE TO WALL</button></div>`).join('');
+  host.querySelectorAll('[data-wall-rule]').forEach(el=>{
+    const r=rules[+el.dataset.wallRule];el.querySelector('button').onclick=()=>{
+      const x=wallVisibilityStore();delete x[r.kind][r.key];saveWallVisibilityStore(x);renderWallExclusionManager();renderQuickPlanningReview();scheduleNonzeroAgendaPublish();
+    };
+  });
+}
+
+
 // AutoPilot v47.15: revision-safe NONZERO daily agenda publisher.
 let __nonzeroPublishTimer=null;
 let __nonzeroPublishing=false;
+let __nonzeroPublishQueued=false;
+let __nonzeroLastAgendaFingerprint='';
+const NONZERO_PUBLISH_DEBOUNCE_MS=2500;
 function normalizeNonzeroEndpoint(v){return String(v||'').trim().replace(/\/+$/,'')}
 function nonzeroIntegrationConfig(){
   return {
@@ -4664,7 +4756,7 @@ function buildNonzeroAgendaDay(p,date,updatedAt){
   if(!p)return {date,weekend:[0,6].includes(new Date(date+'T12:00:00').getDay()),updatedAt,status:'READY',items:[],summary:{eventCount:0,conflictCount:0}};
   const grouped=new Map();
   const add=(act,leg=null)=>{
-    if(!act||!act.title)return;
+    if(!act||!act.title||!isWallEventVisible(act))return;
     const key=[act.uid||'',act.child||'',act.title||'',act.start||'',act.end||'',act.location||''].join('|');
     if(!grouped.has(key))grouped.set(key,{activity:act,legs:[]});
     if(leg)grouped.get(key).legs.push(leg);
@@ -4676,7 +4768,7 @@ function buildNonzeroAgendaDay(p,date,updatedAt){
     const act=x.activity||{},legs=x.legs||[];
     const legText=legs.map(l=>`${l.kind}: ${l.primary}${l.primary==='Backup'?' ⚠':''}`).join(' · ');
     const place=String(act.location||'').trim(),child=childLabel(act.child||'');
-    return {time:displayTimeForNonzero(act.start),title:`${child} · ${act.title||'Family commitment'}`,meta:[legText,place].filter(Boolean).join(' · '),location:place,child,source:act.source||'AutoPilot'};
+    return {time:displayTimeForNonzero(act.start),title:`${child} · ${act.title||'Family commitment'}`,meta:[legText,place].filter(Boolean).join(' · '),location:place,child,source:act.source||'AutoPilot',showOnWall:true};
   });
   const conflicts=(p.assignments||[]).filter(a=>a.primary==='Backup').length+(p.status==='bad'?1:0);
   let status='READY';if(conflicts>0)status='ATTENTION';else if(items.length)status='LIVE';
@@ -4688,7 +4780,21 @@ function buildNonzeroAgenda(){
   const all=(typeof plans!=='undefined'&&Array.isArray(plans)?plans:(Array.isArray(window.plans)?window.plans:[])).filter(Boolean);
   const days=all.map(p=>buildNonzeroAgendaDay(p,p.dateStr||date,updatedAt)).filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date));
   const current=days.find(d=>d.date===date)||buildNonzeroAgendaDay(null,date,updatedAt);
-  return {...current,schema:2,updatedAt,days,range:days.length?{start:days[0].date,end:days[days.length-1].date}:null,source:'autopilot-v52.1'};
+  return {...current,schema:2,updatedAt,days,range:days.length?{start:days[0].date,end:days[days.length-1].date}:null,source:'autopilot-v52.10'};
+}
+function nonzeroAgendaComparable(agenda){
+  if(!agenda||typeof agenda!=='object')return null;
+  const cleanDay=d=>({
+    date:String(d?.date||''),weekend:d?.weekend===true,status:String(d?.status||''),
+    items:Array.isArray(d?.items)?d.items.map(i=>({time:String(i?.time||''),title:String(i?.title||''),meta:String(i?.meta||''),location:String(i?.location||''),child:String(i?.child||''),source:String(i?.source||''),showOnWall:i?.showOnWall!==false})):[],
+    summary:d?.summary||null,nextCriticalAction:d?.nextCriticalAction||null
+  });
+  return {schema:Number(agenda.schema||2),source:String(agenda.source||''),range:agenda.range||null,days:Array.isArray(agenda.days)?agenda.days.map(cleanDay):[],current:cleanDay(agenda)};
+}
+function nonzeroAgendaFingerprint(agenda){
+  const s=JSON.stringify(nonzeroAgendaComparable(agenda));let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return (h>>>0).toString(16).padStart(8,'0');
 }
 async function nonzeroCloudRequest(path,opts={}){
   const cfg=nonzeroIntegrationConfig();
@@ -4711,30 +4817,41 @@ async function testNonzeroIntegration(){
   }catch(e){nonzeroStatus(`<strong>Connection failed:</strong> ${esc(e.message)}`,'warn');return false}
 }
 async function publishNonzeroAgenda({silent=false}={}){
-  if(__nonzeroPublishing)return false;
+  if(__nonzeroPublishing){__nonzeroPublishQueued=true;return false}
   const cfg=nonzeroIntegrationConfig();
   if(!/^https:\/\//i.test(cfg.endpoint)||cfg.key.length<16){if(!silent)nonzeroStatus('<strong>Not configured.</strong> Add the NONZERO Worker URL and private sync key first.','warn');return false}
   __nonzeroPublishing=true;
   try{
     const agenda=buildNonzeroAgenda();
+    const fingerprint=nonzeroAgendaFingerprint(agenda);
+    if(fingerprint===__nonzeroLastAgendaFingerprint){if(!silent)nonzeroStatus('<strong>Current.</strong> The NONZERO agenda already matches this plan; no cloud write was needed.','good');return true}
     for(let attempt=0;attempt<3;attempt++){
       const current=await nonzeroCloudRequest('/state');
       const state=(current.state&&typeof current.state==='object')?current.state:{};
       if(!Array.isArray(state.sessions))state.sessions=[];
+      if(nonzeroAgendaFingerprint(state.autopilotAgenda)===fingerprint){
+        __nonzeroLastAgendaFingerprint=fingerprint;
+        if(!silent)nonzeroStatus('<strong>Current.</strong> Cloud already contains this AutoPilot agenda; no write was needed.','good');
+        return true;
+      }
       const baseRevision=Number(current.revision||state._meta?.revision||0);
       const nextState={...state,autopilotAgenda:agenda};
       try{
         const written=await nonzeroCloudRequest('/state',{method:'PUT',body:JSON.stringify({state:nextState,baseRevision})});
+        __nonzeroLastAgendaFingerprint=fingerprint;
         if(!silent)nonzeroStatus(`<strong>Published.</strong> ${agenda.date} · ${agenda.items.length} agenda item${agenda.items.length===1?'':'s'} · NONZERO revision ${written.revision||'updated'}.`,'good');
         return true;
       }catch(e){if(e.status!==409||attempt===2)throw e}
     }
   }catch(e){if(!silent)nonzeroStatus(`<strong>Publish failed:</strong> ${esc(e.message)}. Existing NONZERO state was left intact.`,'warn');return false}
-  finally{__nonzeroPublishing=false}
+  finally{
+    __nonzeroPublishing=false;
+    if(__nonzeroPublishQueued){__nonzeroPublishQueued=false;scheduleNonzeroAgendaPublish()}
+  }
 }
 function scheduleNonzeroAgendaPublish(){
   const cfg=nonzeroIntegrationConfig(); if(!cfg.auto||!plans.length)return;
-  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),1200);
+  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),NONZERO_PUBLISH_DEBOUNCE_MS);
 }
 $('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();scheduleNonzeroAgendaPublish();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
@@ -4768,6 +4885,7 @@ function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.t
 <scr${''}ipt>window.__apRelease='v51.5';<\/script>
 
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<!-- AutoPilot v52.9: per-event/series NonZero wall visibility controls + Backstage exclusions manager; planning logic remains independent. -->
 </body></html>
 <!-- AutoPilot v50.2: anytime non-destructive calendar refresh; clean planning-cycle restart preserving durable setup; final-step NONZERO publish/test receipt + auto-publish visibility. -->`;
 }
@@ -6550,7 +6668,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function updateCopy(){const n=selected(),app=$('v500App');if(!app)return;const startSub=$('v500StageStart')?.querySelector('.v500-sub');if(startSub)startSub.textContent=`Choose the first day. AutoPilot will refresh every saved calendar, build the next ${n} workdays, and open one recommended plan for review. Your permanent setup stays backstage.`;if($('v500StartNext'))$('v500StartNext').textContent=`BUILD MY ${n}-DAY PLAN`;const h=$('v500StageReview')?.querySelector('.v510-reviewintro h1');if(h)h.textContent=`Review the ${n}-day family plan`;if($('v500ViewTen'))$('v500ViewTen').textContent=`ALL ${n} DAYS`;const rawHelp=$('v500Raw')?.nextElementSibling;if(rawHelp)rawHelp.textContent=`Use this only for unusual exceptions. The ${n}-day plan is already recommended from your normal work pattern and family transportation rules.`;document.querySelectorAll('[data-v510-cycle-label]').forEach(el=>el.textContent=String(n));}
   function phase(){if($('v500StageFinal')?.classList.contains('on'))return 3;if($('v500StageReview')?.classList.contains('on'))return 2;return 1}
   function syncJourney(){const p=phase();document.querySelectorAll('.v510-step').forEach((e,i)=>{e.classList.toggle('on',i+1===p);e.classList.toggle('done',i+1<p)});const status=$('v510JourneyStatus');if(status){const n=selected();status.textContent=p===1?`Choose a ${n}-day cycle and start date.`:p===2?`${n}-day working plan · review recommendations and change only exceptions.`:`${n}-day final plan · one source for print, calendar, phone, Phil, and NonZero.`}const edit=$('v510Edit'),fin=$('v510Finalize');if(edit)edit.disabled=p===1;if(fin)fin.disabled=p!==2;}
-  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v52.8</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
+  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v52.10</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildStart(){const st=$('v500StageStart');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<h1 class="v500-q">Build the next family planning cycle</h1><p class="v500-sub"></p><div class="v510-cyclechoice"><button type="button" class="v510-cycle" data-days="5"><strong>5 workdays</strong><span>Use for a one-week planning pass or a shorter reset.</span></button><button type="button" class="v510-cycle" data-days="10"><strong>10 workdays</strong><span>Use for the full two-week family operating cycle.</span></button></div><div class="v510-startrow"><label>Cycle starts<input id="v500StartDate" type="date" aria-label="First day of plan"></label><button id="v500StartNext" type="button" class="v500-btn primary">BUILD MY PLAN</button></div><div class="v510-promise"><strong>What happens next:</strong> AutoPilot refreshes your connected schedules, applies the normal work-site pattern and transportation logic, and gives you one recommended plan. You only change exceptions.</div>`;document.querySelectorAll('.v510-cycle').forEach(b=>b.onclick=()=>setCycle(Number(b.dataset.days)));}
   function buildLoading(){const st=$('v500StageCalendars');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<div class="v510-loader"></div><h1 class="v500-q">Building the family plan</h1><p class="v500-sub">AutoPilot is actively working. Keep this screen open while it refreshes schedules and builds recommendations.</p><div class="v512-progress"><div class="v512-step active" data-loadstep="1">Refresh calendars</div><div class="v512-step" data-loadstep="2">Apply family rules</div><div class="v512-step" data-loadstep="3">Build recommendations</div><div class="v512-step" data-loadstep="4">Prepare review</div></div><div id="v500RefreshStatus" class="v512-live"><div><b><span class="v512-dot"></span>Starting planning cycle…</b>Connecting to saved schedules.</div></div><div id="v512Elapsed" class="v512-elapsed">Working · 0s</div><button id="v500Refresh" type="button" class="v500-btn primary" style="display:none">RETRY</button>`;}
   let __v512Timer=null,__v512Started=0;
@@ -6558,11 +6676,11 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function v512Clock(on=true){clearInterval(__v512Timer);if(!on)return;__v512Started=Date.now();const tick=()=>{const el=$('v512Elapsed');if(el)el.textContent=`Working · ${Math.floor((Date.now()-__v512Started)/1000)}s`};tick();__v512Timer=setInterval(tick,1000)}
   function buildReview(){const st=$('v500StageReview');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');const header=card.querySelector('.v500-header');if(header){header.className='v510-reviewintro';header.querySelector('div:first-child').innerHTML='<h1>Review the family plan</h1><p>Everything shown is AutoPilot’s recommendation. Scan the full cycle, change only exceptions, then finalize when it looks right.</p>';}const oldActions=card.querySelector(':scope > .v500-actions');if(oldActions)oldActions.style.display='none';const foot=document.createElement('div');foot.className='v510-review-footer';foot.innerHTML=`<div class="hint">Edits save as you make them. Use the note box only for non-routine exceptions.</div><div class="buttons"><button id="v510StartOver" class="v500-btn">CHANGE CYCLE</button><button id="v510ReviewFinalize" class="v500-btn primary">FINALIZE THIS PLAN</button></div>`;card.appendChild(foot);$('v510StartOver').onclick=()=>{if(typeof stage==='function')stage(1);syncJourney()};$('v510ReviewFinalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildFinal(){const st=$('v500StageFinal');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');const header=card.querySelector('.v500-header');if(header){header.className='v510-finalhead';header.innerHTML='<h1>Final family operating plan</h1><p>Every output below comes from this same finalized cycle. No duplicate versions to reconcile.</p>';}const actions=card.querySelector(':scope > .v500-actions');if(actions){actions.className='v510-final-actions';}const nz=$('v502NonzeroFinal');if(nz){const h=nz.querySelector('h3');if(h)h.textContent='Garage wall / NonZero';}}
-  function buildBackstage(){if($('v510Backstage'))return;const root=document.createElement('div');root.id='v510Backstage';root.innerHTML=`<div class="v510-scrim" data-close></div><aside class="v510-drawer"><div class="v510-drawerhead"><div><h2>Backstage</h2><p>Permanent setup, connections, rules, and diagnostics live here. None of this is part of the normal planning cycle.</p></div><button class="v510-close" data-close>CLOSE</button></div><div class="v510-drawerbody"><div class="v510-backstage-summary"><div><b>Calendar feeds</b><span>Connections + refresh health</span></div><div><b>Family rules</b><span>People, locations + transport</span></div><div><b>System</b><span>Routing, backup + integrations</span></div></div><details class="v510-section" open><summary>Calendar connections & event intake</summary><div id="v510CalendarsHost" class="v510-section-content"></div></details><details class="v510-section"><summary>Family, work sites & planning rules</summary><div id="v510SettingsHost" class="v510-section-content"></div></details><details class="v510-section"><summary>Advanced controls & diagnostics</summary><div id="v510AdvancedHost" class="v510-section-content"><p style="font-size:11px;color:#6d655c">Backup/restore, connection tests, NonZero integration, routing assumptions, and other infrequent controls remain available inside the setup panels above. Keep this drawer closed during normal planning.</p></div></details></div></aside>`;document.body.appendChild(root);root.querySelectorAll('[data-close]').forEach(x=>x.onclick=closeBackstage);const cal=$('tab-calendars'),settings=$('tab-settings'),simple=$('simpleSetupPanel');if(cal)$('v510CalendarsHost').appendChild(cal);if(settings)$('v510SettingsHost').appendChild(settings);if(simple&&!cal&&!settings)$('v510SettingsHost').appendChild(simple);}
-  function openBackstage(){buildBackstage();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
+  function buildBackstage(){if($('v510Backstage'))return;const root=document.createElement('div');root.id='v510Backstage';root.innerHTML=`<div class="v510-scrim" data-close></div><aside class="v510-drawer"><div class="v510-drawerhead"><div><h2>Backstage</h2><p>Permanent setup, connections, rules, and diagnostics live here. None of this is part of the normal planning cycle.</p></div><button class="v510-close" data-close>CLOSE</button></div><div class="v510-drawerbody"><div class="v510-backstage-summary"><div><b>Calendar feeds</b><span>Connections + refresh health</span></div><div><b>Family rules</b><span>People, locations + transport</span></div><div><b>System</b><span>Routing, backup + integrations</span></div></div><details class="v510-section" open><summary>Calendar connections & event intake</summary><div id="v510CalendarsHost" class="v510-section-content"></div></details><details class="v510-section"><summary>Family, work sites & planning rules</summary><div id="v510SettingsHost" class="v510-section-content"></div></details><details class="v510-section"><summary>Garage wall visibility</summary><div id="v529WallExclusionsHost" class="v510-section-content"></div></details><details class="v510-section"><summary>Advanced controls & diagnostics</summary><div id="v510AdvancedHost" class="v510-section-content"><p style="font-size:11px;color:#6d655c">Backup/restore, connection tests, NonZero integration, routing assumptions, and other infrequent controls remain available inside the setup panels above. Keep this drawer closed during normal planning.</p></div></details></div></aside>`;document.body.appendChild(root);root.querySelectorAll('[data-close]').forEach(x=>x.onclick=closeBackstage);const cal=$('tab-calendars'),settings=$('tab-settings'),simple=$('simpleSetupPanel');if(cal)$('v510CalendarsHost').appendChild(cal);if(settings)$('v510SettingsHost').appendChild(settings);if(simple&&!cal&&!settings)$('v510SettingsHost').appendChild(simple);}
+  function openBackstage(){buildBackstage();renderWallExclusionManager();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This refresh is taking longer than expected.</b> AutoPilot is still waiting on a calendar connection. You can keep waiting, or use Backstage → Calendar connections to identify the slow feed.'}},25000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Planning v52.8';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Planning v52.10';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
