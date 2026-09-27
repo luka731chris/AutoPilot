@@ -6430,7 +6430,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v52.0';
+   document.title='AutoPilot — Family Logistics Planner v53.3';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6451,7 +6451,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v52.0';
+   document.title='AutoPilot — Family Logistics Planner v53.3';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6504,6 +6504,9 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  snapshotTiles=function(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${snapGuidance(d)}${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b><br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`};
  renderPhone=function(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;let action='';if(d.leaveHome)action+=`<hr><b>Leave home by:</b> ${esc(d.leaveHome.time)} <span class="muted">${esc(d.leaveHome.reason||'')}</span>`;if(d.leaveWork)action+=`<br><b>Leave work by:</b> ${esc(d.leaveWork.time)} <span class="muted">${esc(d.leaveWork.reason||'')}</span>`;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${action}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`};
  phoneHtml=function(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}.deadline{background:#faf7ef;border:1px solid #e2d9ca;border-radius:8px;padding:7px;margin:7px 0;font-size:12px}</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
+</body></html>`}
+})();
+</script>
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 
 <style id="v526PlanningSprintStyle">
@@ -6579,6 +6582,133 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+
+<style id="v532DualPlanStyle">
+/* Keep implementation/backup mechanics out of the day-to-day experience. */
+#tab-plan #exportBackupBtn,#tab-plan #importBackupBtn,#tab-plan #backupFile,#tab-plan #backupStatus{display:none!important}
+#v532PlanHome{max-width:1120px;margin:0 auto 14px;background:#fff;border:1px solid #d8d0c5;border-radius:14px;box-shadow:0 8px 24px rgba(37,32,25,.07);padding:14px 16px}
+.v532-home-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.v532-home-k{font-size:9px;font-weight:950;letter-spacing:.13em;text-transform:uppercase;color:#80766a}.v532-home-head h2{font-size:20px;line-height:1.1;margin:3px 0 4px}.v532-home-head p{font-size:11px;line-height:1.4;color:#6e665d;margin:0}.v532-home-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.v532-home-actions button{min-height:38px;border-radius:9px;border:1px solid #9e9589;background:#fff;padding:7px 11px;font-size:10px;font-weight:950;cursor:pointer}.v532-home-actions button.primary{background:#211f1b;color:#fff;border-color:#211f1b}.v532-home-actions button.future{border-color:#c7a739;background:#fffaf0}.v532-plan-slots{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.v532-slot{border:1px solid #e1dbd2;border-radius:10px;padding:10px 11px;background:#fbfaf7}.v532-slot small{display:block;font-size:8px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:#847a6e}.v532-slot strong{display:block;margin-top:3px;font-size:13px}.v532-slot span{display:block;margin-top:3px;font-size:9.5px;color:#6d655c}.v532-slot.empty{opacity:.58}.v532-slot.live{border-left:4px solid #3d7350}.v532-slot.upcoming{border-left:4px solid #d0a623}
+#v532CurrentBtn,#v532FutureBtn,#v532ReplanBtn{font-weight:950!important}
+#v532ReplanBtn{background:#fffaf0!important;border-color:#c7a739!important}
+#v500StageStart .v527-start-new-label{font-size:11px!important;color:#3f3a34!important}.v532-mode-note{margin:8px 0 0;font-size:10px;color:#6c645a}.v532-mode-note b{color:#211f1b}
+@media(max-width:760px){.v532-home-head{flex-direction:column}.v532-home-actions{width:100%;justify-content:stretch}.v532-home-actions button{flex:1}.v532-plan-slots{grid-template-columns:1fr}}
+</style>
+<script id="v532DualPlanScript">
+(()=>{
+'use strict';
+if(window.__apV532DualPlan)return;window.__apV532DualPlan=true;
+const LIVE='autopilot.v532.livePlan.v1', FUTURE='autopilot.v532.futurePlan.v1', MODE='autopilot.v532.editMode', LEGACY='familyOptimizerV23.currentPlan.v1';
+const $=id=>document.getElementById(id), parse=x=>{try{return x?JSON.parse(x):null}catch{return null}}, clone=x=>JSON.parse(JSON.stringify(x));
+const isoDate=v=>{if(!v)return'';if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);const d=v instanceof Date?v:new Date(v);if(isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const today=()=>isoDate(new Date());
+const plansNow=()=>{try{return Array.isArray(window.plans)?window.plans:(typeof plans!=='undefined'&&Array.isArray(plans)?plans:[])}catch{return[]}};
+const dateOf=p=>isoDate(p?.dateStr||p?.date);
+const range=c=>{const a=(c?.plans||[]).map(dateOf).filter(Boolean).sort();return {start:a[0]||'',end:a[a.length-1]||''}};
+const hasToday=c=>{const t=today(),r=range(c);return !!(r.start&&t>=r.start&&t<=r.end)};
+const fmt=d=>{if(!d)return'—';const x=new Date(d+'T12:00:00');return x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})};
+const rangeText=c=>{const r=range(c);return r.start?(fmt(r.start)+(r.end&&r.end!==r.start?' – '+fmt(r.end):'')):'No plan saved'};
+const mode=()=>localStorage.getItem(MODE)||'live';
+const setMode=m=>localStorage.setItem(MODE,m==='future'?'future':'live');
+function payloadFromRuntime(){const ps=plansNow();if(!ps.length)return null;return {version:1,savedAt:new Date().toISOString(),cycleDays:Number(localStorage.getItem('autopilot.cycleDays')||10),startDate:dateOf(ps[0]),plans:clone(ps)}}
+function legacyCandidate(){return parse(localStorage.getItem(LEGACY))}
+function getLive(){return parse(localStorage.getItem(LIVE))}
+function getFuture(){return parse(localStorage.getItem(FUTURE))}
+function saveSlot(key,p){if(p?.plans?.length)localStorage.setItem(key,JSON.stringify(p))}
+function bootstrap(){
+  let live=getLive(), future=getFuture(), legacy=legacyCandidate();
+  if(!live&&legacy?.plans?.length)saveSlot(LIVE,legacy);
+  live=getLive();future=getFuture();
+  /* When an upcoming plan actually reaches today, promote it without deleting the older archive first. */
+  if(future?.plans?.length&&hasToday(future)&&!hasToday(live)){
+    saveSlot(LIVE,{...future,promotedAt:new Date().toISOString()});localStorage.removeItem(FUTURE);setMode('live');
+  }
+}
+function restore(c,m){
+  if(!c?.plans?.length)return false;
+  try{
+    const norm=c.plans.map(p=>{const q={...p};if(q.date&&!(q.date instanceof Date)){const d=new Date(isoDate(q.date)+'T12:00:00');if(!isNaN(d))q.date=d}else if(!q.date&&q.dateStr)q.date=new Date(q.dateStr+'T12:00:00');return q});
+    if(typeof plans!=='undefined')plans=norm;window.plans=norm;setMode(m);
+    const r=range(c), legacy=$('startDate'), fresh=$('v500StartDate');if(r.start){if(legacy)legacy.value=r.start;if(fresh)fresh.value=r.start}
+    window.captureWorkingPlans?.();
+    const edit=$('v504EditPlan')||$('v510Edit');if(edit)edit.click();else window.renderReview?.();
+    setTimeout(refreshHome,100);return true;
+  }catch(e){console.error('AutoPilot v53.3 restore failed',e);return false}
+}
+function preserveRuntime(){const p=payloadFromRuntime();if(!p)return;saveSlot(mode()==='future'?FUTURE:LIVE,p)}
+function startFuture(){
+  /* Freeze the plan currently on screen into Live before opening a new planning workspace. */
+  if(mode()==='live')preserveRuntime();
+  const legacy=legacyCandidate();if(!getLive()&&legacy?.plans?.length)saveSlot(LIVE,legacy);
+  setMode('future');
+  const st=$('v500StageStart');if(typeof stage==='function')stage(1);else if(st){document.querySelectorAll('.v500-stage').forEach(x=>x.classList.remove('on'));st.classList.add('on')}
+  const d=new Date();d.setDate(d.getDate()+1);const v=isoDate(d),inp=$('v500StartDate');if(inp)inp.value=v;
+  const h=st?.querySelector('.v500-q');if(h)h.textContent='Plan a future 5- or 10-day period';
+  const sub=st?.querySelector('.v500-sub');if(sub)sub.textContent='Build the next period without replacing the plan you are using today. Your Current Plan stays available in parallel.';
+  let note=$('v532ModeNote');if(!note&&st?.querySelector('.v500-card')){note=document.createElement('div');note.id='v532ModeNote';note.className='v532-mode-note';st.querySelector('.v500-card').appendChild(note)}if(note)note.innerHTML='<b>Upcoming-plan mode.</b> Building or editing here will not replace today’s saved plan.';
+  st?.scrollIntoView({behavior:'smooth',block:'start'});refreshHome();
+}
+function ensureHome(){
+  if($('v532PlanHome'))return;
+  const host=document.createElement('section');host.id='v532PlanHome';
+  const cc=$('apCommandCenter'), nav=$('v510Journey');
+  if(cc?.parentNode)cc.insertAdjacentElement('afterend',host);else if(nav?.parentNode)nav.insertAdjacentElement('afterend',host);else document.body.prepend(host);
+}
+function refreshHome(){
+  ensureHome();const h=$('v532PlanHome'),l=getLive(),f=getFuture(),lm=mode();
+  h.innerHTML=`<div class="v532-home-head"><div><div class="v532-home-k">PLAN HOME</div><h2>${hasToday(l)?'Today is protected in Current Plan':'Your plans, one tap away'}</h2><p>Use Current Plan for the schedule you are living now. Build an Upcoming Plan separately for the next 5 or 10 workdays.</p></div><div class="v532-home-actions"><button class="primary" id="v532CurrentBtn" ${l?.plans?.length?'':'disabled'}>VIEW CURRENT PLAN</button><button class="future" id="v532FutureBtn" ${f?.plans?.length?'':'disabled'}>VIEW UPCOMING PLAN</button><button id="v532ReplanBtn">PLAN FUTURE PERIOD</button></div></div><div class="v532-plan-slots"><div class="v532-slot live ${l?.plans?.length?'':'empty'}"><small>CURRENT / LIVE</small><strong>${l?.plans?.length?rangeText(l):'No current plan saved'}</strong><span>${l?.plans?.length?(hasToday(l)?'Includes today · protected while you re-plan':'Saved current plan'):'Build or restore a plan to create this slot.'}</span></div><div class="v532-slot upcoming ${f?.plans?.length?'':'empty'}"><small>UPCOMING</small><strong>${f?.plans?.length?rangeText(f):'No future plan yet'}</strong><span>${f?.plans?.length?'Independent draft · does not overwrite Current Plan':'Use Plan Future Period when you are ready.'}</span></div></div>`;
+  $('v532CurrentBtn').onclick=()=>restore(getLive(),'live');$('v532FutureBtn').onclick=()=>restore(getFuture(),'future');$('v532ReplanBtn').onclick=startFuture;
+  const actions=document.querySelector('#v510Journey .v510-actions');if(actions&&!$('v532ReplanToolbar')){const b=document.createElement('button');b.id='v532ReplanToolbar';b.textContent='PLAN FUTURE';b.onclick=startFuture;actions.appendChild(b)}
+  const old=$('v527CurrentPlanButton');if(old){old.textContent='CURRENT PLAN';old.onclick=()=>restore(getLive(),'live');old.disabled=!l?.plans?.length}
+}
+function allActs(p){const list=[...(Array.isArray(p?.activities)?p.activities:[]),...(Array.isArray(p?.contextActivities)?p.contextActivities:[]),...(Array.isArray(p?.events)?p.events:[])];const seen=new Set();return list.filter(a=>{const k=[a?.start,a?.end,a?.title||a?.summary,a?.child||a?.person,a?.location].join('|');if(seen.has(k))return false;seen.add(k);return a?.showOnWall!==false})}
+const mins=t=>{const m=String(t||'').match(/(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null};
+const clock=m=>m==null?'':new Date(2000,0,1,Math.floor(m/60)%24,m%60).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+function commandPlans(){const l=getLive(),f=getFuture(),t=today();if(l?.plans?.some(p=>dateOf(p)===t))return l.plans;if(f?.plans?.some(p=>dateOf(p)===t))return f.plans;return plansNow()}
+function upcomingTimeline(){
+  const n=new Date(),todayKey=today(),nowM=n.getHours()*60+n.getMinutes(), items=[];
+  for(const p of commandPlans()){
+    const dk=dateOf(p);if(!dk||dk<todayKey)continue;
+    for(const a of allActs(p)){
+      const sm=mins(a.start);if(sm==null)continue;const em=mins(a.end)||sm;
+      items.push({date:dk,sm,em,title:a.title||a.summary||a.name||'Commitment',owner:a.child||a.person||a.owner||'',loc:a.location||''});
+    }
+    const dep=p.departureDeadline??p.departure??p.leaveHome,dm=typeof dep==='number'?dep:mins(dep);if(dm!=null)items.push({date:dk,sm:dm,em:dm,title:'Leave home',owner:'Chris',loc:p.site||p.workSite||''});
+  }
+  items.sort((a,b)=>a.date.localeCompare(b.date)||a.sm-b.sm);
+  const active=items.find(x=>x.date===todayKey&&x.sm<=nowM&&x.em>=nowM);
+  const after=items.filter(x=>x.date>todayKey||(x.date===todayKey&&x.sm>nowM));
+  return {active,next:after[0],later:after[1]};
+}
+function tlLabel(x,fallback){if(!x)return fallback;const prefix=x.date===today()?'':new Date(x.date+'T12:00:00').toLocaleDateString(undefined,{weekday:'short'})+' · ';return `${prefix}${clock(x.sm)} · ${x.owner?x.owner+' · ':''}${x.title}`}
+function refreshCommandCenter(){
+  const cc=$('apCommandCenter');if(!cc)return;const t=upcomingTimeline(),live=getLive();
+  if($('ccNow'))$('ccNow').textContent=tlLabel(t.active,'No active commitment');
+  if($('ccNowSub'))$('ccNowSub').textContent=t.active?.loc||(new Date().getDay()%6===0?'Weekend schedule is active':'AutoPilot is watching today');
+  if($('ccNext'))$('ccNext').textContent=tlLabel(t.next,'No upcoming commitment');if($('ccNextSub'))$('ccNextSub').textContent=t.next?.loc||'';
+  if($('ccLater'))$('ccLater').textContent=tlLabel(t.later,'Nothing else queued');if($('ccLaterSub'))$('ccLaterSub').textContent=t.later?.loc||'';
+  if($('ccState'))$('ccState').textContent=(new Date().getDay()%6===0?'Weekend · ':'')+(mode()==='future'?'Planning upcoming':'Current plan');
+  if($('ccChange')&&live?.plans?.length)$('ccChange').textContent='Current plan protected';
+}
+function simplifyStart(){
+  const st=$('v500StageStart');if(!st)return;const h=st.querySelector('.v500-q'),sub=st.querySelector('.v500-sub');if(mode()==='live'){if(h)h.textContent='Plan home';if(sub)sub.textContent='Open the plan you are using now, or create a separate future 5- or 10-day plan.'}
+}
+function init(){
+  bootstrap();
+  /* The original v52.7 interval may keep rewriting its legacy current-plan key. v53.2 owns the user-facing slots separately. */
+  setTimeout(()=>{const rt=payloadFromRuntime();if(rt&&mode()==='live'&&!getLive())saveSlot(LIVE,rt);refreshHome();simplifyStart();refreshCommandCenter()},250);
+  setInterval(()=>{preserveRuntime();bootstrap();refreshHome();refreshCommandCenter()},1800);
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('#v500StartNext');if(b&&mode()==='future')setTimeout(()=>{const p=payloadFromRuntime();if(p)saveSlot(FUTURE,p);refreshHome()},2500);
+    if(e.target.closest('#v502RestartCycle,#v510StartOver,.v504-newcycle,#newCycleBtn')){e.preventDefault();e.stopImmediatePropagation();startFuture()}
+  },true);
+  window.addEventListener('pagehide',preserveRuntime);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<!-- AutoPilot v53.3: Premium-tested baseline + Current/Upcoming dual-plan planning layer. -->
+<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v53.3';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
 </body></html>`};
  // One-page review/fridge output gets the same operational deadlines.
  v504PrintCard=function(p){
@@ -6589,7 +6719,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  // NONZERO daily agenda begins with the critical leave action so the Wall can surface it.
  const oldBuildNz=buildNonzeroAgenda;
  buildNonzeroAgenda=function(){const out=oldBuildNz();try{const p=plans.find(x=>x.dateStr===out.date);const g=guidance(p);const a=g.evening||g.morning;if(a){const title=`${a.label} ${fmt513(a.time)}`;out.items=[{time:fmt513(a.time),title,meta:a.reason||'',location:'',child:'',source:'AutoPilot timing'},...(out.items||[])];out.nextCriticalAction={time:fmt513(a.time),text:title+' '+(a.reason||'')};out.summary=out.summary||{};out.summary.eventCount=(out.items||[]).length}out.source='autopilot-v52.0'}catch{}return out};
- function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v52.0';document.title='AutoPilot — Family Logistics Planner v52.0';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
+ function init(){const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v52.0';document.title='AutoPilot — Family Logistics Planner v53.3';const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · operational departure guidance'}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -6680,7 +6810,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();renderWallExclusionManager();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This refresh is taking longer than expected.</b> AutoPilot is still waiting on a calendar connection. You can keep waiting, or use Backstage → Calendar connections to identify the slow feed.'}},25000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Planning v53.2';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v53.3';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
@@ -6935,6 +7065,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
 #apCommandCenter .cc-score .cc-v{font-size:26px}.cc-meter{height:4px;border-radius:99px;background:#eeeae3;margin-top:7px;overflow:hidden}.cc-meter i{display:block;height:100%;background:#2d6a4f;border-radius:99px}
 #apCommandCenter .cc-exceptions{border-top:1px solid #eee8df;padding:8px 14px;background:#fbfaf7;display:none}.cc-exceptions.on{display:block}.cc-ex-head{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:950}.cc-ex-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}.cc-ex{display:flex;align-items:center;gap:7px;border:1px solid #e1dbd0;border-radius:999px;padding:5px 8px 5px 10px;background:#fff;font-size:10px;font-weight:800}.cc-ex button{border:0;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:950;cursor:pointer;background:#211f1b;color:white}.cc-change{font-size:10px;color:#7b7268;margin-left:auto}
 @media(max-width:900px){#apCommandCenter{top:var(--ap-command-top);margin:0 8px 10px;border-radius:0 0 12px 12px}.cc-grid{grid-template-columns:1fr 1fr!important}.cc-cell{min-height:72px}.cc-v{font-size:13.5px!important}.cc-score .cc-v{font-size:23px!important}}
+#apCommandCenter.is-compact .cc-head{padding:5px 14px 4px}#apCommandCenter.is-compact .cc-grid .cc-cell{min-height:48px;padding:6px 11px}#apCommandCenter.is-compact .cc-s{display:none}#apCommandCenter.is-compact .cc-v{font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#apCommandCenter.is-compact .cc-score .cc-v{font-size:20px}#apCommandCenter.is-compact .cc-meter{margin-top:3px}#apCommandCenter.is-compact .cc-exceptions{padding:5px 10px}
 </style>
 
 <script id="v531CommandCenter">
@@ -6961,135 +7092,11 @@ function mark(id){const h=handled();h[id]=Date.now();localStorage.setItem(KEY,JS
 function syncStickyOffset(){const nav=$('v510Journey');const h=nav?Math.ceil(nav.getBoundingClientRect().height):0;document.documentElement.style.setProperty('--ap-command-top',Math.max(0,h)+'px')}
 function ensure(){if($('apCommandCenter')){syncStickyOffset();return;}const host=document.createElement('section');host.id='apCommandCenter';host.innerHTML='<div class="cc-head"><div><div class="cc-brand">AUTOPILOT · COMMAND CENTER</div><div class="cc-state" id="ccState">—</div></div><div class="cc-change" id="ccChange"></div></div><div class="cc-grid"><div class="cc-cell"><div class="cc-k">NOW</div><div class="cc-v" id="ccNow">—</div><div class="cc-s" id="ccNowSub"></div></div><div class="cc-cell"><div class="cc-k">NEXT</div><div class="cc-v" id="ccNext">—</div><div class="cc-s" id="ccNextSub"></div></div><div class="cc-cell"><div class="cc-k">LATER</div><div class="cc-v" id="ccLater">—</div><div class="cc-s" id="ccLaterSub"></div></div><div class="cc-cell cc-score"><div class="cc-k">DAY READINESS</div><div class="cc-v" id="ccScore">—</div><div class="cc-s" id="ccScoreSub">Based on plan completeness + unresolved conflicts</div><div class="cc-meter"><i id="ccMeter"></i></div></div></div><div class="cc-exceptions" id="ccExceptions"><div class="cc-ex-head"><span>EXCEPTIONS NEEDING JUDGMENT</span><span id="ccExCount"></span></div><div class="cc-ex-list" id="ccExList"></div></div>';
 const nav=$('v510Journey');if(nav?.parentNode)nav.insertAdjacentElement('afterend',host);else{const anchor=$('v500StageStart')||document.body.firstElementChild;if(anchor?.parentNode)anchor.parentNode.insertBefore(host,anchor);else document.body.prepend(host)}syncStickyOffset()}
+function syncCompact(){const h=$('apCommandCenter');if(h)h.classList.toggle('is-compact',window.scrollY>140)}
 function publishSnapshot(t,s,ex){try{const compact={version:2,updatedAt:Date.now(),phase:phase(),now:label(t.current,''),next:label(t.next,''),later:label(t.later,''),readiness:s,openExceptions:ex.length};localStorage.setItem('autopilot.commandCenter.snapshot',JSON.stringify(compact));window.__apCommandCenterSnapshot=compact}catch{}}
 function render(){ensure();const t=timeline(),s=score(),ex=conflicts().filter(x=>!handled()[x.id]);$('ccState').textContent=phase();$('ccChange').textContent=changeText();$('ccNow').textContent=label(t.current,'Nothing active right now');$('ccNowSub').textContent=t.current?.loc||'AutoPilot is watching the day';$('ccNext').textContent=label(t.next,'No upcoming commitment');$('ccNextSub').textContent=t.next?.loc||'';$('ccLater').textContent=label(t.later,'Evening clear');$('ccLaterSub').textContent=t.later?.loc||'';$('ccScore').textContent=s;$('ccMeter').style.width=s+'%';$('ccExceptions').classList.toggle('on',ex.length>0);$('ccExCount').textContent=ex.length?`${ex.length} OPEN`:'';$('ccExList').innerHTML=ex.map(x=>`<div class="cc-ex"><span>${esc(x.text)}</span><button data-cc-handle="${esc(x.id)}">HANDLED</button></div>`).join('');document.querySelectorAll('[data-cc-handle]').forEach(b=>b.onclick=()=>mark(b.dataset.ccHandle));publishSnapshot(t,s,ex);syncStickyOffset()}
 function removeLegacyAgendaCoupling(){const fn=window.buildNonzeroAgenda;if(typeof fn==='function'&&fn.__v530&&fn.__v530Original)window.buildNonzeroAgenda=fn.__v530Original}
-function init(){ensure();removeLegacyAgendaCoupling();render();const nav=$('v510Journey');if(window.ResizeObserver&&nav){const ro=new ResizeObserver(syncStickyOffset);ro.observe(nav);window.__apV531NavObserver=ro}window.addEventListener('resize',syncStickyOffset,{passive:true});setInterval(render,30000);document.addEventListener('change',()=>setTimeout(render,100),true);document.addEventListener('click',()=>setTimeout(render,180),true);window.addEventListener('storage',render)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script>
-
-<!-- AutoPilot v53.2: dual-plan persistence + weekend-aware command center + simplified plan home -->
-<style id="v532DualPlanStyle">
-/* Keep implementation/backup mechanics out of the day-to-day experience. */
-#tab-plan #exportBackupBtn,#tab-plan #importBackupBtn,#tab-plan #backupFile,#tab-plan #backupStatus{display:none!important}
-#v532PlanHome{max-width:1120px;margin:0 auto 14px;background:#fff;border:1px solid #d8d0c5;border-radius:14px;box-shadow:0 8px 24px rgba(37,32,25,.07);padding:14px 16px}
-.v532-home-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.v532-home-k{font-size:9px;font-weight:950;letter-spacing:.13em;text-transform:uppercase;color:#80766a}.v532-home-head h2{font-size:20px;line-height:1.1;margin:3px 0 4px}.v532-home-head p{font-size:11px;line-height:1.4;color:#6e665d;margin:0}.v532-home-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.v532-home-actions button{min-height:38px;border-radius:9px;border:1px solid #9e9589;background:#fff;padding:7px 11px;font-size:10px;font-weight:950;cursor:pointer}.v532-home-actions button.primary{background:#211f1b;color:#fff;border-color:#211f1b}.v532-home-actions button.future{border-color:#c7a739;background:#fffaf0}.v532-plan-slots{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.v532-slot{border:1px solid #e1dbd2;border-radius:10px;padding:10px 11px;background:#fbfaf7}.v532-slot small{display:block;font-size:8px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:#847a6e}.v532-slot strong{display:block;margin-top:3px;font-size:13px}.v532-slot span{display:block;margin-top:3px;font-size:9.5px;color:#6d655c}.v532-slot.empty{opacity:.58}.v532-slot.live{border-left:4px solid #3d7350}.v532-slot.upcoming{border-left:4px solid #d0a623}
-#v532CurrentBtn,#v532FutureBtn,#v532ReplanBtn{font-weight:950!important}
-#v532ReplanBtn{background:#fffaf0!important;border-color:#c7a739!important}
-#v500StageStart .v527-start-new-label{font-size:11px!important;color:#3f3a34!important}.v532-mode-note{margin:8px 0 0;font-size:10px;color:#6c645a}.v532-mode-note b{color:#211f1b}
-@media(max-width:760px){.v532-home-head{flex-direction:column}.v532-home-actions{width:100%;justify-content:stretch}.v532-home-actions button{flex:1}.v532-plan-slots{grid-template-columns:1fr}}
-</style>
-<script id="v532DualPlanScript">
-(()=>{
-'use strict';
-if(window.__apV532DualPlan)return;window.__apV532DualPlan=true;
-const LIVE='autopilot.v532.livePlan.v1', FUTURE='autopilot.v532.futurePlan.v1', MODE='autopilot.v532.editMode', LEGACY='familyOptimizerV23.currentPlan.v1';
-const $=id=>document.getElementById(id), parse=x=>{try{return x?JSON.parse(x):null}catch{return null}}, clone=x=>JSON.parse(JSON.stringify(x));
-const isoDate=v=>{if(!v)return'';if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);const d=v instanceof Date?v:new Date(v);if(isNaN(d))return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const today=()=>isoDate(new Date());
-const plansNow=()=>{try{return Array.isArray(window.plans)?window.plans:(typeof plans!=='undefined'&&Array.isArray(plans)?plans:[])}catch{return[]}};
-const dateOf=p=>isoDate(p?.dateStr||p?.date);
-const range=c=>{const a=(c?.plans||[]).map(dateOf).filter(Boolean).sort();return {start:a[0]||'',end:a[a.length-1]||''}};
-const hasToday=c=>{const t=today(),r=range(c);return !!(r.start&&t>=r.start&&t<=r.end)};
-const fmt=d=>{if(!d)return'—';const x=new Date(d+'T12:00:00');return x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})};
-const rangeText=c=>{const r=range(c);return r.start?(fmt(r.start)+(r.end&&r.end!==r.start?' – '+fmt(r.end):'')):'No plan saved'};
-const mode=()=>localStorage.getItem(MODE)||'live';
-const setMode=m=>localStorage.setItem(MODE,m==='future'?'future':'live');
-function payloadFromRuntime(){const ps=plansNow();if(!ps.length)return null;return {version:1,savedAt:new Date().toISOString(),cycleDays:Number(localStorage.getItem('autopilot.cycleDays')||10),startDate:dateOf(ps[0]),plans:clone(ps)}}
-function legacyCandidate(){return parse(localStorage.getItem(LEGACY))}
-function getLive(){return parse(localStorage.getItem(LIVE))}
-function getFuture(){return parse(localStorage.getItem(FUTURE))}
-function saveSlot(key,p){if(p?.plans?.length)localStorage.setItem(key,JSON.stringify(p))}
-function bootstrap(){
-  let live=getLive(), future=getFuture(), legacy=legacyCandidate();
-  if(!live&&legacy?.plans?.length)saveSlot(LIVE,legacy);
-  live=getLive();future=getFuture();
-  /* When an upcoming plan actually reaches today, promote it without deleting the older archive first. */
-  if(future?.plans?.length&&hasToday(future)&&!hasToday(live)){
-    saveSlot(LIVE,{...future,promotedAt:new Date().toISOString()});localStorage.removeItem(FUTURE);setMode('live');
-  }
-}
-function restore(c,m){
-  if(!c?.plans?.length)return false;
-  try{
-    const norm=c.plans.map(p=>{const q={...p};if(q.date&&!(q.date instanceof Date)){const d=new Date(isoDate(q.date)+'T12:00:00');if(!isNaN(d))q.date=d}else if(!q.date&&q.dateStr)q.date=new Date(q.dateStr+'T12:00:00');return q});
-    if(typeof plans!=='undefined')plans=norm;window.plans=norm;setMode(m);
-    const r=range(c), legacy=$('startDate'), fresh=$('v500StartDate');if(r.start){if(legacy)legacy.value=r.start;if(fresh)fresh.value=r.start}
-    window.captureWorkingPlans?.();
-    const edit=$('v504EditPlan')||$('v510Edit');if(edit)edit.click();else window.renderReview?.();
-    setTimeout(refreshHome,100);return true;
-  }catch(e){console.error('AutoPilot v53.2 restore failed',e);return false}
-}
-function preserveRuntime(){const p=payloadFromRuntime();if(!p)return;saveSlot(mode()==='future'?FUTURE:LIVE,p)}
-function startFuture(){
-  /* Freeze the plan currently on screen into Live before opening a new planning workspace. */
-  if(mode()==='live')preserveRuntime();
-  const legacy=legacyCandidate();if(!getLive()&&legacy?.plans?.length)saveSlot(LIVE,legacy);
-  setMode('future');
-  const st=$('v500StageStart');if(typeof stage==='function')stage(1);else if(st){document.querySelectorAll('.v500-stage').forEach(x=>x.classList.remove('on'));st.classList.add('on')}
-  const d=new Date();d.setDate(d.getDate()+1);const v=isoDate(d),inp=$('v500StartDate');if(inp)inp.value=v;
-  const h=st?.querySelector('.v500-q');if(h)h.textContent='Plan a future 5- or 10-day period';
-  const sub=st?.querySelector('.v500-sub');if(sub)sub.textContent='Build the next period without replacing the plan you are using today. Your Current Plan stays available in parallel.';
-  let note=$('v532ModeNote');if(!note&&st?.querySelector('.v500-card')){note=document.createElement('div');note.id='v532ModeNote';note.className='v532-mode-note';st.querySelector('.v500-card').appendChild(note)}if(note)note.innerHTML='<b>Upcoming-plan mode.</b> Building or editing here will not replace today’s saved plan.';
-  st?.scrollIntoView({behavior:'smooth',block:'start'});refreshHome();
-}
-function ensureHome(){
-  if($('v532PlanHome'))return;
-  const host=document.createElement('section');host.id='v532PlanHome';
-  const cc=$('apCommandCenter'), nav=$('v510Journey');
-  if(cc?.parentNode)cc.insertAdjacentElement('afterend',host);else if(nav?.parentNode)nav.insertAdjacentElement('afterend',host);else document.body.prepend(host);
-}
-function refreshHome(){
-  ensureHome();const h=$('v532PlanHome'),l=getLive(),f=getFuture(),lm=mode();
-  h.innerHTML=`<div class="v532-home-head"><div><div class="v532-home-k">PLAN HOME</div><h2>${hasToday(l)?'Today is protected in Current Plan':'Your plans, one tap away'}</h2><p>Use Current Plan for the schedule you are living now. Build an Upcoming Plan separately for the next 5 or 10 workdays.</p></div><div class="v532-home-actions"><button class="primary" id="v532CurrentBtn" ${l?.plans?.length?'':'disabled'}>VIEW CURRENT PLAN</button><button class="future" id="v532FutureBtn" ${f?.plans?.length?'':'disabled'}>VIEW UPCOMING PLAN</button><button id="v532ReplanBtn">PLAN FUTURE PERIOD</button></div></div><div class="v532-plan-slots"><div class="v532-slot live ${l?.plans?.length?'':'empty'}"><small>CURRENT / LIVE</small><strong>${l?.plans?.length?rangeText(l):'No current plan saved'}</strong><span>${l?.plans?.length?(hasToday(l)?'Includes today · protected while you re-plan':'Saved current plan'):'Build or restore a plan to create this slot.'}</span></div><div class="v532-slot upcoming ${f?.plans?.length?'':'empty'}"><small>UPCOMING</small><strong>${f?.plans?.length?rangeText(f):'No future plan yet'}</strong><span>${f?.plans?.length?'Independent draft · does not overwrite Current Plan':'Use Plan Future Period when you are ready.'}</span></div></div>`;
-  $('v532CurrentBtn').onclick=()=>restore(getLive(),'live');$('v532FutureBtn').onclick=()=>restore(getFuture(),'future');$('v532ReplanBtn').onclick=startFuture;
-  const actions=document.querySelector('#v510Journey .v510-actions');if(actions&&!$('v532ReplanToolbar')){const b=document.createElement('button');b.id='v532ReplanToolbar';b.textContent='PLAN FUTURE';b.onclick=startFuture;actions.appendChild(b)}
-  const old=$('v527CurrentPlanButton');if(old){old.textContent='CURRENT PLAN';old.onclick=()=>restore(getLive(),'live');old.disabled=!l?.plans?.length}
-}
-function allActs(p){const list=[...(Array.isArray(p?.activities)?p.activities:[]),...(Array.isArray(p?.contextActivities)?p.contextActivities:[]),...(Array.isArray(p?.events)?p.events:[])];const seen=new Set();return list.filter(a=>{const k=[a?.start,a?.end,a?.title||a?.summary,a?.child||a?.person,a?.location].join('|');if(seen.has(k))return false;seen.add(k);return a?.showOnWall!==false})}
-const mins=t=>{const m=String(t||'').match(/(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null};
-const clock=m=>m==null?'':new Date(2000,0,1,Math.floor(m/60)%24,m%60).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-function commandPlans(){const l=getLive(),f=getFuture(),t=today();if(l?.plans?.some(p=>dateOf(p)===t))return l.plans;if(f?.plans?.some(p=>dateOf(p)===t))return f.plans;return plansNow()}
-function upcomingTimeline(){
-  const n=new Date(),todayKey=today(),nowM=n.getHours()*60+n.getMinutes(), items=[];
-  for(const p of commandPlans()){
-    const dk=dateOf(p);if(!dk||dk<todayKey)continue;
-    for(const a of allActs(p)){
-      const sm=mins(a.start);if(sm==null)continue;const em=mins(a.end)||sm;
-      items.push({date:dk,sm,em,title:a.title||a.summary||a.name||'Commitment',owner:a.child||a.person||a.owner||'',loc:a.location||''});
-    }
-    const dep=p.departureDeadline??p.departure??p.leaveHome,dm=typeof dep==='number'?dep:mins(dep);if(dm!=null)items.push({date:dk,sm:dm,em:dm,title:'Leave home',owner:'Chris',loc:p.site||p.workSite||''});
-  }
-  items.sort((a,b)=>a.date.localeCompare(b.date)||a.sm-b.sm);
-  const active=items.find(x=>x.date===todayKey&&x.sm<=nowM&&x.em>=nowM);
-  const after=items.filter(x=>x.date>todayKey||(x.date===todayKey&&x.sm>nowM));
-  return {active,next:after[0],later:after[1]};
-}
-function tlLabel(x,fallback){if(!x)return fallback;const prefix=x.date===today()?'':new Date(x.date+'T12:00:00').toLocaleDateString(undefined,{weekday:'short'})+' · ';return `${prefix}${clock(x.sm)} · ${x.owner?x.owner+' · ':''}${x.title}`}
-function refreshCommandCenter(){
-  const cc=$('apCommandCenter');if(!cc)return;const t=upcomingTimeline(),live=getLive();
-  if($('ccNow'))$('ccNow').textContent=tlLabel(t.active,'No active commitment');
-  if($('ccNowSub'))$('ccNowSub').textContent=t.active?.loc||(new Date().getDay()%6===0?'Weekend schedule is active':'AutoPilot is watching today');
-  if($('ccNext'))$('ccNext').textContent=tlLabel(t.next,'No upcoming commitment');if($('ccNextSub'))$('ccNextSub').textContent=t.next?.loc||'';
-  if($('ccLater'))$('ccLater').textContent=tlLabel(t.later,'Nothing else queued');if($('ccLaterSub'))$('ccLaterSub').textContent=t.later?.loc||'';
-  if($('ccState'))$('ccState').textContent=(new Date().getDay()%6===0?'Weekend · ':'')+(mode()==='future'?'Planning upcoming':'Current plan');
-  if($('ccChange')&&live?.plans?.length)$('ccChange').textContent='Current plan protected';
-}
-function simplifyStart(){
-  const st=$('v500StageStart');if(!st)return;const h=st.querySelector('.v500-q'),sub=st.querySelector('.v500-sub');if(mode()==='live'){if(h)h.textContent='Plan home';if(sub)sub.textContent='Open the plan you are using now, or create a separate future 5- or 10-day plan.'}
-}
-function init(){
-  bootstrap();
-  /* The original v52.7 interval may keep rewriting its legacy current-plan key. v53.2 owns the user-facing slots separately. */
-  setTimeout(()=>{const rt=payloadFromRuntime();if(rt&&mode()==='live'&&!getLive())saveSlot(LIVE,rt);refreshHome();simplifyStart();refreshCommandCenter()},250);
-  setInterval(()=>{preserveRuntime();bootstrap();refreshHome();refreshCommandCenter()},1800);
-  document.addEventListener('click',e=>{
-    const b=e.target.closest('#v500StartNext');if(b&&mode()==='future')setTimeout(()=>{const p=payloadFromRuntime();if(p)saveSlot(FUTURE,p);refreshHome()},2500);
-    if(e.target.closest('#v502RestartCycle,#v510StartOver,.v504-newcycle,#newCycleBtn')){e.preventDefault();e.stopImmediatePropagation();startFuture()}
-  },true);
-  window.addEventListener('pagehide',preserveRuntime);
-}
+function init(){ensure();removeLegacyAgendaCoupling();render();const nav=$('v510Journey');if(window.ResizeObserver&&nav){const ro=new ResizeObserver(syncStickyOffset);ro.observe(nav);window.__apV531NavObserver=ro}window.addEventListener('resize',syncStickyOffset,{passive:true});window.addEventListener('scroll',syncCompact,{passive:true});syncCompact();setInterval(render,30000);document.addEventListener('change',()=>setTimeout(render,100),true);document.addEventListener('click',()=>setTimeout(render,180),true);window.addEventListener('storage',render)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
