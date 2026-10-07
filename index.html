@@ -3638,7 +3638,7 @@ async function assignTransport(day){
   const site=day.onsite?getSites().find(s=>s.name===day.site):null;
   const buffer=+$('transportBuffer').value||20;
 
-  for(const leg of legs){
+  for(const leg of ordered){
     const opts=[];
     const homeTravel=await homeToActivityMinutes(leg.activity);
 
@@ -6622,6 +6622,199 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  renderPhone=function(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;let action='';if(d.leaveHome)action+=`<hr><b>Leave home by:</b> ${esc(d.leaveHome.time)} <span class="muted">${esc(d.leaveHome.reason||'')}</span>`;if(d.leaveWork)action+=`<br><b>Leave work by:</b> ${esc(d.leaveWork.time)} <span class="muted">${esc(d.leaveWork.reason||'')}</span>`;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${action}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`};
  phoneHtml=function(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}.deadline{background:#faf7ef;border:1px solid #e2d9ca;border-radius:8px;padding:7px;margin:7px 0;font-size:12px}</style><style id="suiteStyle">.suite-card{background:var(--card,#fff);color:var(--text,#211f1b);border:1px solid var(--border,#d8d0c5);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}.suite-card h2{font-size:18px;margin:0}.suite-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.suite-muted{color:var(--muted,#645d53);font-size:14px;line-height:1.45}.suite-card p{line-height:1.4;overflow-wrap:anywhere}.suite-card button,.suite-change button{min-height:44px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}.suite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.suite-card label,.suite-change label{display:block;font-size:14px;margin:10px 0}.suite-card input:not([type=checkbox]),.suite-change input:not([type=checkbox]),.suite-change select{display:block;box-sizing:border-box;width:100%;min-height:44px;font-size:16px;margin-top:4px;padding:8px;border:1px solid var(--border,#aaa);border-radius:8px}.suite-card details{margin-top:12px}.suite-card summary{cursor:pointer;min-height:34px;font-size:15px;font-weight:700}.suite-code{font-size:14px;word-break:break-all;user-select:all}.suite-change{padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;margin:10px 0;font-size:15px}.suite-change p{margin:6px 0}.suite-ride{display:grid;grid-template-columns:90px 1fr 110px;gap:8px}.suite-today-detail{padding:12px 16px;border-top:1px solid var(--border,#ddd);font-size:15px}.suite-today-detail strong{display:block;font-size:18px;margin-bottom:5px}.suite-modal{position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.suite-modal[hidden]{display:none}.suite-modal-panel{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border-radius:16px;padding:20px}.suite-event{padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.suite-event strong{font-size:17px}.suite-event p{margin:5px 0;font-size:15px}.suite-dinner{border-left:3px solid #dba64b;padding-left:10px}.suite-save{font-size:14px}.suite-card .suite-decision-status{font-size:14px;color:var(--green,#356c4a)}@media(max-width:480px){.suite-heading{align-items:flex-start;flex-direction:column}.suite-ride{grid-template-columns:1fr 1fr}.suite-ride label:first-child{grid-column:1/-1}}body.trainingFocus #suiteChanges,body.trainingFocus #suiteFamilyModal{display:none} 
 </style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
+
+
+<!-- AutoPilot v53.8: chronological logistics review + route-feasible household ride solver + simplicity hardening. -->
+<style id="v538LogisticsStyle">
+/* Reviewed decisions now read as one chronological audit trail instead of two status buckets. */
+#reviewedDecisionList .v538-day{margin-top:12px;border-left:4px solid #cfc6b7;padding-left:10px}
+#reviewedDecisionList .v538-day:first-child{margin-top:6px}
+#reviewedDecisionList .v538-day-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin:0 0 6px;font-weight:950}
+#reviewedDecisionList .v538-day-head span{font-size:10px;color:#766e62;font-weight:800}
+#reviewedDecisionList .reviewed-row{grid-template-columns:minmax(220px,1.3fr) minmax(260px,1fr)!important}
+#reviewedDecisionList .v538-status{display:inline-flex;align-items:center;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:950;letter-spacing:.03em}
+#reviewedDecisionList .v538-status.required{background:#edf7ef;color:#275f35;border:1px solid #b8d2bd}
+#reviewedDecisionList .v538-status.info{background:#f3f0eb;color:#6f675c;border:1px solid #d7d0c6}
+.v538-ride-reason{display:block;margin-top:3px;font-size:9px;line-height:1.3;color:#756d62}
+.v538-ride-reason.warn{color:#996000;font-weight:800}
+@media(max-width:760px){#reviewedDecisionList .reviewed-row{grid-template-columns:1fr!important}}
+</style>
+<script id="v538LogisticsHardening">
+(()=>{
+'use strict';
+if(window.__apV538LogisticsHardening)return;window.__apV538LogisticsHardening=true;
+const $=id=>document.getElementById(id);
+const esc538=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tmin538=v=>{try{return typeof toMin==='function'?toMin(v):(()=>{const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null})()}catch{return null}};
+const time538=a=>{const n=tmin538(a?.start);return n==null?99999:n};
+const end538=a=>{const n=tmin538(a?.end||a?.start);return n==null?99999:n};
+const eventSort538=(a,b)=>String(a?.date||'').localeCompare(String(b?.date||''))||time538(a)-time538(b)||end538(a)-end538(b)||String(a?.title||'').localeCompare(String(b?.title||''));
+function sortedActs538(p){
+  const transport=(p?.activities||p?.events||[]).filter(a=>a?.title);
+  const context=(p?.contextActivities||[]).filter(a=>a?.title);
+  const seen=new Set(),out=[];
+  for(const a of [...transport,...context]){
+    const k=[a.uid||'',a.date||p?.dateStr||'',a.start||'',a.end||'',String(a.title||'').toLowerCase(),String(a.source||'').toLowerCase()].join('|');
+    if(!seen.has(k)){seen.add(k);out.push(a)}
+  }
+  return out.sort(eventSort538);
+}
+/* A later release accidentally reintroduced an unsorted acts() helper. Force all review/final surfaces back to chronological data. */
+try{window.acts=sortedActs538}catch{}
+try{acts=sortedActs538}catch{}
+try{window.groups=function(p){
+  const m=new Map();
+  for(const a of sortedActs538(p)){
+    const n=(typeof safeOwner==='function'?safeOwner(a):(a.child||'Family'));
+    if(!m.has(n))m.set(n,[]);m.get(n).push(a);
+  }
+  return [...m.entries()].sort((x,y)=>eventSort538(x[1][0],y[1][0]));
+}}catch{}
+try{
+  const sortedCorrectionRows538=dateStr=>[...document.querySelectorAll('#activityBody > tr')].filter(r=>r.querySelector('.a-date')?.value===dateStr).sort((ra,rb)=>eventSort538(typeof rowToCalendarEvent==='function'?rowToCalendarEvent(ra):{},typeof rowToCalendarEvent==='function'?rowToCalendarEvent(rb):{}));
+  window.correctionActivityRows=sortedCorrectionRows538; correctionActivityRows=sortedCorrectionRows538;
+}catch{}
+
+/* Keep the reviewed-decision audit chronological. Splitting "no transport" ahead of rides made the page look out of order. */
+window.renderReviewedDecisions=function(rows){
+  const host=$('reviewedDecisionList'),summary=$('reviewedDecisionSummary');if(!host)return;
+  const reviewed=(rows||[]).filter(x=>typeof isReviewedDecision==='function'?isReviewedDecision(x.row):true)
+    .slice().sort((a,b)=>eventSort538(a.event,b.event));
+  const noTransport=reviewed.filter(x=>x.row.dataset.transportClass!=='required');
+  const needsTransport=reviewed.filter(x=>x.row.dataset.transportClass==='required');
+  if(summary)summary.innerHTML=`<div class="review-summary-banner"><strong>${reviewed.length} reviewed</strong><span class="qr-chip">${noTransport.length} no transport</span><span class="qr-chip good">${needsTransport.length} need transport</span><span class="small muted">Shown in date/time order.</span></div>`;
+  if(!reviewed.length){host.innerHTML='<div class="reviewed-empty">No reviewed decisions yet.</div>';return}
+  const grouped=[];let current=null;
+  for(const item of reviewed){
+    const d=item.event.date||'';
+    if(!current||current.date!==d){current={date:d,items:[]};grouped.push(current)}
+    current.items.push(item);
+  }
+  const dateLabel=d=>{try{return new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}catch{return d}};
+  host.innerHTML=grouped.map(g=>`<div class="v538-day"><div class="v538-day-head"><strong>${esc538(dateLabel(g.date))}</strong><span>${g.items.length} event${g.items.length===1?'':'s'}</span></div>${g.items.map(({row,index,event})=>{
+    const req=row.dataset.transportClass==='required',stamp=typeof formatReviewDecisionStamp==='function'?formatReviewDecisionStamp(row):{text:'Reviewed',warn:false};
+    return `<div class="reviewed-row" data-reviewed-row="${index}"><div><div class="reviewed-time">${typeof displayTime12h==='function'?displayTime12h(event.start):esc538(event.start)}${event.end?` – ${typeof displayTime12h==='function'?displayTime12h(event.end):esc538(event.end)}`:''}</div><div class="reviewed-title">${esc538(event.title)}</div><div class="reviewed-meta">${esc538(typeof childLabel==='function'?childLabel(event.child):event.child)} · ${esc538(event.source||'Manual')}</div><span class="v538-status ${req?'required':'info'}">${req?'NEEDS TRANSPORT':'NO TRANSPORT'}</span><div class="reviewed-origin ${stamp.warn?'warn':''}">${esc538(stamp.text)}</div></div><div class="reviewed-actions"><div class="review-toggle" role="group" aria-label="Transport decision"><button type="button" data-set-reviewed="required" class="${req?'active required':''}">NEEDS TRANSPORT</button><button type="button" data-set-reviewed="info" class="${!req?'active no':''}">NO TRANSPORT</button></div><button type="button" data-reviewed-reopen class="secondary">Reopen</button></div></div>`;
+  }).join('')}</div>`).join('');
+  host.querySelectorAll('[data-reviewed-row]').forEach(card=>{
+    const item=(rows||[]).find(x=>x.index===+card.dataset.reviewedRow);if(!item)return;
+    card.querySelectorAll('[data-set-reviewed]').forEach(btn=>btn.onclick=()=>{
+      const row=item.row,newClass=btn.dataset.setReviewed;if(row.dataset.transportClass===newClass)return;
+      try{setLastReviewChange(row)}catch{}
+      row.dataset.transportClass=newClass;row.dataset.transportOverride=newClass;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';
+      try{stampReviewDecision(row,'reviewed-toggle')}catch{}
+      const sel=row.querySelector('.transport-override');if(sel)sel.value=newClass;
+      try{rememberTransportDecision(rowToCalendarEvent(row),newClass==='required')}catch{}
+      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${typeof transportClassCss==='function'?transportClassCss(newClass):newClass}`;b.textContent=typeof transportClassLabel==='function'?transportClassLabel(newClass):newClass}
+      try{if(plans.length)markPlanStale('Transport decision changed')}catch{}
+      try{renderQuickPlanningReview()}catch{}
+    });
+    const reopen=card.querySelector('[data-reviewed-reopen]');if(reopen)reopen.onclick=()=>{
+      const row=item.row;try{setLastReviewChange(row)}catch{};row.dataset.transportManual='';row.dataset.transportOverride='';row.dataset.transportReason='Ambiguous Primary Family event';row.dataset.reviewDecisionAt='';row.dataset.reviewDecisionSource='';try{renderQuickPlanningReview()}catch{}
+    };
+  });
+};
+
+/* Whole-day ride solver. It evaluates each leg against work windows, prior rides, travel time, and the next work obligation. */
+const SERVICE=5;
+function home538(){return $('homeAddress')?.value?.trim()||''}
+function buffer538(){return +$('transportBuffer')?.value||20}
+function useful538(v){try{return typeof locationLooksUseful==='function'?locationLooksUseful(v):String(v||'').trim().length>5}catch{return false}}
+async function route538(from,to,fallback){try{return await routeMinutes(from,to,fallback)}catch{return fallback}}
+function phaseFor538(day,person,legTime){
+  const home=home538();
+  if(person==='Chris'){
+    if(day.chrisUnavailable)return null;
+    if(!day.onsite)return {phase:'local',origin:home,available:0,post:null,label:'remote/local'};
+    const site=(typeof getSites==='function'?getSites():[]).find(s=>s.name===day.site),work=site?.address||day.chrisWorkAddress||'';
+    if(day.departHome!=null&&legTime<day.departHome)return {phase:'prework',origin:home,available:0,post:{address:work,deadline:day.arrive},label:'before onsite work'};
+    if(day.leaveWork!=null&&legTime>=day.leaveWork)return {phase:'postwork',origin:work,available:day.leaveWork,post:null,label:`after leaving ${day.site||'work'}`};
+    return null;
+  }
+  if(person==='Kira'){
+    if(day.kiraUnavailable)return null;
+    if(day.kiraOff)return {phase:'local',origin:home,available:0,post:null,label:'off/local'};
+    const work=day.kiraAddress||'';
+    if(day.kiraStart!=null&&legTime<day.kiraStart)return {phase:'prework',origin:home,available:0,post:{address:work,deadline:day.kiraStart},label:'before Kira shift'};
+    if(day.kiraEnd!=null&&legTime>=day.kiraEnd)return {phase:'postwork',origin:work,available:day.kiraEnd,post:null,label:'after Kira shift'};
+    return null;
+  }
+  return null;
+}
+async function candidate538(day,leg,person,state,priorSameEvent){
+  const base=phaseFor538(day,person,leg.time);if(!base)return null;
+  const dest=String(leg.activity?.location||'').trim(),fallback=Math.max(8,Number(leg.activity?.homeDrive)||20),buf=buffer538(),home=home538();
+  let origin=base.origin,available=base.available,continuity=false,reason=base.label;
+  const last=state[person];
+  if(last&&last.phase===base.phase&&last.time>available){
+    const gap=leg.time-last.time;
+    if(gap>75&&useful538(last.address)&&useful538(home)){
+      const back=await route538(last.address,home,fallback);
+      if(last.time+back<leg.time-buf){origin=home;available=last.time+back;reason='after prior ride + return home'}
+      else{origin=last.address||origin;available=last.time;reason='directly after prior ride';continuity=true}
+    }else{origin=last.address||origin;available=last.time;reason='directly after prior ride';continuity=true}
+  }
+  const travel=await route538(origin,dest,fallback);
+  const departBy=leg.time-buf-travel;
+  if(available>departBy)return null;
+  const finish=leg.time+SERVICE;
+  if(base.post?.deadline!=null&&base.post.address){
+    const onward=await route538(dest,base.post.address,fallback);
+    if(finish+onward>base.post.deadline)return null;
+  }
+  const tentative=!useful538(dest)||!useful538(origin)||$('liveRouting')?.value!=='yes';
+  let score=person==='Kira'?(day.kiraOff?96:78):(day.onsite?74:92);
+  score-=Math.min(24,travel*.45);
+  if(continuity)score+=6;
+  if(priorSameEvent===person)score+=9;
+  if(tentative)score-=9;
+  const slack=Math.max(0,departBy-available);score+=Math.min(8,slack/15);
+  const detail=`${reason} · ~${Math.round(travel)} min to event · ${Math.round(slack)} min slack${base.post?' · work start protected':''}${tentative?' · verify route/location':''}`;
+  return {n:person,s:score,tentative,reason:detail,phase:base.phase,finish,address:dest||origin,slack};
+}
+window.assignTransport=async function(day){
+  const legs=[];
+  for(const a of (day.activities||[])){
+    if(a?.drop==='yes'&&a.start)legs.push({activity:a,kind:'Drop',time:tmin538(a.start)});
+    if(a?.pick==='yes'&&a.end)legs.push({activity:a,kind:'Pickup',time:tmin538(a.end)});
+  }
+  const ordered=legs.filter(x=>x.time!=null).sort((a,b)=>a.time-b.time||((a.kind==='Drop'?0:1)-(b.kind==='Drop'?0:1))||String(a.activity?.title||'').localeCompare(String(b.activity?.title||'')));
+  const assignments=[],state={Chris:null,Kira:null},eventDriver=new Map();
+  const eventKey=a=>[a?.date||day.dateStr||'',a?.uid||'',a?.title||'',a?.start||'',a?.location||''].join('|').toLowerCase();
+  for(const leg of ordered){
+    const opts=[],key=eventKey(leg.activity),priorSameEvent=eventDriver.get(key)||'';
+    for(const who of ['Chris','Kira']){const c=await candidate538(day,leg,who,state,priorSameEvent);if(c)opts.push(c)}
+    if($('oldestCanDrive')?.value==='yes'&&leg.activity?.child!=='Oldest'){
+      opts.push({n:typeof childLabel==='function'?childLabel('Oldest'):'Oldest',s:34,tentative:true,reason:'Configured as a driver, but personal schedule/routing is not verified',phase:'unknown',finish:leg.time+SERVICE,address:String(leg.activity?.location||'')});
+    }
+    opts.push({n:'Backup',s:1,tentative:true,reason:'No configured household driver can cover this leg without violating another ride or work obligation',phase:'backup',finish:leg.time+SERVICE,address:String(leg.activity?.location||'')});
+    opts.sort((a,b)=>b.s-a.s);
+    const best=opts[0],second=opts.find(x=>x.n!==best.n)||{n:'Backup'};
+    const rec={...leg,primary:best.n,secondary:second.n||'Backup',recommendationReason:best.reason,alternatives:opts.slice(1,3).map(x=>x.n),recommendationTentative:!!best.tentative,recommendationSlack:best.slack??null};
+    assignments.push(rec);
+    if(best.n==='Chris'||best.n==='Kira')state[best.n]={time:best.finish,address:best.address,phase:best.phase,eventKey:key,kind:leg.kind};
+    if(leg.kind==='Drop'&&(best.n==='Chris'||best.n==='Kira'))eventDriver.set(key,best.n);
+  }
+  return assignments;
+};
+try{assignTransport=window.assignTransport}catch{}
+
+/* Make ride rationale visible anywhere a compact recommendation is displayed, without adding another workflow step. */
+const priorAssignmentObj=window.assignmentObj;
+window.v538AssignmentReason=function(p,a,k){
+  try{const z=(p?.assignments||[]).find(x=>x?.kind===k&&(typeof ak==='function'?ak(x.activity):x.activity?.title)===(typeof ak==='function'?ak(a):a?.title));return z?.recommendationReason||''}catch{return''}
+};
+
+/* Version identity */
+function identity(){
+  document.title='AutoPilot — Family Logistics Planner v53.8';
+  document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v53.8');
+  document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v53.8'});
+}
+function refreshChronology(){try{if(typeof renderQuickPlanningReview==='function')renderQuickPlanningReview()}catch{}try{if(typeof renderReview==='function'&&document.querySelector('#v500StageReview.on'))renderReview()}catch{}try{if(typeof renderPlanCorrections==='function'&&plans?.length)renderPlanCorrections()}catch{}}
+function init(){identity();setTimeout(()=>{identity();refreshChronology()},160);setTimeout(refreshChronology,900)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>`}
 })();
 </script>
