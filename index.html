@@ -6548,7 +6548,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v54.1';
+   document.title='AutoPilot — Family Logistics Planner v54.2';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6569,7 +6569,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v54.1';
+   document.title='AutoPilot — Family Logistics Planner v54.2';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6809,7 +6809,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 
 <!-- AutoPilot v53.3: Premium-tested baseline + Current/Upcoming dual-plan planning layer. -->
-<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v54.1';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
+<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v54.2';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
 <style id="v534SyncStyle">
 #v534Sync{max-width:1120px;margin:0 auto 14px;padding:14px 16px;border:1px solid #d8d0c5;border-left:4px solid #3d7350;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(37,32,25,.06);color:#211f1b}
 #v534Sync .v534-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -6931,7 +6931,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();renderWallExclusionManager();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This is taking longer than normal.</b> AutoPilot will continue with the latest saved calendar data rather than leave you stuck on this screen.'}},12000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v54.1';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v54.2';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
@@ -7288,7 +7288,7 @@ window.__suitePlanner={renderToday,refreshShared,applySavedAgenda};if(document.r
  const $=id=>document.getElementById(id);
  function polish(){
    const brand=document.querySelector('#v510Journey .v510-wordmark small');if(brand)brand.textContent='Family Logistics Planner · v53.9';
-   document.title='AutoPilot — Family Logistics Planner v54.1';
+   document.title='AutoPilot — Family Logistics Planner v54.2';
    const cc=$('apCommandCenter');if(cc)cc.setAttribute('aria-label','Today at a glance');
    const start=$('v500StartNext');if(start){const n=Number(localStorage.getItem('autopilot.cycleDays')||window.__apCycleDays||10)===5?5:10;if(!start.disabled)start.textContent=`BUILD ${n}-DAY PLAN`;}
  }
@@ -7479,7 +7479,7 @@ window.v538AssignmentReason=function(p,a,k){
 
 /* Version identity */
 function identity(){
-  document.title='AutoPilot — Family Logistics Planner v54.1';
+  document.title='AutoPilot — Family Logistics Planner v54.2';
   document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v53.9');
   document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v53.9'});
 }
@@ -7488,7 +7488,7 @@ function init(){identity();setTimeout(()=>{identity();refreshChronology()},160);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v54.1";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v53.9"},1200);</script>
+<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v54.2";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v53.9"},1200);</script>
 <style id="v539MobileBounds">
 @media(max-width:600px){
  #v510Journey{margin:0 0 8px!important;padding:8px 10px 6px!important;max-width:100%;box-sizing:border-box}
@@ -7539,12 +7539,25 @@ const wp=(s,sty='')=>'<w:p><w:pPr>'+sty+'</w:pPr><w:r><w:t xml:space="preserve">
 const tbl=(rows,widths)=>'<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:bottom w:val="single" w:color="CBD5E1"/><w:insideH w:val="single" w:color="DEE6EF"/><w:insideV w:val="single" w:color="DEE6EF"/></w:tblBorders></w:tblPr><w:tblGrid>'+widths.map(n=>'<w:gridCol w:w="'+n+'"/>').join('')+'</w:tblGrid>'+rows.map((cells,i)=>'<w:tr>'+cells.map((c,j)=>'<w:tc><w:tcPr><w:tcW w:w="'+widths[j]+'" w:type="dxa"/><w:shd w:fill="'+(i===0?'DCE8F2':i%2===0?'F5F8FB':'FFFFFF')+'"/></w:tcPr>'+wp(c)+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';
 async function makeDocx(records,start,end,failures){
  const by=new Map();records.forEach(r=>{if(!by.has(r.date))by.set(r.date,[]);by.get(r.date).push(r)});
- let content=wp('AUTOPILOT  |  FAMILY COVERAGE CALENDAR','<w:pStyle w:val="Title"/>')+wp(start+'  –  '+end+'   •   '+records.length+' calendar events')+wp('Source coverage: '+(failures.length?failures.join('; '):'All available feeds retrieved. Other calendars may not be connected.'))+wp('Review note: driver assignments and recovery coverage are not verified.');
+ const x=T;
+ const run=(t,sz=17,bold=false,color='29384A')=>'<w:r><w:rPr><w:rFonts w:ascii="Aptos" w:hAnsi="Aptos"/><w:sz w:val="'+sz+'"/><w:color w:val="'+color+'"/>'+(bold?'<w:b/>':'')+'</w:rPr><w:t xml:space="preserve">'+x(t)+'</w:t></w:r>';
+ const para=(runs,after=0,before=0)=>'<w:p><w:pPr><w:spacing w:before="'+before+'" w:after="'+after+'" w:line="245" w:lineRule="auto"/></w:pPr>'+runs+'</w:p>';
+ const shade=(color)=>'<w:shd w:val="clear" w:color="auto" w:fill="'+color+'"/>';
+ const header=(title,kicker)=>para(run(kicker.toUpperCase(),15,true,'57758D'),85)+para(run(title,36,true,'142E46'),140);
+ const section=(title)=>para(run(title,24,true,'163B56'),145,240);
+ const monthName=m=>new Date(m+'-15T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+ const week=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+ const grid=(cells,colW,head=false)=>'<w:tbl><w:tblPr><w:tblW w:w="'+(colW*7)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="85" w:type="dxa"/><w:left w:w="95" w:type="dxa"/><w:bottom w:w="85" w:type="dxa"/><w:right w:w="95" w:type="dxa"/></w:tblCellMar><w:tblBorders><w:bottom w:val="single" w:sz="4" w:color="D7E0E8"/><w:insideH w:val="single" w:sz="4" w:color="D7E0E8"/><w:insideV w:val="single" w:sz="4" w:color="D7E0E8"/></w:tblBorders></w:tblPr><w:tblGrid>'+week.map(()=>'<w:gridCol w:w="'+colW+'"/>').join('')+'</w:tblGrid>'+cells.map((r,ri)=>'<w:tr><w:trPr>'+(ri?'<w:trHeight w:val="1370" w:hRule="atLeast"/>':'<w:trHeight w:val="310" w:hRule="atLeast"/>')+'</w:trPr>'+r.map((c,ci)=>'<w:tc><w:tcPr><w:tcW w:w="'+colW+'" w:type="dxa"/>'+shade(ri===0?'173A56':c.active?'FFFFFF':'F1F4F7')+'<w:vAlign w:val="top"/></w:tcPr>'+(ri===0?para(run(c,14,true,'FFFFFF')):c.day?para(run(String(c.day),20,true,'173A56'),100)+c.events.slice(0,4).map(e=>para(run(time12(e.start)+'  ',13,true,'27617F')+run(e.title,13,false,'243D50'),70)).join('')+(c.events.length>4?para(run('+'+(c.events.length-4)+' more in agenda',13,true,'5C7285')):''):para(run(' ',13)))+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';
+ const agtable=(arr)=>{const cols=[1290,5620,2910];const rows=[['TIME','COMMITMENT / SOURCE','COVERAGE / NOTES'],...arr];return '<w:tbl><w:tblPr><w:tblW w:w="9820" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="105" w:type="dxa"/><w:bottom w:w="105" w:type="dxa"/><w:left w:w="125" w:type="dxa"/><w:right w:w="125" w:type="dxa"/></w:tblCellMar><w:tblBorders><w:bottom w:val="single" w:color="DDE4E9" w:sz="4"/><w:insideH w:val="single" w:color="E3EAF0" w:sz="4"/></w:tblBorders></w:tblPr><w:tblGrid>'+cols.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.map((r,i)=>'<w:tr>'+r.map((c,j)=>'<w:tc><w:tcPr><w:tcW w:w="'+cols[j]+'" w:type="dxa"/>'+shade(i===0?'173A56':i%2?'FFFFFF':'F5F8FA')+'</w:tcPr>'+ (i===0?para(run(c,14,true,'FFFFFF')):j===1?para(run(c[0],16,true,'213A4B')+run(c[1],14,false,'63788B')):para(run(c,14,j===0,'324E63')))+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>'};
+ let content=header('Family commitments & coverage','AUTOPILOT  /  LONG-RANGE FAMILY PLANNING');
+ content+=para(run(fmt(start)+' – '+fmt(end),19,true,'254E6D')+run('    |    '+records.length+' commitments',17,false,'61778B'),190);
+ content+=para(run('DATA COVERAGE  ',14,true,'456B85')+run(failures.length?'Feed issues: '+failures.join('; '):'Available connected feeds retrieved; calendars not connected may be missing.',14),100);
+ content+=para(run('Assignments and parental coverage are planning fields, not confirmed commitments.',14,false,'6B7885'),180);
  const months=[...new Set(Array.from({length:Math.round((new Date(end+'T12:00:00')-new Date(start+'T12:00:00'))/86400000)+1},(_,i)=>dateAdd(start,i).slice(0,7)))];
- for(const m of months){const [y,mo]=m.split('-').map(Number);content+=wp(new Date(y,mo-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'}),'<w:pStyle w:val="Heading1"/>');const first=new Date(y,mo-1,1).getDay(),n=new Date(y,mo,0).getDate(),slots=[];for(let i=0;i<first;i++)slots.push('');for(let d=1;d<=n;d++){const iso=m+'-'+String(d).padStart(2,'0');const arr=by.get(iso)||[];slots.push((iso>=start&&iso<=end?String(d):'')+(arr.length?'\n'+arr.map(x=>time12(x.start)+' '+x.title).join('\n'):'') )}while(slots.length%7)slots.push('');const rows=[['SUN','MON','TUE','WED','THU','FRI','SAT']];for(let i=0;i<slots.length;i+=7)rows.push(slots.slice(i,i+7));content+=tbl(rows,[1370,1370,1370,1370,1370,1370,1370]);}
- content+=wp('DAY-BY-DAY AGENDA  |  COVERAGE REVIEW','<w:pStyle w:val="Heading1"/>');
- for(let d=start;d<=end;d=dateAdd(d,1)){const list=by.get(d)||[];content+=wp(fmt(d)+'  •  '+list.length+' event'+(list.length===1?'':'s'),'<w:pStyle w:val="Heading2"/>');content+=tbl([['TIME','ACTIVITY / SOURCE','DRIVER / BACKUP / NOTES'],...(list.length?list.map(r=>[time12(r.start)+(r.end?' – '+time12(r.end):''),r.title+'\n'+r.source+(r.location?' • '+r.location:''),'Drop: __________  Pick: __________\nBackup: __________  □ Confirmed']):[['—','No events from available feeds — verify coverage','Notes: __________________________']])],[1670,4300,3700]);content+=wp('Parent coverage / PT / schedule changes: __________________________________________________');}
- const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+content+'<w:sectPr><w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/><w:pgMar w:top="650" w:bottom="650" w:left="760" w:right="760"/></w:sectPr></w:body></w:document>';
+ for(const m of months){content+=section(monthName(m));const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1).getDay(),n=new Date(y,mo,0).getDate(),slots=[];for(let i=0;i<first;i++)slots.push({});for(let d=1;d<=n;d++){const iso=m+'-'+String(d).padStart(2,'0'),active=iso>=start&&iso<=end;slots.push({day:d,events:active?(by.get(iso)||[]):[],active})}while(slots.length%7)slots.push({});const rows=[week];for(let i=0;i<slots.length;i+=7)rows.push(slots.slice(i,i+7));content+=grid(rows,1410);content+=para(run('Activities show up to four per day; the detailed agenda includes all retrieved commitments.',13,false,'728394'),130);}
+ content+=section('Detailed agenda  /  transportation review');
+ for(let d=start;d<=end;d=dateAdd(d,1)){const list=by.get(d)||[];content+=para(run(fmt(d),18,true,'1A3C54')+run('   '+list.length+' commitment'+(list.length===1?'':'s'),14,false,'74869A'),70,155);const arr=list.length?list.map(r=>[[time12(r.start)+(r.end?' – '+time12(r.end):'')],[r.title,'  •  '+r.source+(r.location?'  •  '+r.location:'')],['Drop: ________   Pick: ________  Backup: ________']]):[[['—'],['No events returned','  •  Confirm source coverage'],['Notes: ____________________']]];content+=agtable(arr);content+=para(run('PARENT SUPPORT  ____________________     PT / RIDES  ____________________     CHANGES  ____________________',13,false,'6B7F91'),70);}
+ const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+content+'<w:sectPr><w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/><w:pgMar w:top="640" w:bottom="640" w:left="720" w:right="720"/></w:sectPr></w:body></w:document>';
  const zip=new JSZip();zip.file('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');zip.file('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');zip.file('word/document.xml',xml);return zip.generateAsync({type:'blob',compression:'DEFLATE'});
 }
 async function makeXlsx(records,start,end,failures){
