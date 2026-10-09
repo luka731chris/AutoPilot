@@ -1266,7 +1266,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </div>
 <div class="v500-nav"><button class="v500-btn" id="v500Prev">← Previous day</button><span id="v500Count"></span><button class="v500-btn" id="v500Next">Save + next day →</button></div>
 <div id="v500ReviewBody" style="margin-top:10px"></div>
-<div class="v500-textbox"><label>Add only non-routine exceptions</label><textarea id="v500Raw" placeholder="Examples:\nRemote Thursday\nKira picks Whitney up from gymnastics Thursday\nSoccer Friday — ride with teammate\nI need to stay at Wheeling until 6 PM Wednesday"></textarea><small>Use this for unusual items only. Your ordinary week is already recommended as Remote M/F · Weirton T/Th · Wheeling Wed, with pickup/drop-off recommendations built around the family schedule. AutoPilot applies exceptions when you refresh, print, or finalize.</small></div>
+<div class="v500-textbox"><label>Add only non-routine exceptions</label><textarea id="v500Raw" placeholder="Examples:&#10;Remote Thursday&#10;Kira picks Whitney up from gymnastics Thursday&#10;Soccer Friday — ride with teammate&#10;I need to stay at Wheeling until 6 PM Wednesday"></textarea><small>Use this for unusual items only. Your ordinary week is already recommended as Remote M/F · Weirton T/Th · Wheeling Wed, with pickup/drop-off recommendations built around the family schedule. AutoPilot applies exceptions when you refresh, print, or finalize.</small></div>
 <div class="v500-actions"><button class="v500-btn gold" id="v500GeneratePrelim">GENERATE PRELIMINARY 10-DAY PLAN</button><button class="v500-btn" id="v500ChangeDate">CHANGE START DATE</button></div>
 <div class="v500-status" id="v500ReviewStatus">Review as much or as little as you need before generating the preliminary plan.</div>
 </div>
@@ -3817,7 +3817,7 @@ async function generateCore(){
   }
   const patternSiteFor=d=>getWorkPattern()[d.getDay()]||'Remote';
   const workPatternLabel=()=>{const p=getWorkPattern();return `Mon ${p[1]} · Tue ${p[2]} · Wed ${p[3]} · Thu ${p[4]} · Fri ${p[5]}`};
-  let base=await Promise.all(Array.from({length:14},async(_,i)=>{
+  let base=await Promise.all(Array.from({length:window.__apCycleDays===5?7:14},async(_,i)=>{
     const date=addDays(start,i), ds=iso(date), weekend=[0,6].includes(date.getDay()), k=kira.find(x=>x.date===ds)||{shift:'off',start:'',end:'',address:'',fallbackCommute:0};
     const kInfo=kiraShiftInfo(k.shift);
     const kiraWorkAddress=k.address||kInfo.address||'';
@@ -4248,7 +4248,7 @@ function render(options={}){
       <div class="kira-line">Kira: ${esc(p.kiraLocation||'—')} · transport feasibility includes work → home → activity travel</div>
     </div>`;
   }).join('');
-  $('bossMessage').value='Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmtArrival(p.arrive)}; planned departure ${fmtDeparture(p.leaveWork)}.`:'Remote.'}`).join('\n');
+  $('bossMessage').value=`Hey Phil, here is my planned schedule for the next ${window.__apCycleDays||10} workdays. Let me know if you have any concerns or adjustments.\n\n`+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site} — expected arrival ${fmtArrival(p.arrive)}; planned departure ${fmtDeparture(p.leaveWork)}.`:'Remote.'}`).join('\n');
   const watch=[];
   for(const p of work){
     const backups=p.assignments.filter(a=>a.primary==='Backup');
@@ -5752,7 +5752,7 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
   function rebuildPhilEmail(){
     const box=$('bossMessage');if(!box)return'';
     const work=(plans||[]).filter(p=>!p.weekend);
-    const text='Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site||'Onsite'} — approx. arrival ${fmtArrival(p.arrive)}; approx. departure ${fmtDeparture(p.leaveWork)}.`:'Remote.'}`).join('\n');
+    const text=`Hey Phil, here is my planned schedule for the next ${window.__apCycleDays||10} workdays. Let me know if you have any concerns or adjustments.\n\n`+work.map(p=>`${dayName(p.date)} ${shortDate(p.date)}: ${p.holiday?'Holiday / no work.':p.onsite?`${p.site||'Onsite'} — approx. arrival ${fmtArrival(p.arrive)}; approx. departure ${fmtDeparture(p.leaveWork)}.`:'Remote.'}`).join('\n');
     box.value=text;box.dispatchEvent(new Event('input',{bubbles:true}));return text;
   }
   function printableCss(){return `@page{size:landscape;margin:.35in}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#222;margin:0}h1{font-size:22px;margin:0 0 4px}.sub{font-size:11px;color:#666;margin-bottom:12px}.week-grid{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:6px!important}.daybox{border:1px solid #bbb!important;border-radius:0!important;min-height:3.45in!important;height:auto!important;padding:8px!important;box-shadow:none!important;break-inside:avoid}.daybox *{font-size:10px!important}.daybox h3,.daybox strong{font-size:11px!important}button,.no-print{display:none!important}`;}
@@ -6244,16 +6244,16 @@ async function applyFreeText(){
 }
 async function generatePrelim(){let b=$('v500GeneratePrelim');b.disabled=true;$('v500ReviewStatus').className='v500-status busy';$('v500ReviewStatus').textContent='Applying your edits and recalculating the draft…';try{let unresolved=await applyFreeText();if(typeof window.__apV4732ApplyPending!=='function')throw new Error('Recalculation engine is unavailable.');await window.__apV4732ApplyPending(false);try{window.__apV4731EnforceWhitney?.()}catch{};captureWorkingPlans();if(workPlans().length!==(window.__apCycleDays||10))throw new Error('The recalculated plan no longer contains exactly the selected cycle length.');renderTen('v500PrelimTiles',true);$('v500PrelimStatus').className='v500-status '+(unresolved.length?'warn':'good');$('v500PrelimStatus').innerHTML=unresolved.length?`<b>Draft generated.</b> ${unresolved.length} free-text item${unresolved.length===1?' was':'s were'} not interpreted confidently. AutoPilot did not guess; use Edit this day for those changes.`:'<b>Draft generated.</b> Your edits were applied.';stage(4)}catch(e){console.error(e);$('v500ReviewStatus').className='v500-status warn';$('v500ReviewStatus').innerHTML='<b>Could not generate the preliminary plan.</b> '+esc(e.message)}finally{b.disabled=false}}
 function jumpDate(d){let ps=workPlans(),ix=ps.findIndex(p=>dkey(p)===d);if(ix<0)return;dayIndex=ix;view='day';renderReview();stage(3)}
-function bossMessage(){return 'Hey Phil, here is my planned schedule for the next 10 workdays. Let me know if you have any concerns or adjustments.\n\n'+workPlans().map(p=>`${dateLabel(p,true)}: ${p.holiday?'Holiday / no work.':p.onsite?`${site(p)} — approx. arrival ${fmtArr(p.arrive)}; approx. departure ${fmtDep(p.leaveWork)}.`:'Remote.'}`).join('\n')}
+function bossMessage(){return `Hey Phil, here is my planned schedule for the next ${window.__apCycleDays||10} workdays. Let me know if you have any concerns or adjustments.\n\n`+workPlans().map(p=>`${dateLabel(p,true)}: ${p.holiday?'Holiday / no work.':p.onsite?`${site(p)} — approx. arrival ${fmtArr(p.arrive)}; approx. departure ${fmtDep(p.leaveWork)}.`:'Remote.'}`).join('\n')}
 function snapshot(){return workPlans().map(p=>({date:dkey(p),label:dateLabel(p,true),chris:chris(p),kira:kira(p),events:acts(p).map(a=>({person:safeOwner(a),title:a.title,start:start(a),end:end(a),location:a.location||'',drop:assignment(p,a,'Drop'),pickup:assignment(p,a,'Pickup')}))}))}
 function snapshotTiles(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b><br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`}
 function renderPhone(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`}
 function phoneHtml(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}</style><style id="suiteStyle">.suite-card{background:var(--card,#fff);color:var(--text,#211f1b);border:1px solid var(--border,#d8d0c5);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}.suite-card h2{font-size:18px;margin:0}.suite-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.suite-muted{color:var(--muted,#645d53);font-size:14px;line-height:1.45}.suite-card p{line-height:1.4;overflow-wrap:anywhere}.suite-card button,.suite-change button{min-height:44px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}.suite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.suite-card label,.suite-change label{display:block;font-size:14px;margin:10px 0}.suite-card input:not([type=checkbox]),.suite-change input:not([type=checkbox]),.suite-change select{display:block;box-sizing:border-box;width:100%;min-height:44px;font-size:16px;margin-top:4px;padding:8px;border:1px solid var(--border,#aaa);border-radius:8px}.suite-card details{margin-top:12px}.suite-card summary{cursor:pointer;min-height:34px;font-size:15px;font-weight:700}.suite-code{font-size:14px;word-break:break-all;user-select:all}.suite-change{padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;margin:10px 0;font-size:15px}.suite-change p{margin:6px 0}.suite-ride{display:grid;grid-template-columns:90px 1fr 110px;gap:8px}.suite-today-detail{padding:12px 16px;border-top:1px solid var(--border,#ddd);font-size:15px}.suite-today-detail strong{display:block;font-size:18px;margin-bottom:5px}.suite-modal{position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.suite-modal[hidden]{display:none}.suite-modal-panel{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border-radius:16px;padding:20px}.suite-event{padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.suite-event strong{font-size:17px}.suite-event p{margin:5px 0;font-size:15px}.suite-dinner{border-left:3px solid #dba64b;padding-left:10px}.suite-save{font-size:14px}.suite-card .suite-decision-status{font-size:14px;color:var(--green,#356c4a)}@media(max-width:480px){.suite-heading{align-items:flex-start;flex-direction:column}.suite-ride{grid-template-columns:1fr 1fr}.suite-ride label:first-child{grid-column:1/-1}}body.trainingFocus #suiteChanges,body.trainingFocus #suiteFamilyModal{display:none} 
-</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
+</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">${data.length}-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data).replace(/</g,'\\u003c')};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 </body></html>`}
 function download(name,text,type='text/plain'){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);stage(5);try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
+function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);stage(5);window.dispatchEvent(new Event('suite-plan-finalized'));try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
 function printStage(which){$('v500App').classList.remove('print-prelim','print-final');$('v500App').classList.add(which);setTimeout(()=>window.print(),50);setTimeout(()=>$('v500App').classList.remove(which),800)}
 function downloadIcs(){try{if(typeof downloadPhilOutlookIcs==='function')return downloadPhilOutlookIcs('all')}catch{};let old=$('v4738Ics');old?.click()}
 
@@ -6547,7 +6547,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v53.7';
+   document.title='AutoPilot — Family Logistics Planner v53.9';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6568,7 +6568,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v53.7';
+   document.title='AutoPilot — Family Logistics Planner v53.9';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6621,200 +6621,10 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  snapshotTiles=function(data){return `<div class="v500-tiles">${data.map(d=>`<div class="v500-tile"><div class="v500-tdate">${esc(d.label)}</div><div class="v500-twork"><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}</div>${snapGuidance(d)}${d.events.length?d.events.map(e=>`<div class="v500-tev"><b>${esc(e.person)} · ${esc(e.title)}</b><br>${esc(e.start)}${e.end&&e.end!==e.start?'–'+esc(e.end):''}${e.location?'<br>'+esc(e.location):''}<div class="v500-tride">Drop: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}</div></div>`).join(''):'<div class="v500-tev">No evening rides</div>'}</div>`).join('')}</div>`};
  renderPhone=function(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Math.min(n,finalData.length-1));let d=finalData[phoneIndex];$('v500PhoneCount').textContent=`Day ${phoneIndex+1} of ${finalData.length}`;$('v500PhonePrev').disabled=phoneIndex===0;$('v500PhoneNext').disabled=phoneIndex===finalData.length-1;let action='';if(d.leaveHome)action+=`<hr><b>Leave home by:</b> ${esc(d.leaveHome.time)} <span class="muted">${esc(d.leaveHome.reason||'')}</span>`;if(d.leaveWork)action+=`<br><b>Leave work by:</b> ${esc(d.leaveWork.time)} <span class="muted">${esc(d.leaveWork.reason||'')}</span>`;$('v500PhoneBody').innerHTML=`<b style="font-size:19px">${esc(d.label)}</b><hr><b>Chris:</b> ${esc(d.chris)}<br><b>Kira:</b> ${esc(d.kira)}${action}${d.events.length?'<hr>'+d.events.map(e=>`<b>${esc(e.start)} ${esc(e.person)} · ${esc(e.title)}</b>${e.location?'<br>'+esc(e.location):''}<br>Drop-off: ${esc(e.drop)}<br>Pickup: ${esc(e.pickup)}`).join('<br><br>'):'<hr>No evening transportation events.'}`};
  phoneHtml=function(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}.deadline{background:#faf7ef;border:1px solid #e2d9ca;border-radius:8px;padding:7px;margin:7px 0;font-size:12px}</style><style id="suiteStyle">.suite-card{background:var(--card,#fff);color:var(--text,#211f1b);border:1px solid var(--border,#d8d0c5);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}.suite-card h2{font-size:18px;margin:0}.suite-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.suite-muted{color:var(--muted,#645d53);font-size:14px;line-height:1.45}.suite-card p{line-height:1.4;overflow-wrap:anywhere}.suite-card button,.suite-change button{min-height:44px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}.suite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.suite-card label,.suite-change label{display:block;font-size:14px;margin:10px 0}.suite-card input:not([type=checkbox]),.suite-change input:not([type=checkbox]),.suite-change select{display:block;box-sizing:border-box;width:100%;min-height:44px;font-size:16px;margin-top:4px;padding:8px;border:1px solid var(--border,#aaa);border-radius:8px}.suite-card details{margin-top:12px}.suite-card summary{cursor:pointer;min-height:34px;font-size:15px;font-weight:700}.suite-code{font-size:14px;word-break:break-all;user-select:all}.suite-change{padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;margin:10px 0;font-size:15px}.suite-change p{margin:6px 0}.suite-ride{display:grid;grid-template-columns:90px 1fr 110px;gap:8px}.suite-today-detail{padding:12px 16px;border-top:1px solid var(--border,#ddd);font-size:15px}.suite-today-detail strong{display:block;font-size:18px;margin-bottom:5px}.suite-modal{position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.suite-modal[hidden]{display:none}.suite-modal-panel{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border-radius:16px;padding:20px}.suite-event{padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.suite-event strong{font-size:17px}.suite-event p{margin:5px 0;font-size:15px}.suite-dinner{border-left:3px solid #dba64b;padding-left:10px}.suite-save{font-size:14px}.suite-card .suite-decision-status{font-size:14px;color:var(--green,#356c4a)}@media(max-width:480px){.suite-heading{align-items:flex-start;flex-direction:column}.suite-ride{grid-template-columns:1fr 1fr}.suite-ride label:first-child{grid-column:1/-1}}body.trainingFocus #suiteChanges,body.trainingFocus #suiteFamilyModal{display:none} 
-</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">10-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data)};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
+</style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">${data.length}-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data).replace(/</g,'\\u003c')};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function dl(d){let x='';if(d.leaveHome)x+='<div><b>Leave home by '+e(d.leaveHome.time)+'</b> '+e(d.leaveHome.reason||'')+'</div>';if(d.leaveWork)x+='<div><b>Leave work by '+e(d.leaveWork.time)+'</b> '+e(d.leaveWork.reason||'')+'</div>';return x?'<div class="deadline">'+x+'</div>':''}function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+dl(d)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
 
 
-<!-- AutoPilot v53.8: chronological logistics review + route-feasible household ride solver + simplicity hardening. -->
-<style id="v538LogisticsStyle">
-/* Reviewed decisions now read as one chronological audit trail instead of two status buckets. */
-#reviewedDecisionList .v538-day{margin-top:12px;border-left:4px solid #cfc6b7;padding-left:10px}
-#reviewedDecisionList .v538-day:first-child{margin-top:6px}
-#reviewedDecisionList .v538-day-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin:0 0 6px;font-weight:950}
-#reviewedDecisionList .v538-day-head span{font-size:10px;color:#766e62;font-weight:800}
-#reviewedDecisionList .reviewed-row{grid-template-columns:minmax(220px,1.3fr) minmax(260px,1fr)!important}
-#reviewedDecisionList .v538-status{display:inline-flex;align-items:center;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:950;letter-spacing:.03em}
-#reviewedDecisionList .v538-status.required{background:#edf7ef;color:#275f35;border:1px solid #b8d2bd}
-#reviewedDecisionList .v538-status.info{background:#f3f0eb;color:#6f675c;border:1px solid #d7d0c6}
-.v538-ride-reason{display:block;margin-top:3px;font-size:9px;line-height:1.3;color:#756d62}
-.v538-ride-reason.warn{color:#996000;font-weight:800}
-@media(max-width:760px){#reviewedDecisionList .reviewed-row{grid-template-columns:1fr!important}}
-</style>
-<script id="v538LogisticsHardening">
-(()=>{
-'use strict';
-if(window.__apV538LogisticsHardening)return;window.__apV538LogisticsHardening=true;
-const $=id=>document.getElementById(id);
-const esc538=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const tmin538=v=>{try{return typeof toMin==='function'?toMin(v):(()=>{const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null})()}catch{return null}};
-const time538=a=>{const n=tmin538(a?.start);return n==null?99999:n};
-const end538=a=>{const n=tmin538(a?.end||a?.start);return n==null?99999:n};
-const eventSort538=(a,b)=>String(a?.date||'').localeCompare(String(b?.date||''))||time538(a)-time538(b)||end538(a)-end538(b)||String(a?.title||'').localeCompare(String(b?.title||''));
-function sortedActs538(p){
-  const transport=(p?.activities||p?.events||[]).filter(a=>a?.title);
-  const context=(p?.contextActivities||[]).filter(a=>a?.title);
-  const seen=new Set(),out=[];
-  for(const a of [...transport,...context]){
-    const k=[a.uid||'',a.date||p?.dateStr||'',a.start||'',a.end||'',String(a.title||'').toLowerCase(),String(a.source||'').toLowerCase()].join('|');
-    if(!seen.has(k)){seen.add(k);out.push(a)}
-  }
-  return out.sort(eventSort538);
-}
-/* A later release accidentally reintroduced an unsorted acts() helper. Force all review/final surfaces back to chronological data. */
-try{window.acts=sortedActs538}catch{}
-try{acts=sortedActs538}catch{}
-try{window.groups=function(p){
-  const m=new Map();
-  for(const a of sortedActs538(p)){
-    const n=(typeof safeOwner==='function'?safeOwner(a):(a.child||'Family'));
-    if(!m.has(n))m.set(n,[]);m.get(n).push(a);
-  }
-  return [...m.entries()].sort((x,y)=>eventSort538(x[1][0],y[1][0]));
-}}catch{}
-try{
-  const sortedCorrectionRows538=dateStr=>[...document.querySelectorAll('#activityBody > tr')].filter(r=>r.querySelector('.a-date')?.value===dateStr).sort((ra,rb)=>eventSort538(typeof rowToCalendarEvent==='function'?rowToCalendarEvent(ra):{},typeof rowToCalendarEvent==='function'?rowToCalendarEvent(rb):{}));
-  window.correctionActivityRows=sortedCorrectionRows538; correctionActivityRows=sortedCorrectionRows538;
-}catch{}
 
-/* Keep the reviewed-decision audit chronological. Splitting "no transport" ahead of rides made the page look out of order. */
-window.renderReviewedDecisions=function(rows){
-  const host=$('reviewedDecisionList'),summary=$('reviewedDecisionSummary');if(!host)return;
-  const reviewed=(rows||[]).filter(x=>typeof isReviewedDecision==='function'?isReviewedDecision(x.row):true)
-    .slice().sort((a,b)=>eventSort538(a.event,b.event));
-  const noTransport=reviewed.filter(x=>x.row.dataset.transportClass!=='required');
-  const needsTransport=reviewed.filter(x=>x.row.dataset.transportClass==='required');
-  if(summary)summary.innerHTML=`<div class="review-summary-banner"><strong>${reviewed.length} reviewed</strong><span class="qr-chip">${noTransport.length} no transport</span><span class="qr-chip good">${needsTransport.length} need transport</span><span class="small muted">Shown in date/time order.</span></div>`;
-  if(!reviewed.length){host.innerHTML='<div class="reviewed-empty">No reviewed decisions yet.</div>';return}
-  const grouped=[];let current=null;
-  for(const item of reviewed){
-    const d=item.event.date||'';
-    if(!current||current.date!==d){current={date:d,items:[]};grouped.push(current)}
-    current.items.push(item);
-  }
-  const dateLabel=d=>{try{return new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}catch{return d}};
-  host.innerHTML=grouped.map(g=>`<div class="v538-day"><div class="v538-day-head"><strong>${esc538(dateLabel(g.date))}</strong><span>${g.items.length} event${g.items.length===1?'':'s'}</span></div>${g.items.map(({row,index,event})=>{
-    const req=row.dataset.transportClass==='required',stamp=typeof formatReviewDecisionStamp==='function'?formatReviewDecisionStamp(row):{text:'Reviewed',warn:false};
-    return `<div class="reviewed-row" data-reviewed-row="${index}"><div><div class="reviewed-time">${typeof displayTime12h==='function'?displayTime12h(event.start):esc538(event.start)}${event.end?` – ${typeof displayTime12h==='function'?displayTime12h(event.end):esc538(event.end)}`:''}</div><div class="reviewed-title">${esc538(event.title)}</div><div class="reviewed-meta">${esc538(typeof childLabel==='function'?childLabel(event.child):event.child)} · ${esc538(event.source||'Manual')}</div><span class="v538-status ${req?'required':'info'}">${req?'NEEDS TRANSPORT':'NO TRANSPORT'}</span><div class="reviewed-origin ${stamp.warn?'warn':''}">${esc538(stamp.text)}</div></div><div class="reviewed-actions"><div class="review-toggle" role="group" aria-label="Transport decision"><button type="button" data-set-reviewed="required" class="${req?'active required':''}">NEEDS TRANSPORT</button><button type="button" data-set-reviewed="info" class="${!req?'active no':''}">NO TRANSPORT</button></div><button type="button" data-reviewed-reopen class="secondary">Reopen</button></div></div>`;
-  }).join('')}</div>`).join('');
-  host.querySelectorAll('[data-reviewed-row]').forEach(card=>{
-    const item=(rows||[]).find(x=>x.index===+card.dataset.reviewedRow);if(!item)return;
-    card.querySelectorAll('[data-set-reviewed]').forEach(btn=>btn.onclick=()=>{
-      const row=item.row,newClass=btn.dataset.setReviewed;if(row.dataset.transportClass===newClass)return;
-      try{setLastReviewChange(row)}catch{}
-      row.dataset.transportClass=newClass;row.dataset.transportOverride=newClass;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';
-      try{stampReviewDecision(row,'reviewed-toggle')}catch{}
-      const sel=row.querySelector('.transport-override');if(sel)sel.value=newClass;
-      try{rememberTransportDecision(rowToCalendarEvent(row),newClass==='required')}catch{}
-      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${typeof transportClassCss==='function'?transportClassCss(newClass):newClass}`;b.textContent=typeof transportClassLabel==='function'?transportClassLabel(newClass):newClass}
-      try{if(plans.length)markPlanStale('Transport decision changed')}catch{}
-      try{renderQuickPlanningReview()}catch{}
-    });
-    const reopen=card.querySelector('[data-reviewed-reopen]');if(reopen)reopen.onclick=()=>{
-      const row=item.row;try{setLastReviewChange(row)}catch{};row.dataset.transportManual='';row.dataset.transportOverride='';row.dataset.transportReason='Ambiguous Primary Family event';row.dataset.reviewDecisionAt='';row.dataset.reviewDecisionSource='';try{renderQuickPlanningReview()}catch{}
-    };
-  });
-};
-
-/* Whole-day ride solver. It evaluates each leg against work windows, prior rides, travel time, and the next work obligation. */
-const SERVICE=5;
-function home538(){return $('homeAddress')?.value?.trim()||''}
-function buffer538(){return +$('transportBuffer')?.value||20}
-function useful538(v){try{return typeof locationLooksUseful==='function'?locationLooksUseful(v):String(v||'').trim().length>5}catch{return false}}
-async function route538(from,to,fallback){try{return await routeMinutes(from,to,fallback)}catch{return fallback}}
-function phaseFor538(day,person,legTime){
-  const home=home538();
-  if(person==='Chris'){
-    if(day.chrisUnavailable)return null;
-    if(!day.onsite)return {phase:'local',origin:home,available:0,post:null,label:'remote/local'};
-    const site=(typeof getSites==='function'?getSites():[]).find(s=>s.name===day.site),work=site?.address||day.chrisWorkAddress||'';
-    if(day.departHome!=null&&legTime<day.departHome)return {phase:'prework',origin:home,available:0,post:{address:work,deadline:day.arrive},label:'before onsite work'};
-    if(day.leaveWork!=null&&legTime>=day.leaveWork)return {phase:'postwork',origin:work,available:day.leaveWork,post:null,label:`after leaving ${day.site||'work'}`};
-    return null;
-  }
-  if(person==='Kira'){
-    if(day.kiraUnavailable)return null;
-    if(day.kiraOff)return {phase:'local',origin:home,available:0,post:null,label:'off/local'};
-    const work=day.kiraAddress||'';
-    if(day.kiraStart!=null&&legTime<day.kiraStart)return {phase:'prework',origin:home,available:0,post:{address:work,deadline:day.kiraStart},label:'before Kira shift'};
-    if(day.kiraEnd!=null&&legTime>=day.kiraEnd)return {phase:'postwork',origin:work,available:day.kiraEnd,post:null,label:'after Kira shift'};
-    return null;
-  }
-  return null;
-}
-async function candidate538(day,leg,person,state,priorSameEvent){
-  const base=phaseFor538(day,person,leg.time);if(!base)return null;
-  const dest=String(leg.activity?.location||'').trim(),fallback=Math.max(8,Number(leg.activity?.homeDrive)||20),buf=buffer538(),home=home538();
-  let origin=base.origin,available=base.available,continuity=false,reason=base.label;
-  const last=state[person];
-  if(last&&last.phase===base.phase&&last.time>available){
-    const gap=leg.time-last.time;
-    if(gap>75&&useful538(last.address)&&useful538(home)){
-      const back=await route538(last.address,home,fallback);
-      if(last.time+back<leg.time-buf){origin=home;available=last.time+back;reason='after prior ride + return home'}
-      else{origin=last.address||origin;available=last.time;reason='directly after prior ride';continuity=true}
-    }else{origin=last.address||origin;available=last.time;reason='directly after prior ride';continuity=true}
-  }
-  const travel=await route538(origin,dest,fallback);
-  const departBy=leg.time-buf-travel;
-  if(available>departBy)return null;
-  const finish=leg.time+SERVICE;
-  if(base.post?.deadline!=null&&base.post.address){
-    const onward=await route538(dest,base.post.address,fallback);
-    if(finish+onward>base.post.deadline)return null;
-  }
-  const tentative=!useful538(dest)||!useful538(origin)||$('liveRouting')?.value!=='yes';
-  let score=person==='Kira'?(day.kiraOff?96:78):(day.onsite?74:92);
-  score-=Math.min(24,travel*.45);
-  if(continuity)score+=6;
-  if(priorSameEvent===person)score+=9;
-  if(tentative)score-=9;
-  const slack=Math.max(0,departBy-available);score+=Math.min(8,slack/15);
-  const detail=`${reason} · ~${Math.round(travel)} min to event · ${Math.round(slack)} min slack${base.post?' · work start protected':''}${tentative?' · verify route/location':''}`;
-  return {n:person,s:score,tentative,reason:detail,phase:base.phase,finish,address:dest||origin,slack};
-}
-window.assignTransport=async function(day){
-  const legs=[];
-  for(const a of (day.activities||[])){
-    if(a?.drop==='yes'&&a.start)legs.push({activity:a,kind:'Drop',time:tmin538(a.start)});
-    if(a?.pick==='yes'&&a.end)legs.push({activity:a,kind:'Pickup',time:tmin538(a.end)});
-  }
-  const ordered=legs.filter(x=>x.time!=null).sort((a,b)=>a.time-b.time||((a.kind==='Drop'?0:1)-(b.kind==='Drop'?0:1))||String(a.activity?.title||'').localeCompare(String(b.activity?.title||'')));
-  const assignments=[],state={Chris:null,Kira:null},eventDriver=new Map();
-  const eventKey=a=>[a?.date||day.dateStr||'',a?.uid||'',a?.title||'',a?.start||'',a?.location||''].join('|').toLowerCase();
-  for(const leg of ordered){
-    const opts=[],key=eventKey(leg.activity),priorSameEvent=eventDriver.get(key)||'';
-    for(const who of ['Chris','Kira']){const c=await candidate538(day,leg,who,state,priorSameEvent);if(c)opts.push(c)}
-    if($('oldestCanDrive')?.value==='yes'&&leg.activity?.child!=='Oldest'){
-      opts.push({n:typeof childLabel==='function'?childLabel('Oldest'):'Oldest',s:34,tentative:true,reason:'Configured as a driver, but personal schedule/routing is not verified',phase:'unknown',finish:leg.time+SERVICE,address:String(leg.activity?.location||'')});
-    }
-    opts.push({n:'Backup',s:1,tentative:true,reason:'No configured household driver can cover this leg without violating another ride or work obligation',phase:'backup',finish:leg.time+SERVICE,address:String(leg.activity?.location||'')});
-    opts.sort((a,b)=>b.s-a.s);
-    const best=opts[0],second=opts.find(x=>x.n!==best.n)||{n:'Backup'};
-    const rec={...leg,primary:best.n,secondary:second.n||'Backup',recommendationReason:best.reason,alternatives:opts.slice(1,3).map(x=>x.n),recommendationTentative:!!best.tentative,recommendationSlack:best.slack??null};
-    assignments.push(rec);
-    if(best.n==='Chris'||best.n==='Kira')state[best.n]={time:best.finish,address:best.address,phase:best.phase,eventKey:key,kind:leg.kind};
-    if(leg.kind==='Drop'&&(best.n==='Chris'||best.n==='Kira'))eventDriver.set(key,best.n);
-  }
-  return assignments;
-};
-try{assignTransport=window.assignTransport}catch{}
-
-/* Make ride rationale visible anywhere a compact recommendation is displayed, without adding another workflow step. */
-const priorAssignmentObj=window.assignmentObj;
-window.v538AssignmentReason=function(p,a,k){
-  try{const z=(p?.assignments||[]).find(x=>x?.kind===k&&(typeof ak==='function'?ak(x.activity):x.activity?.title)===(typeof ak==='function'?ak(a):a?.title));return z?.recommendationReason||''}catch{return''}
-};
-
-/* Version identity */
-function identity(){
-  document.title='AutoPilot — Family Logistics Planner v53.8';
-  document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v53.8');
-  document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v53.8'});
-}
-function refreshChronology(){try{if(typeof renderQuickPlanningReview==='function')renderQuickPlanningReview()}catch{}try{if(typeof renderReview==='function'&&document.querySelector('#v500StageReview.on'))renderReview()}catch{}try{if(typeof renderPlanCorrections==='function'&&plans?.length)renderPlanCorrections()}catch{}}
-function init(){identity();setTimeout(()=>{identity();refreshChronology()},160);setTimeout(refreshChronology,900)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script>
 </body></html>`}
 })();
 </script>
@@ -6881,7 +6691,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    $('v526ChangeMeals')?.addEventListener('click',()=>{const open=change.style.display!=='block';change.style.display=open?'block':'none';$('v526ChangeMeals').textContent=open?'DONE CHANGING':'CHANGE A DINNER';});
    $('v526MealSetup')?.addEventListener('click',()=>{const t=$('v524Taste'); if(t){t.click(); const panel=$('v524TastePanel'); if(panel)scrollToEl(panel);}});
    $('v526ApproveMeals')?.addEventListener('click',()=>{
-      const wrap=$('v524GroceryWrap'); if(wrap)wrap.style.display='block';
+      const wrap=$('v524GroceryWrap'); if(wrap)wrap.style.display='none';
       const txt=$('v524GroceryText'); if(txt && typeof groceryText==='function') try{txt.textContent=groceryText();}catch(e){}
       $('v524Grocery')?.click();
       if(wrap){wrap.style.display='block';wrap.classList.add('v526-grocery-ready');scrollToEl(wrap);}
@@ -6937,6 +6747,7 @@ function bootstrap(){
 function restore(c,m){
   if(!c?.plans?.length)return false;
   try{
+    const cycle=Number(c.cycleDays)===5?5:10;window.__apCycleDays=cycle;localStorage.setItem('autopilot.cycleDays',String(cycle));document.querySelector(`.v510-cycle[data-days="${cycle}"]`)?.click();
     const norm=c.plans.map(p=>{const q={...p};if(q.date&&!(q.date instanceof Date)){const d=new Date(isoDate(q.date)+'T12:00:00');if(!isNaN(d))q.date=d}else if(!q.date&&q.dateStr)q.date=new Date(q.dateStr+'T12:00:00');return q});
     if(typeof plans!=='undefined')plans=norm;window.plans=norm;setMode(m);
     const r=range(c), legacy=$('startDate'), fresh=$('v500StartDate');if(r.start){if(legacy)legacy.value=r.start;if(fresh)fresh.value=r.start}
@@ -6997,7 +6808,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 
 <!-- AutoPilot v53.3: Premium-tested baseline + Current/Upcoming dual-plan planning layer. -->
-<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v53.7';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
+<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v53.9';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
 <style id="v534SyncStyle">
 #v534Sync{max-width:1120px;margin:0 auto 14px;padding:14px 16px;border:1px solid #d8d0c5;border-left:4px solid #3d7350;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(37,32,25,.06);color:#211f1b}
 #v534Sync .v534-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -7106,7 +6917,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function updateCopy(){const n=selected(),app=$('v500App');if(!app)return;const startSub=$('v500StageStart')?.querySelector('.v500-sub');if(startSub)startSub.textContent=`Choose the first day. AutoPilot will refresh every saved calendar, build the next ${n} workdays, and open one recommended plan for review. Your permanent setup stays backstage.`;if($('v500StartNext'))$('v500StartNext').textContent=`BUILD MY ${n}-DAY PLAN`;const h=$('v500StageReview')?.querySelector('.v510-reviewintro h1');if(h)h.textContent=`Review the ${n}-day family plan`;if($('v500ViewTen'))$('v500ViewTen').textContent=`ALL ${n} DAYS`;const rawHelp=$('v500Raw')?.nextElementSibling;if(rawHelp)rawHelp.textContent=`Use this only for unusual exceptions. The ${n}-day plan is already recommended from your normal work pattern and family transportation rules.`;document.querySelectorAll('[data-v510-cycle-label]').forEach(el=>el.textContent=String(n));}
   function phase(){if($('v500StageFinal')?.classList.contains('on'))return 3;if($('v500StageReview')?.classList.contains('on'))return 2;return 1}
   function syncJourney(){const p=phase();document.querySelectorAll('.v510-step').forEach((e,i)=>{e.classList.toggle('on',i+1===p);e.classList.toggle('done',i+1<p)});const status=$('v510JourneyStatus');if(status){const n=selected();status.textContent=p===1?`Choose a ${n}-day cycle and start date.`:p===2?`${n}-day working plan · review recommendations and change only exceptions.`:`${n}-day final plan · one source for print, calendar, phone, Phil, and NonZero.`}const edit=$('v510Edit'),fin=$('v510Finalize');if(edit)edit.disabled=p===1;if(fin)fin.disabled=p!==2;}
-  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v53.7</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
+  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v53.9</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildStart(){const st=$('v500StageStart');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<h1 class="v500-q">Build the next family planning cycle</h1><p class="v500-sub"></p><div class="v510-cyclechoice"><button type="button" class="v510-cycle" data-days="5"><strong>5 workdays</strong><span>Use for a one-week planning pass or a shorter reset.</span></button><button type="button" class="v510-cycle" data-days="10"><strong>10 workdays</strong><span>Use for the full two-week family operating cycle.</span></button></div><div class="v510-startrow"><label>Cycle starts<input id="v500StartDate" type="date" aria-label="First day of plan"></label><button id="v500StartNext" type="button" class="v500-btn primary">BUILD MY PLAN</button></div><div class="v510-promise"><strong>What happens next:</strong> AutoPilot refreshes your connected schedules, applies the normal work-site pattern and transportation logic, and gives you one recommended plan. You only change exceptions.</div>`;document.querySelectorAll('.v510-cycle').forEach(b=>b.onclick=()=>setCycle(Number(b.dataset.days)));}
   function buildLoading(){const st=$('v500StageCalendars');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<div class="v510-loader"></div><h1 class="v500-q">Building the family plan</h1><p class="v500-sub">AutoPilot is building the plan now. Slow calendar feeds will not hold up the planning cycle; the latest saved data is used automatically when needed.</p><div class="v512-progress"><div class="v512-step active" data-loadstep="1">Refresh calendars</div><div class="v512-step" data-loadstep="2">Apply family rules</div><div class="v512-step" data-loadstep="3">Build recommendations</div><div class="v512-step" data-loadstep="4">Prepare review</div></div><div id="v500RefreshStatus" class="v512-live"><div><b><span class="v512-dot"></span>Starting planning cycle…</b>Connecting to saved schedules.</div></div><div id="v512Elapsed" class="v512-elapsed">Working · 0s</div><button id="v500Refresh" type="button" class="v500-btn primary" style="display:none">RETRY</button>`;}
   let __v512Timer=null,__v512Started=0;
@@ -7119,7 +6930,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();renderWallExclusionManager();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This is taking longer than normal.</b> AutoPilot will continue with the latest saved calendar data rather than leave you stuck on this screen.'}},12000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v53.7';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v53.9';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
@@ -7195,7 +7006,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
  function meal(id,s){return allDinners(s).find(m=>m.id===id)||DINNERS[0]}
  window.__suiteMeals={forDate:(date,p)=>{const s=load(),id=s.byDate[date]?.mealId;if(!id)return null;const m=meal(id,s);return {id:m.id,name:m.name,minutes:m.mins,prep:m.advance&&m.advance!=='None.'?m.advance:m.prep||'',sourceUrl:m.sourceUrl||''}},reload:()=>renderMealHQ()};
  function lunch(id){return LUNCHES.find(x=>x.id===id)||LUNCHES[0]}
- function cycleDays(){const n=Number(localStorage.getItem('autopilot.cycleDays')||10)===5?5:10,all=(window.plans||plans||[]);let seen=0,last='';for(const p of all){if(!p.weekend){seen++;last=p.dateStr;if(seen>=n)break}}return all.filter(p=>!last||p.dateStr<=last)}
+ function cycleDays(){return (window.plans||plans||[]).slice(0,window.__apCycleDays===5?7:14)}
  function loadLevel(p){if(p.weekend)return (p.activities?.length||0)+(p.contextActivities?.length||0)>=2?'Busy':'Flexible';try{const x=typeof dayChallengeLevel==='function'?dayChallengeLevel(p):'';return x==='challenge-high'?'Challenging':x==='challenge-med'?'Busy':'Normal'}catch{return 'Normal'}}
  function maxMinutes(level){return level==='Challenging'?20:level==='Busy'?30:45}
  function isOnsite(p){return !p.weekend && !/remote/i.test(String(p.workSite||p.site||p.recommendation||p.workMode||''))}
@@ -7216,7 +7027,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
  function lunchCard(p,s){const id=s.lunchByDate[p.dateStr]||recommendLunch(p,s)?.id||'l-leftovers',m=lunch(id),level=isOnsite(p)?'Pack for onsite':'Home / flexible';return `<div class="v524-card" data-lunch-date="${p.dateStr}"><div class="v524-top"><div class="v524-date">${dateLabel(p)}</div><div class="v524-load">${level}</div></div><div class="v524-row"><select class="v524-lunch">${lunchOptions(id)}</select><button class="v524-lunchroll v524-reroll">↻</button></div><div class="v524-meta"><span class="v524-chip">~${m.mins} min</span><span class="v524-chip">${m.mode}</span></div><div class="v524-prep"><b>Prep:</b> ${m.prep}</div></div>`}
  function batchPrep(s,days){const picks=[];const dinners=days.map(p=>meal(s.byDate[p.dateStr]?.mealId,s));const lunches=days.filter(p=>!p.weekend).map(p=>lunch(s.lunchByDate[p.dateStr]));if([...dinners,...lunches].some(m=>(m.ingredients||[]).some(x=>/rice/i.test(x))))picks.push('Cook a batch of rice/grain once for bowls and sides.');if([...dinners,...lunches].some(m=>(m.ingredients||[]).some(x=>/rotisserie chicken/i.test(x))))picks.push('Shred one rotisserie chicken when groceries come home.');if(dinners.some(m=>/pepper|fajita/i.test(m.name)))picks.push('Slice peppers/onions once; store ready to cook.');if(lunches.filter(m=>m.id==='l-proteinbox'||m.id==='l-chickenbowl').length>=2)picks.push('Build 2–3 lunches at once instead of nightly.');if(!picks.length)picks.push('No major batch prep needed — keep this week light.');return picks.slice(0,4)}
  function summaryHtml(s,days){const hard=days.filter(p=>['Busy','Challenging'].includes(loadLevel(p))).length,web=days.filter(p=>meal(s.byDate[p.dateStr]?.mealId,s).sourceUrl).length,lunches=days.filter(p=>!p.weekend).length,prep=batchPrep(s,days);return `<div class="v524-summary"><div class="v524-summary-card"><small>Hard logistics days</small><strong>${hard}</strong><span>AutoPilot biases these toward faster dinners.</span></div><div class="v524-summary-card"><small>Dinners planned</small><strong>${days.length}</strong><span>${web?web+' discovered recipe'+(web===1?'':'s')+' in rotation.':'Built from known family options.'}</span></div><div class="v524-summary-card"><small>Lunches covered</small><strong>${lunches}</strong><span>Packable options follow work-site days.</span></div><div class="v524-summary-card"><small>Batch-prep moves</small><strong>${prep.length}</strong><span>Only the prep worth doing ahead.</span></div></div><div class="v524-banner"><b>AutoPilot’s job:</b> make the decisions once. Transport + worksite difficulty sets the meal effort ceiling; family feedback sets the taste floor; groceries consolidate after you approve the plan.</div>`}
- function renderMealHQ(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||!(window.plans||plans||[]).length)return;let host=$('v524MealHQ');if(!host){host=document.createElement('section');host.id='v524MealHQ';const old=$('v522DinnerPlanner');if(old)old.remove();const foot=card.querySelector('.v510-review-footer');if(foot)card.insertBefore(host,foot);else card.appendChild(host)}const s=ensure(),days=cycleDays(),work=days.filter(p=>!p.weekend),hard=days.filter(p=>['Busy','Challenging'].includes(loadLevel(p))).length,prep=batchPrep(s,days);host.innerHTML=`<div class="v524-head v525-head"><div><h3>Meals & Groceries</h3><p>AutoPilot already picked the easiest realistic meals around your family schedule. Change only what looks wrong.</p></div><div class="v524-actions"><button id="v524Replan" class="primary">BUILD / REFRESH WEEK</button><button id="v524Grocery">GROCERY LIST</button><button id="v524Taste">TASTE SETUP</button></div></div><div class="v525-oneglance"><b>${days.length} dinners + ${work.length} workday lunches planned</b><span>${hard} busy night${hard===1?'':'s'} protected · ${prep.length} prep move${prep.length===1?'':'s'}</span></div><div id="v524TastePanel" class="v524-panel"></div><div class="v524-section v525-week"><div class="v524-sectionhead"><div><h4>This week</h4><p>Use 👍 WORKED or 👎 NOT AGAIN. That is enough for AutoPilot to learn.</p></div></div><div class="v524-grid">${days.map(p=>dinnerCard(p,s)).join('')}</div></div><div class="v524-section v525-prep"><div class="v524-sectionhead"><div><h4>Prep only what matters</h4><p>These are the few actions most likely to make the week easier.</p></div></div><div class="v524-batch">${prep.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div></div><details class="v525-details"><summary>Lunch plan & optional meal controls</summary><div class="v525-detailbody"><div class="v524-section"><div class="v524-sectionhead"><div><h4>Workday lunches — automatic</h4><p>You do not need to review these unless something looks wrong.</p></div></div><div class="v524-grid">${work.map(p=>lunchCard(p,s)).join('')}</div></div><div class="v525-advanced"><button id="v524Discover">FIND NEW RECIPE IDEAS</button><div id="v524DiscoverPanel" class="v524-panel"></div></div></div></details><div id="v524GroceryWrap"><div class="v524-grocery-head"><div><strong>Weekly grocery list</strong><div class="v525-small">Generated from the meals above. Copy it and go.</div></div><button id="v524CopyGrocery">COPY LIST</button></div><div class="v524-grocery" id="v524GroceryText"></div></div>`;wire();annotate()}
+ function renderMealHQ(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||!(window.plans||plans||[]).length)return;let host=$('v524MealHQ');if(!host){host=document.createElement('section');host.id='v524MealHQ';const old=$('v522DinnerPlanner');if(old)old.remove();const foot=card.querySelector('.v510-review-footer');if(foot)card.insertBefore(host,foot);else card.appendChild(host)}const s=ensure(),days=cycleDays(),work=days.filter(p=>!p.weekend),hard=days.filter(p=>['Busy','Challenging'].includes(loadLevel(p))).length,prep=batchPrep(s,days);delete host.dataset.v526;host.classList.remove('v526-simple');host.innerHTML=`<div class="v524-head v525-head"><div><h3>Meals & Groceries</h3><p>AutoPilot already picked the easiest realistic meals around your family schedule. Change only what looks wrong.</p></div><div class="v524-actions"><button id="v524Replan" class="primary">BUILD / REFRESH WEEK</button><button id="v524Grocery">GROCERY LIST</button><button id="v524Taste">TASTE SETUP</button></div></div><div class="v525-oneglance"><b>${days.length} dinners + ${work.length} workday lunches planned</b><span>${hard} busy night${hard===1?'':'s'} protected · ${prep.length} prep move${prep.length===1?'':'s'}</span></div><div id="v524TastePanel" class="v524-panel"></div><div class="v524-section v525-week"><div class="v524-sectionhead"><div><h4>This week</h4><p>Use 👍 WORKED or 👎 NOT AGAIN. That is enough for AutoPilot to learn.</p></div></div><div class="v524-grid">${days.map(p=>dinnerCard(p,s)).join('')}</div></div><div class="v524-section v525-prep"><div class="v524-sectionhead"><div><h4>Prep only what matters</h4><p>These are the few actions most likely to make the week easier.</p></div></div><div class="v524-batch">${prep.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div></div><details class="v525-details"><summary>Lunch plan & optional meal controls</summary><div class="v525-detailbody"><div class="v524-section"><div class="v524-sectionhead"><div><h4>Workday lunches — automatic</h4><p>You do not need to review these unless something looks wrong.</p></div></div><div class="v524-grid">${work.map(p=>lunchCard(p,s)).join('')}</div></div><div class="v525-advanced"><button id="v524Discover">FIND NEW RECIPE IDEAS</button><div id="v524DiscoverPanel" class="v524-panel"></div></div></div></details><div id="v524GroceryWrap"><div class="v524-grocery-head"><div><strong>Weekly grocery list</strong><div class="v525-small">Generated from the meals above. Copy it and go.</div></div><button id="v524CopyGrocery">COPY LIST</button></div><div class="v524-grocery" id="v524GroceryText"></div></div>`;wire();annotate()}
  function setFeedback(id,type){const s=load();s.feedback[id]=s.feedback[id]||{};s.feedback[id][type]=(s.feedback[id][type]||0)+1;if(type==='fail'&&!['leftovers','takeout'].includes(id)){if(!s.hidden.includes(id))s.hidden.push(id)}if(type==='winner'&&!s.favorites.includes(id))s.favorites.push(id);save(s);renderMealHQ()}
  function renderTaste(){const p=$('v524TastePanel');if(!p)return;const s=load(),people=s.people;p.innerHTML=`<div class="v524-panelhead"><div><h4>Family taste setup</h4><p>Set this up once. Focus especially on Whitney and Will. AutoPilot will use it quietly in the background.</p></div><button id="v524TasteDone">DONE</button></div><div class="v524-panelbody"><div class="v524-family">${people.map((n,i)=>`<label>Person ${i+1}<input class="v524-name" data-i="${i}" value="${esc(n)}"></label>`).join('')}</div><div class="v524-guard">${people.map((n,i)=>`<label>${esc(n)} won't eat ingredients<input class="v524-no" data-i="${i}" placeholder="e.g. mushrooms, olives" value="${esc(s.ingredientNo?.[i]||'')}"></label>`).join('')}</div><label class="v524-rule"><input id="v524RequireAll" type="checkbox" ${s.requireAll?'checked':''}> Do not recommend meals when anyone has a hard “No” or ingredient conflict.</label><div class="v524-matrix-wrap"><table class="v524-matrix"><thead><tr><th>Meal</th>${people.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead><tbody>${allDinners(s).filter(m=>!['leftovers','takeout'].includes(m.id)).map(m=>`<tr><td><b>${esc(m.name)}</b></td>${people.map((_,i)=>{const v=s.tastes?.[m.id]?.[i]||'unknown';return `<td><button class="v524-rate" data-meal="${esc(m.id)}" data-person="${i}" data-v="${v}">${TASTE_LABELS[v]}</button></td>`}).join('')}</tr>`).join('')}</tbody></table></div></div>`;p.querySelectorAll('.v524-rate').forEach(b=>b.onclick=()=>{const st=load(),mid=b.dataset.meal,i=+b.dataset.person,cur=b.dataset.v,next=TASTE_VALUES[(TASTE_VALUES.indexOf(cur)+1)%TASTE_VALUES.length];st.tastes[mid]=st.tastes[mid]||{};st.tastes[mid][i]=next;save(st);b.dataset.v=next;b.textContent=TASTE_LABELS[next]});p.querySelectorAll('.v524-name').forEach(inp=>inp.onchange=()=>{const st=load();st.people[+inp.dataset.i]=(inp.value||DEFAULT_PEOPLE[+inp.dataset.i]).trim();save(st)});p.querySelectorAll('.v524-no').forEach(inp=>inp.onchange=()=>{const st=load();st.ingredientNo[+inp.dataset.i]=inp.value.trim();save(st)});$('v524RequireAll').onchange=e=>{const st=load();st.requireAll=e.target.checked;save(st)};$('v524TasteDone').onclick=()=>{p.style.display='none';render()}}
  function parseDuration(s){const m=String(s||'').match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);return m?(+(m[1]||0)*60+ +(m[2]||0)):30}
@@ -7230,10 +7041,10 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
  function category(item){const x=item.toLowerCase();if(/chicken|turkey|salmon|egg|sausage|meatball|deli|rotisserie/.test(x))return'PROTEIN';if(/lettuce|tomato|pepper|onion|broccoli|cucumber|spinach|fruit|avocado|berries|grapes|carrot|lemon|corn|green bean/.test(x))return'PRODUCE';if(/yogurt|cheese|feta|parmesan|ricotta|mozzarella/.test(x))return'DAIRY';if(/bread|wrap|tortilla|pita|naan|bun|cracker/.test(x))return'BAKERY / BREAD';if(/frozen|oven fries|peas/.test(x))return'FROZEN';return'PANTRY / OTHER'}
  function weekKey(p){const d=new Date(p.date);d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());return d.toISOString().slice(0,10)}
  function groceryText(){const s=load(),weeks={};for(const p of cycleDays()){const k=weekKey(p);weeks[k]=weeks[k]||[];weeks[k].push(...(meal(s.byDate[p.dateStr]?.mealId,s).ingredients||[]));if(!p.weekend)weeks[k].push(...(lunch(s.lunchByDate[p.dateStr]).ingredients||[]))}let out=[];for(const [k,items] of Object.entries(weeks)){const d=new Date(k+'T12:00:00');out.push(`WEEK OF ${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}`);const groups={};for(const raw of items){const item=String(raw).trim();if(!item)continue;const c=category(item);groups[c]=groups[c]||new Map();const key=item.toLowerCase();groups[c].set(key,{name:item,n:(groups[c].get(key)?.n||0)+1})}for(const c of ['PRODUCE','PROTEIN','DAIRY','BAKERY / BREAD','FROZEN','PANTRY / OTHER']){if(!groups[c]?.size)continue;out.push(`\n${c}`);[...groups[c].values()].sort((a,b)=>a.name.localeCompare(b.name)).forEach(x=>out.push(`☐ ${x.name}${x.n>1?`  (${x.n} uses)`:''}`))}out.push('')}return out.join('\n').trim()}
- function wire(){const s=load();$('v524Taste').onclick=()=>{const p=$('v524TastePanel');const open=p.style.display!=='block';p.style.display=open?'block':'none';if(open)renderTaste()};$('v524Discover').onclick=()=>{const p=$('v524DiscoverPanel');const open=p.style.display!=='block';p.style.display=open?'block':'none';if(open)renderDiscover()};$('v524Replan').onclick=()=>{const st=load();for(const p of cycleDays()){st.byDate[p.dateStr]={mealId:recommend(p,st,0).id,auto:true};if(!p.weekend)st.lunchByDate[p.dateStr]=recommendLunch(p,st).id}save(st);render()};$('v524Grocery').onclick=()=>{const w=$('v524GroceryWrap');w.style.display=w.style.display==='block'?'none':'block';if(w.style.display==='block')$('v524GroceryText').textContent=groceryText()};$('v524CopyGrocery').onclick=async()=>{try{await navigator.clipboard.writeText($('v524GroceryText').textContent);$('v524CopyGrocery').textContent='COPIED'}catch{}};document.querySelectorAll('[data-date]').forEach(row=>{const date=row.dataset.date,sel=row.querySelector('.v524-dinner');sel.onchange=()=>{const st=load();st.byDate[date]={mealId:sel.value,auto:false};st.history=[...(st.history||[]),sel.value].slice(-30);save(st);renderMealHQ()};row.querySelector('.v524-reroll').onclick=()=>{const st=load(),p=cycleDays().find(x=>x.dateStr===date),cur=sel.value,c=visibleMeals(st).filter(x=>x.id!==cur).map(m=>({m,sc:scoreMeal(m,p,st,[cur])})).sort((a,b)=>b.sc-a.sc);st.byDate[date]={mealId:(c[0]?.m.id||cur),auto:true};save(st);renderMealHQ()};row.querySelectorAll('[data-fb]').forEach(b=>b.onclick=()=>setFeedback(sel.value,b.dataset.fb))});document.querySelectorAll('[data-lunch-date]').forEach(row=>{const date=row.dataset.lunchDate,sel=row.querySelector('.v524-lunch');sel.onchange=()=>{const st=load();st.lunchByDate[date]=sel.value;save(st);renderMealHQ()};row.querySelector('.v524-lunchroll').onclick=()=>{const st=load(),idx=LUNCHES.findIndex(x=>x.id===sel.value);st.lunchByDate[date]=LUNCHES[(idx+1)%LUNCHES.length].id;save(st);renderMealHQ()}})}
+ function wire(){const s=load();$('v524Taste').onclick=()=>{const p=$('v524TastePanel');const open=p.style.display!=='block';p.style.display=open?'block':'none';if(open)renderTaste()};$('v524Discover').onclick=()=>{const p=$('v524DiscoverPanel');const open=p.style.display!=='block';p.style.display=open?'block':'none';if(open)renderDiscover()};$('v524Replan').onclick=()=>{const st=load();for(const p of cycleDays()){st.byDate[p.dateStr]={mealId:recommend(p,st,0).id,auto:true};if(!p.weekend)st.lunchByDate[p.dateStr]=recommendLunch(p,st).id}save(st);render()};$('v524Grocery').onclick=()=>{const w=$('v524GroceryWrap');w.style.display=w.style.display==='block'?'none':'block';if(w.style.display==='block')$('v524GroceryText').textContent=groceryText()};$('v524CopyGrocery').onclick=async()=>{try{await navigator.clipboard.writeText($('v524GroceryText').textContent);$('v524CopyGrocery').textContent='COPIED'}catch{}};document.querySelectorAll('[data-date]').forEach(row=>{const date=row.dataset.date,sel=row.querySelector('.v524-dinner');if(!sel)return;sel.onchange=()=>{const st=load();st.byDate[date]={mealId:sel.value,auto:false};st.history=[...(st.history||[]),sel.value].slice(-30);save(st);renderMealHQ()};row.querySelector('.v524-reroll').onclick=()=>{const st=load(),p=cycleDays().find(x=>x.dateStr===date),cur=sel.value,c=visibleMeals(st).filter(x=>x.id!==cur).map(m=>({m,sc:scoreMeal(m,p,st,[cur])})).sort((a,b)=>b.sc-a.sc);st.byDate[date]={mealId:(c[0]?.m.id||cur),auto:true};save(st);renderMealHQ()};row.querySelectorAll('[data-fb]').forEach(b=>b.onclick=()=>setFeedback(sel.value,b.dataset.fb))});document.querySelectorAll('[data-lunch-date]').forEach(row=>{const date=row.dataset.lunchDate,sel=row.querySelector('.v524-lunch');sel.onchange=()=>{const st=load();st.lunchByDate[date]=sel.value;save(st);renderMealHQ()};row.querySelector('.v524-lunchroll').onclick=()=>{const st=load(),idx=LUNCHES.findIndex(x=>x.id===sel.value);st.lunchByDate[date]=LUNCHES[(idx+1)%LUNCHES.length].id;save(st);renderMealHQ()}})}
  function annotate(){const s=load(),work=(window.plans||plans||[]).filter(p=>!p.weekend);['calendarPreview','printCalendar'].forEach(id=>{const host=$(id);if(!host)return;[...host.children].forEach((box,i)=>{const p=work[i];if(!p)return;box.querySelectorAll('.ap-meal-output').forEach(x=>x.remove());const d=meal(s.byDate[p.dateStr]?.mealId,s),l=lunch(s.lunchByDate[p.dateStr]);const div=document.createElement('div');div.className='ap-meal-output';div.innerHTML=`<b>Meals</b><div class="meal-name">Lunch: ${esc(l.name)}</div><div class="meal-name">Dinner: ${esc(d.name)}</div><div class="meal-prep">${esc(d.prep||'')}</div>`;box.appendChild(div)})})}
  function hook(){try{if(typeof window.render==='function'&&!window.render.__v524){const base=window.render;const wrapped=function(...args){const o=base.apply(this,args);setTimeout(()=>{renderMealHQ();annotate()},0);return o};wrapped.__v524=true;window.render=wrapped}}catch(e){console.warn('Meal HQ hook',e)}}
- function init(){hook();let n=0;const t=setInterval(()=>{n++;hook();if((window.plans||plans||[]).length){renderMealHQ();annotate()}if(n>30)clearInterval(t)},250)}
+ function init(){hook();let n=0;const t=setInterval(()=>{n++;hook();if((window.plans||plans||[]).length){if(!$('v524MealHQ'))renderMealHQ();annotate()}if(n>30)clearInterval(t)},250)}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -7439,7 +7250,7 @@ function render(status){ensure();$('apbStatus').textContent=!configured()?'Optio
 async function refresh(){if(!configured()){render();return}try{const [status,list]=await Promise.all([request('/status'),request('/changes')]);changes=list.changes||[];render(status);if($('v534Sync'))$('v534Sync').style.display='none'}catch(e){ensure();$('apbStatus').textContent='Background unavailable · '+e.message}}
 async function sync(approve=false){if(!configured())return;const p=payload(approve),sig=signature(p);if(!approve&&sig===lastSignature)return;await request('/config',{method:'PUT',body:JSON.stringify(p)});lastSignature=sig;localStorage.removeItem(PENDING)}
 function queue(approve=false){if(!configured())return;clearTimeout(timer);timer=setTimeout(()=>sync(approve).then(refresh).catch(e=>{localStorage.setItem(PENDING,'1');$('apbStatus').textContent='Will retry · '+e.message}),approve?100:1500)}
-function init(){ensure();render();if(configured()){sync(false).then(refresh).catch(()=>refresh())}setInterval(()=>{if(configured()&&document.visibilityState==='visible')refresh()},300000);const originalSave=saveCalendarLinks;saveCalendarLinks=function(...args){const result=originalSave.apply(this,args);queue();return result};const originalVisibility=saveWallVisibilityStore;saveWallVisibilityStore=function(...args){const result=originalVisibility.apply(this,args);queue();return result};const originalFinalize=finalize;finalize=function(...args){const result=originalFinalize.apply(this,args);if(localStorage.getItem('autopilot.v532.editMode')==='future'){const ps=(typeof plans!=='undefined'&&Array.isArray(plans)?plans:[]);localStorage.setItem('autopilot.background.approvedFuture',JSON.stringify({plans:ps}))}window.dispatchEvent(new Event('suite-plan-finalized'));queue(true);return result};window.addEventListener('online',()=>{if(configured()&&localStorage.getItem(PENDING))queue(true)});window.addEventListener('focus',refresh)}
+function init(){ensure();render();if(configured()){sync(false).then(refresh).catch(()=>refresh())}setInterval(()=>{if(configured()&&document.visibilityState==='visible')refresh()},300000);const originalSave=saveCalendarLinks;saveCalendarLinks=function(...args){const result=originalSave.apply(this,args);queue();return result};const originalVisibility=saveWallVisibilityStore;saveWallVisibilityStore=function(...args){const result=originalVisibility.apply(this,args);queue();return result};window.addEventListener('suite-plan-finalized',()=>{if(localStorage.getItem('autopilot.v532.editMode')==='future'){const ps=(typeof plans!=='undefined'&&Array.isArray(plans)?plans:[]);localStorage.setItem('autopilot.background.approvedFuture',JSON.stringify({plans:ps}))}queue(true)});window.addEventListener('online',()=>{if(configured()&&localStorage.getItem(PENDING))queue(true)});window.addEventListener('focus',refresh)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -7475,8 +7286,8 @@ window.__suitePlanner={renderToday,refreshShared,applySavedAgenda};if(document.r
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
  function polish(){
-   const brand=document.querySelector('#v510Journey .v510-wordmark small');if(brand)brand.textContent='Family Logistics Planner · v53.7';
-   document.title='AutoPilot — Family Logistics Planner v53.7';
+   const brand=document.querySelector('#v510Journey .v510-wordmark small');if(brand)brand.textContent='Family Logistics Planner · v53.9';
+   document.title='AutoPilot — Family Logistics Planner v53.9';
    const cc=$('apCommandCenter');if(cc)cc.setAttribute('aria-label','Today at a glance');
    const start=$('v500StartNext');if(start){const n=Number(localStorage.getItem('autopilot.cycleDays')||window.__apCycleDays||10)===5?5:10;if(!start.disabled)start.textContent=`BUILD ${n}-DAY PLAN`;}
  }
@@ -7484,3 +7295,213 @@ window.__suitePlanner={renderToday,refreshShared,applySavedAgenda};if(document.r
  document.addEventListener('click',e=>{const cycle=e.target.closest('.v510-cycle');if(cycle)setTimeout(polish,0);});
 })();
 </script>
+
+<!-- AutoPilot v53.8: chronological logistics review + route-feasible household ride solver + simplicity hardening. -->
+<style id="v538LogisticsStyle">
+/* Reviewed decisions now read as one chronological audit trail instead of two status buckets. */
+#reviewedDecisionList .v538-day{margin-top:12px;border-left:4px solid #cfc6b7;padding-left:10px}
+#reviewedDecisionList .v538-day:first-child{margin-top:6px}
+#reviewedDecisionList .v538-day-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin:0 0 6px;font-weight:950}
+#reviewedDecisionList .v538-day-head span{font-size:10px;color:#766e62;font-weight:800}
+#reviewedDecisionList .reviewed-row{grid-template-columns:minmax(220px,1.3fr) minmax(260px,1fr)!important}
+#reviewedDecisionList .v538-status{display:inline-flex;align-items:center;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:950;letter-spacing:.03em}
+#reviewedDecisionList .v538-status.required{background:#edf7ef;color:#275f35;border:1px solid #b8d2bd}
+#reviewedDecisionList .v538-status.info{background:#f3f0eb;color:#6f675c;border:1px solid #d7d0c6}
+.v538-ride-reason{display:block;margin-top:3px;font-size:9px;line-height:1.3;color:#756d62}
+.v538-ride-reason.warn{color:#996000;font-weight:800}
+@media(max-width:760px){#reviewedDecisionList .reviewed-row{grid-template-columns:1fr!important}}
+</style>
+<script id="v538LogisticsHardening">
+(()=>{
+'use strict';
+if(window.__apV538LogisticsHardening)return;window.__apV538LogisticsHardening=true;
+const $=id=>document.getElementById(id);
+const esc538=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tmin538=v=>{try{return typeof toMin==='function'?toMin(v):(()=>{const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null})()}catch{return null}};
+const time538=a=>{const n=tmin538(a?.start);return n==null?99999:n};
+const end538=a=>{const n=tmin538(a?.end||a?.start);return n==null?99999:n};
+const eventSort538=(a,b)=>String(a?.date||'').localeCompare(String(b?.date||''))||time538(a)-time538(b)||end538(a)-end538(b)||String(a?.title||'').localeCompare(String(b?.title||''));
+function sortedActs538(p){
+  const transport=(p?.activities||p?.events||[]).filter(a=>a?.title);
+  const context=(p?.contextActivities||[]).filter(a=>a?.title);
+  const seen=new Set(),out=[];
+  for(const a of [...transport,...context]){
+    const k=[a.uid||'',a.date||p?.dateStr||'',a.start||'',a.end||'',String(a.title||'').toLowerCase(),String(a.source||'').toLowerCase()].join('|');
+    if(!seen.has(k)){seen.add(k);out.push(a)}
+  }
+  return out.sort(eventSort538);
+}
+/* A later release accidentally reintroduced an unsorted acts() helper. Force all review/final surfaces back to chronological data. */
+try{window.acts=sortedActs538}catch{}
+try{acts=sortedActs538}catch{}
+try{window.groups=function(p){
+  const m=new Map();
+  for(const a of sortedActs538(p)){
+    const n=(typeof safeOwner==='function'?safeOwner(a):(a.child||'Family'));
+    if(!m.has(n))m.set(n,[]);m.get(n).push(a);
+  }
+  return [...m.entries()].sort((x,y)=>eventSort538(x[1][0],y[1][0]));
+}}catch{}
+try{
+  const sortedCorrectionRows538=dateStr=>[...document.querySelectorAll('#activityBody > tr')].filter(r=>r.querySelector('.a-date')?.value===dateStr).sort((ra,rb)=>eventSort538(typeof rowToCalendarEvent==='function'?rowToCalendarEvent(ra):{},typeof rowToCalendarEvent==='function'?rowToCalendarEvent(rb):{}));
+  window.correctionActivityRows=sortedCorrectionRows538; correctionActivityRows=sortedCorrectionRows538;
+}catch{}
+
+/* Keep the reviewed-decision audit chronological. Splitting "no transport" ahead of rides made the page look out of order. */
+window.renderReviewedDecisions=function(rows){
+  const host=$('reviewedDecisionList'),summary=$('reviewedDecisionSummary');if(!host)return;
+  const reviewed=(rows||[]).filter(x=>typeof isReviewedDecision==='function'?isReviewedDecision(x.row):true)
+    .slice().sort((a,b)=>eventSort538(a.event,b.event));
+  const noTransport=reviewed.filter(x=>x.row.dataset.transportClass!=='required');
+  const needsTransport=reviewed.filter(x=>x.row.dataset.transportClass==='required');
+  if(summary)summary.innerHTML=`<div class="review-summary-banner"><strong>${reviewed.length} reviewed</strong><span class="qr-chip">${noTransport.length} no transport</span><span class="qr-chip good">${needsTransport.length} need transport</span><span class="small muted">Shown in date/time order.</span></div>`;
+  if(!reviewed.length){host.innerHTML='<div class="reviewed-empty">No reviewed decisions yet.</div>';return}
+  const grouped=[];let current=null;
+  for(const item of reviewed){
+    const d=item.event.date||'';
+    if(!current||current.date!==d){current={date:d,items:[]};grouped.push(current)}
+    current.items.push(item);
+  }
+  const dateLabel=d=>{try{return new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}catch{return d}};
+  host.innerHTML=grouped.map(g=>`<div class="v538-day"><div class="v538-day-head"><strong>${esc538(dateLabel(g.date))}</strong><span>${g.items.length} event${g.items.length===1?'':'s'}</span></div>${g.items.map(({row,index,event})=>{
+    const req=row.dataset.transportClass==='required',stamp=typeof formatReviewDecisionStamp==='function'?formatReviewDecisionStamp(row):{text:'Reviewed',warn:false};
+    return `<div class="reviewed-row" data-reviewed-row="${index}"><div><div class="reviewed-time">${typeof displayTime12h==='function'?displayTime12h(event.start):esc538(event.start)}${event.end?` – ${typeof displayTime12h==='function'?displayTime12h(event.end):esc538(event.end)}`:''}</div><div class="reviewed-title">${esc538(event.title)}</div><div class="reviewed-meta">${esc538(typeof childLabel==='function'?childLabel(event.child):event.child)} · ${esc538(event.source||'Manual')}</div><span class="v538-status ${req?'required':'info'}">${req?'NEEDS TRANSPORT':'NO TRANSPORT'}</span><div class="reviewed-origin ${stamp.warn?'warn':''}">${esc538(stamp.text)}</div></div><div class="reviewed-actions"><div class="review-toggle" role="group" aria-label="Transport decision"><button type="button" data-set-reviewed="required" class="${req?'active required':''}">NEEDS TRANSPORT</button><button type="button" data-set-reviewed="info" class="${!req?'active no':''}">NO TRANSPORT</button></div><button type="button" data-reviewed-reopen class="secondary">Reopen</button></div></div>`;
+  }).join('')}</div>`).join('');
+  host.querySelectorAll('[data-reviewed-row]').forEach(card=>{
+    const item=(rows||[]).find(x=>x.index===+card.dataset.reviewedRow);if(!item)return;
+    card.querySelectorAll('[data-set-reviewed]').forEach(btn=>btn.onclick=()=>{
+      const row=item.row,newClass=btn.dataset.setReviewed;if(row.dataset.transportClass===newClass)return;
+      try{setLastReviewChange(row)}catch{}
+      row.dataset.transportClass=newClass;row.dataset.transportOverride=newClass;row.dataset.transportManual='true';row.dataset.transportReason='Saved planning decision';
+      try{stampReviewDecision(row,'reviewed-toggle')}catch{}
+      const sel=row.querySelector('.transport-override');if(sel)sel.value=newClass;
+      try{rememberTransportDecision(rowToCalendarEvent(row),newClass==='required')}catch{}
+      const b=row.querySelector('.transport-class');if(b){b.className=`transport-class ${typeof transportClassCss==='function'?transportClassCss(newClass):newClass}`;b.textContent=typeof transportClassLabel==='function'?transportClassLabel(newClass):newClass}
+      try{if(plans.length)markPlanStale('Transport decision changed')}catch{}
+      try{renderQuickPlanningReview()}catch{}
+    });
+    const reopen=card.querySelector('[data-reviewed-reopen]');if(reopen)reopen.onclick=()=>{
+      const row=item.row;try{setLastReviewChange(row)}catch{};row.dataset.transportManual='';row.dataset.transportOverride='';row.dataset.transportReason='Ambiguous Primary Family event';row.dataset.reviewDecisionAt='';row.dataset.reviewDecisionSource='';try{renderQuickPlanningReview()}catch{}
+    };
+  });
+};
+
+/* Whole-day ride solver. It evaluates each leg against work windows, prior rides, travel time, and the next work obligation. */
+const SERVICE=5;
+function home538(){return $('homeAddress')?.value?.trim()||''}
+function buffer538(){return +$('transportBuffer')?.value||20}
+function useful538(v){try{return typeof locationLooksUseful==='function'?locationLooksUseful(v):String(v||'').trim().length>5}catch{return false}}
+async function route538(from,to,fallback){try{return await routeMinutes(from,to,fallback)}catch{return fallback}}
+function phaseFor538(day,person,legTime){
+  const home=home538();
+  if(person==='Chris'){
+    if(day.chrisUnavailable)return null;
+    if(!day.onsite)return {phase:'local',origin:home,available:0,post:null,label:'remote/local'};
+    const site=(typeof getSites==='function'?getSites():[]).find(s=>s.name===day.site),work=site?.address||day.chrisWorkAddress||'';
+    if(day.departHome!=null&&legTime<day.departHome)return {phase:'prework',origin:home,available:0,post:{address:work,deadline:day.arrive},label:'before onsite work'};
+    if(day.leaveWork!=null&&legTime>=day.leaveWork)return {phase:'postwork',origin:work,available:day.leaveWork,post:null,label:`after leaving ${day.site||'work'}`};
+    return null;
+  }
+  if(person==='Kira'){
+    if(day.kiraUnavailable)return null;
+    if(day.kiraOff)return {phase:'local',origin:home,available:0,post:null,label:'off/local'};
+    const work=day.kiraAddress||'';
+    if(day.kiraStart!=null&&legTime<day.kiraStart)return {phase:'prework',origin:home,available:0,post:{address:work,deadline:day.kiraStart},label:'before Kira shift'};
+    if(day.kiraEnd!=null&&legTime>=day.kiraEnd)return {phase:'postwork',origin:work,available:day.kiraEnd,post:null,label:'after Kira shift'};
+    return null;
+  }
+  return null;
+}
+async function candidate538(day,leg,person,state,priorSameEvent){
+  const base=phaseFor538(day,person,leg.time);if(!base)return null;
+  const dest=String(leg.activity?.location||'').trim(),fallback=Math.max(8,Number(leg.activity?.homeDrive)||20),buf=buffer538(),home=home538();
+  let origin=base.origin,available=base.available,continuity=false,reason=base.label;
+  const last=state[person];
+  if(last&&last.phase===base.phase&&last.time>available){
+    const gap=leg.time-last.time;
+    if(gap>75&&useful538(last.address)&&useful538(home)){
+      const back=await route538(last.address,home,fallback);
+      if(last.time+back<leg.time-buf){origin=home;available=last.time+back;reason='after prior ride + return home'}
+      else{origin=last.address||origin;available=last.time;reason='directly after prior ride';continuity=true}
+    }else{origin=last.address||origin;available=last.time;reason='directly after prior ride';continuity=true}
+  }
+  const travel=await route538(origin,dest,fallback);
+  const departBy=leg.time-buf-travel;
+  if(available>departBy)return null;
+  const finish=leg.time+SERVICE;
+  if(base.post?.deadline!=null&&base.post.address){
+    const onward=await route538(dest,base.post.address,fallback);
+    if(finish+onward>base.post.deadline)return null;
+  }
+  const tentative=!useful538(dest)||!useful538(origin)||$('liveRouting')?.value!=='yes';
+  let score=person==='Kira'?(day.kiraOff?96:78):(day.onsite?74:92);
+  score-=Math.min(24,travel*.45);
+  if(continuity)score+=6;
+  if(priorSameEvent===person)score+=9;
+  if(tentative)score-=9;
+  const slack=Math.max(0,departBy-available);score+=Math.min(8,slack/15);
+  const detail=`${reason} · ~${Math.round(travel)} min to event · ${Math.round(slack)} min slack${base.post?' · work start protected':''}${tentative?' · verify route/location':''}`;
+  return {n:person,s:score,tentative,reason:detail,phase:base.phase,finish,address:dest||origin,slack};
+}
+window.assignTransport=async function(day){
+  const legs=[];
+  for(const a of (day.activities||[])){
+    if(a?.drop==='yes'&&a.start)legs.push({activity:a,kind:'Drop',time:tmin538(a.start)});
+    if(a?.pick==='yes'&&a.end)legs.push({activity:a,kind:'Pickup',time:tmin538(a.end)});
+  }
+  const ordered=legs.filter(x=>x.time!=null).sort((a,b)=>a.time-b.time||((a.kind==='Drop'?0:1)-(b.kind==='Drop'?0:1))||String(a.activity?.title||'').localeCompare(String(b.activity?.title||'')));
+  const assignments=[],state={Chris:null,Kira:null},eventDriver=new Map();
+  const eventKey=a=>[a?.date||day.dateStr||'',a?.uid||'',a?.title||'',a?.start||'',a?.location||''].join('|').toLowerCase();
+  for(const leg of ordered){
+    const opts=[],key=eventKey(leg.activity),priorSameEvent=eventDriver.get(key)||'';
+    for(const who of ['Chris','Kira']){const c=await candidate538(day,leg,who,state,priorSameEvent);if(c)opts.push(c)}
+    if($('oldestCanDrive')?.value==='yes'&&leg.activity?.child!=='Oldest'){
+      opts.push({n:typeof childLabel==='function'?childLabel('Oldest'):'Oldest',s:34,tentative:true,reason:'Configured as a driver, but personal schedule/routing is not verified',phase:'unknown',finish:leg.time+SERVICE,address:String(leg.activity?.location||'')});
+    }
+    opts.push({n:'Backup',s:1,tentative:true,reason:'No configured household driver can cover this leg without violating another ride or work obligation',phase:'backup',finish:leg.time+SERVICE,address:String(leg.activity?.location||'')});
+    opts.sort((a,b)=>b.s-a.s);
+    const best=opts[0],second=opts.find(x=>x.n!==best.n)||{n:'Backup'};
+    const rec={...leg,primary:best.n,secondary:second.n||'Backup',recommendationReason:best.reason,alternatives:opts.slice(1,3).map(x=>x.n),recommendationTentative:!!best.tentative,recommendationSlack:best.slack??null};
+    assignments.push(rec);
+    if(best.n==='Chris'||best.n==='Kira')state[best.n]={time:best.finish,address:best.address,phase:best.phase,eventKey:key,kind:leg.kind};
+    if(leg.kind==='Drop'&&(best.n==='Chris'||best.n==='Kira'))eventDriver.set(key,best.n);
+  }
+  return assignments;
+};
+try{assignTransport=window.assignTransport}catch{}
+
+/* Make ride rationale visible anywhere a compact recommendation is displayed, without adding another workflow step. */
+const priorAssignmentObj=window.assignmentObj;
+window.v538AssignmentReason=function(p,a,k){
+  try{const z=(p?.assignments||[]).find(x=>x?.kind===k&&(typeof ak==='function'?ak(x.activity):x.activity?.title)===(typeof ak==='function'?ak(a):a?.title));return z?.recommendationReason||''}catch{return''}
+};
+
+/* Version identity */
+function identity(){
+  document.title='AutoPilot — Family Logistics Planner v53.9';
+  document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v53.9');
+  document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v53.9'});
+}
+function refreshChronology(){try{if(typeof renderQuickPlanningReview==='function')renderQuickPlanningReview()}catch{}try{if(typeof renderReview==='function'&&document.querySelector('#v500StageReview.on'))renderReview()}catch{}try{if(typeof renderPlanCorrections==='function'&&plans?.length)renderPlanCorrections()}catch{}}
+function init(){identity();setTimeout(()=>{identity();refreshChronology()},160);setTimeout(refreshChronology,900)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v53.9";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v53.9"},1200);</script>
+<style id="v539MobileBounds">
+@media(max-width:600px){
+ #v510Journey{margin:0 0 8px!important;padding:8px 10px 6px!important;max-width:100%;box-sizing:border-box}
+ #apCommandCenter .cc-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #apCommandCenter .cc-cell{min-width:0;overflow-wrap:anywhere}
+}
+</style>
+<style id="v539MobileReview">
+@media(max-width:600px){
+ #v500App .v507-editgrid{grid-template-columns:minmax(0,1fr)!important}
+ #v500App .v507-tile,#v500App .v507-mini{min-width:0!important}
+ #v500App .v508-chris,#v500App .v508-kiraedit{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #v500App .v508-chris>.wide{grid-column:1/-1}
+ #v500App .v507-edit{min-width:0!important;max-width:100%;box-sizing:border-box}
+ #v500App .v509-rec{white-space:normal!important;overflow-wrap:anywhere}
+}
+</style>
