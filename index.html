@@ -1225,8 +1225,70 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </style>
 
 <style id="suiteStyle">.suite-card{background:var(--card,#fff);color:var(--text,#211f1b);border:1px solid var(--border,#d8d0c5);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}.suite-card h2{font-size:18px;margin:0}.suite-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.suite-muted{color:var(--muted,#645d53);font-size:14px;line-height:1.45}.suite-card p{line-height:1.4;overflow-wrap:anywhere}.suite-card button,.suite-change button{min-height:44px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}.suite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.suite-card label,.suite-change label{display:block;font-size:14px;margin:10px 0}.suite-card input:not([type=checkbox]),.suite-change input:not([type=checkbox]),.suite-change select{display:block;box-sizing:border-box;width:100%;min-height:44px;font-size:16px;margin-top:4px;padding:8px;border:1px solid var(--border,#aaa);border-radius:8px}.suite-card details{margin-top:12px}.suite-card summary{cursor:pointer;min-height:34px;font-size:15px;font-weight:700}.suite-code{font-size:14px;word-break:break-all;user-select:all}.suite-change{padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;margin:10px 0;font-size:15px}.suite-change p{margin:6px 0}.suite-ride{display:grid;grid-template-columns:90px 1fr 110px;gap:8px}.suite-today-detail{padding:12px 16px;border-top:1px solid var(--border,#ddd);font-size:15px}.suite-today-detail strong{display:block;font-size:18px;margin-bottom:5px}.suite-modal{position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.suite-modal[hidden]{display:none}.suite-modal-panel{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border-radius:16px;padding:20px}.suite-event{padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.suite-event strong{font-size:17px}.suite-event p{margin:5px 0;font-size:15px}.suite-dinner{border-left:3px solid #dba64b;padding-left:10px}.suite-save{font-size:14px}.suite-card .suite-decision-status{font-size:14px;color:var(--green,#356c4a)}@media(max-width:480px){.suite-heading{align-items:flex-start;flex-direction:column}.suite-ride{grid-template-columns:1fr 1fr}.suite-ride label:first-child{grid-column:1/-1}}body.trainingFocus #suiteChanges,body.trainingFocus #suiteFamilyModal{display:none} 
-</style></head>
+</style><style id="apV547VisibilityStyle">.ap-publish-visibility{margin-top:8px;padding:9px 10px;border-radius:9px;border:1px solid #d4e0ea;background:#f6f9fc}.ap-publish-visibility .wall-review-btn{margin:4px 6px 4px 0}.ap-publish-visibility .wall-review-label{display:block;color:#284861;font-weight:750;letter-spacing:.04em}</style><style>
+#quickReviewDays .activity-review-attendance{min-width:150px}
+#quickReviewDays .activity-review-attendance label{display:block;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;color:#776f62}
+#quickReviewDays .activity-review-attendance select{width:100%;font-size:12px;min-height:36px;padding:6px;border-radius:8px}
+#quickReviewDays .activity-review-attendance small{display:block;font-size:10px;line-height:1.3;color:#756f63;margin-top:3px}
+#quickReviewDays .ap-not-going{opacity:.76;border-left-color:#9197a3}
+#quickReviewDays .ap-not-going .activity-review-title{text-decoration:line-through;text-decoration-color:#9ba4ae}
+#quickReviewDays [data-review-attendance]:focus-visible{outline:3px solid #24749b!important;outline-offset:2px!important}
+</style>
+</head>
 <body>
+
+<!-- AutoPilot v55.5 / modular workflow: isolated UI layer; preserves underlying planning and Meal HQ engines. -->
+<style id="apModularStyle">
+#apWorkflow{position:sticky;top:0;z-index:1400;margin:8px auto 16px;max-width:1400px;background:#fff;border:1px solid #dce3ea;border-radius:15px;box-shadow:0 9px 28px #10283e12;padding:15px 18px;color:#14283b;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+#apWorkflow .apw-head{display:flex;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+#apWorkflow .apw-title{font-size:16px;font-weight:800;letter-spacing:-.02em}#apWorkflow .apw-sub{font-size:12px;color:#526171;margin-top:3px}
+#apWorkflow .apw-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#apWorkflow button{border:1px solid #cad5de;background:#f7f9fb;color:#334456;border-radius:10px;min-height:48px;padding:9px 11px;font-size:12px;font-weight:760;text-align:left;cursor:pointer}
+#apWorkflow button[aria-current="step"]{background:#153a55;color:#fff;border-color:#153a55}#apWorkflow button:focus-visible,#apModuleStage button:focus-visible,#apModuleStage select:focus-visible{outline:3px solid #ca933b;outline-offset:2px}
+#apWorkflow button small{display:block;font-size:10px;font-weight:500;opacity:.8;margin-top:3px}
+#apModuleStage{max-width:1400px;margin:0 auto 18px;padding:16px 20px;border:1px solid #dae2e9;border-radius:15px;background:#fff;color:#203448;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+#apModuleStage[hidden]{display:none!important}#apModuleStage .apw-stage-head{display:flex;align-items:start;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:14px}
+#apModuleStage h2{font-size:22px!important;font-weight:800!important;letter-spacing:-.025em;margin:0 0 5px!important;color:#17334c!important}#apModuleStage p{font-size:13px;line-height:1.45;color:#617180;margin:0 0 10px}
+#apModuleStage .apw-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}#apModuleStage .apw-actions button{border:1px solid #becbd6;border-radius:9px;padding:10px 14px;background:#fff;font-weight:700;cursor:pointer;min-height:42px;color:#244359}#apModuleStage .apw-actions .primary{background:#173f5e;color:#fff;border-color:#173f5e}
+#apModuleStage .apw-cook{border:1px solid #e0e7ed;border-radius:12px;padding:13px;margin:10px 0 16px;background:#f8fafc}#apModuleStage .apw-cook h3{margin:0 0 8px;font-size:14px}#apModuleStage .apw-cook-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+#apModuleStage .apw-cook label{font-size:11px;font-weight:750;color:#43586d}#apModuleStage .apw-cook select{width:100%;display:block;margin-top:4px;padding:8px;border:1px solid #b5c5d4;border-radius:7px;font-size:13px;background:white}
+#apModuleStage #v524MealHQ{margin:12px 0;background:white}#apModuleStage .apw-notice{padding:12px;background:#f3f7fa;border:1px solid #dbe6ee;border-radius:10px;font-size:13px;margin:8px 0 14px}
+body.apw-dinner #apModuleStage #v524GroceryWrap{display:none!important}
+body.apw-groceries #apModuleStage #v524MealHQ > :not(#v524GroceryWrap){display:none!important}
+body.apw-groceries #apModuleStage #v524GroceryWrap{display:block!important;margin:0!important}
+body.apw-dinner #apModuleStage #v524MealHQ > #v524GroceryWrap{display:none!important}
+body.apw-logistics #apModuleStage,body.apw-outputs #apModuleStage{display:none!important}
+body.apw-dinner #v500App,body.apw-groceries #v500App{display:none!important}
+
+body.apw-dinner #apModuleStage,body.apw-groceries #apModuleStage{display:block!important}
+@media(max-width:650px){#apWorkflow{position:static;padding:12px}#apWorkflow .apw-nav{grid-template-columns:repeat(2,1fr)}#apModuleStage{padding:12px}}
+@media print{#apWorkflow,#apModuleStage{display:none!important}}
+</style>
+<div id="apWorkflow" role="navigation" aria-label="Family planning workflow">
+  <div class="apw-head"><div><div class="apw-title">Family planning workspace <span style="font-weight:500;color:#7e91a2;font-size:11px">v55.4</span></div><div class="apw-sub" id="apwSummary">Choose a start date, then complete one decision at a time.</div></div><span id="apwProgress" style="font-size:11px;color:#566d7d" aria-live="polite">Ready to start</span></div>
+  <div class="apw-nav"><button type="button" data-apw="logistics" aria-current="step">01 · Logistics<small>Dates, calendars, rides</small></button><button type="button" data-apw="dinner">02 · Dinner<small>Who cooks, what works</small></button><button type="button" data-apw="groceries">03 · Groceries<small>Ingredients, shopping list</small></button><button type="button" data-apw="outputs">04 · Share<small>Publish final logistics</small></button></div>
+</div>
+<section id="apModuleStage" hidden aria-live="polite"><div class="apw-stage-head"><div><h2 id="apwStageTitle">Dinner planning</h2><p id="apwStageSub">Dinner decisions are separate from transportation decisions.</p></div></div><div class="apw-notice" id="apwStageMessage"></div><div id="apwCookArea" class="apw-cook"></div><div id="apwMealsSlot"></div><div class="apw-actions"><button type="button" id="apwBack">← Previous stage</button><button type="button" class="primary" id="apwNext">Continue →</button></div></section>
+<script id="apModularScript">
+(function(){'use strict';
+const $=id=>document.getElementById(id),KEY='autopilot.modularWorkflow.v1';
+const names=['logistics','dinner','groceries','outputs'];let current='logistics',moving=false;
+function read(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify({...read(),...o}))}catch{}}
+function planReady(){try{return !!(typeof plans!=='undefined'&&Array.isArray(plans)&&plans.length)}catch{return false}}
+function stamp(){const v=$('v500StartDate')?.value||$('startDate')?.value;return v?new Date(v+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No date selected'}
+function updateCook(){const root=$('apwCookArea');if(!root)return;if(!planReady()){root.innerHTML='';return}const rows=(typeof plans!=='undefined'?plans:[]).filter(p=>p.dateStr);const old=read().cooks||{};root.innerHTML='<h3>Who can prepare dinner?</h3><p>Optional. Assign a cook after reviewing transportation. These selections do not alter the logistics plan.</p><div class="apw-cook-grid">'+rows.map(p=>{const val=old[p.dateStr]||'';const date=new Date(p.dateStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});return '<label>'+date+'<select data-apw-cook="'+p.dateStr+'">'+['','Kira','Chris','Both','Grandparents','Other / help','Takeout / no cooking'].map(x=>'<option value="'+x+'"'+(x===val?' selected':'')+'>'+(x||'Decide later')+'</option>').join('')+'</select></label>'}).join('')+'</div>';
+root.querySelectorAll('select').forEach(s=>s.addEventListener('change',()=>{const cooks={...(read().cooks||{})};cooks[s.dataset.apwCook]=s.value;save({cooks});}));}
+function attachMeal(){const host=$('v524MealHQ'),slot=$('apwMealsSlot');if(!host||!slot||host.parentElement===slot||moving)return;moving=true;try{slot.appendChild(host)}finally{moving=false}}
+function render(){const has=planReady();$('apwSummary').textContent=stamp()+' · '+(has?'Logistics plan available; dinner can be reviewed separately.':'Start with logistics and build the family plan.');$('apwProgress').textContent=(has?'Plan built · ':'Waiting for plan · ')+({logistics:'Logistics',dinner:'Dinner',groceries:'Groceries',outputs:'Share'}[current]);document.querySelectorAll('[data-apw]').forEach(b=>{const on=b.dataset.apw===current;b.setAttribute('aria-current',on?'step':'false')});document.body.classList.remove(...names.map(x=>'apw-'+x));document.body.classList.add('apw-'+current);
+const stage=$('apModuleStage');stage.hidden=current==='logistics'||current==='outputs';if(current==='dinner'){$('apwStageTitle').textContent='Plan dinner, after logistics';$('apwStageSub').textContent='Choose meals using the family schedule. Save favorites and explore recipes without changing the transportation plan.';$('apwStageMessage').textContent=has?'Your transportation decisions stay as-is. Choose who can cook, then change only the dinners you need to.':'Build the logistics plan first; dinner choices will become available when the plan is ready.';$('apwCookArea').style.display='block';updateCook();}else if(current==='groceries'){$('apwStageTitle').textContent='Groceries, from the selected meals';$('apwStageSub').textContent='Review ingredients after dinner choices are settled.';$('apwStageMessage').textContent=has?'The list is generated from your selected dinners and lunches. Check your pantry before shopping.':'Build a plan and select dinners to generate a grocery list.';$('apwCookArea').style.display='none';}
+if(stage.hidden===false){attachMeal();if(current==='groceries'){const trigger=$('v524Grocery');const list=$('v524GroceryText');if(trigger&&list&&!list.textContent.trim())trigger.click();$('v524GroceryWrap')?.style.setProperty('display','block');}else if(current==='dinner')$('v524GroceryWrap')?.style.setProperty('display','none');}
+$('apwBack').textContent=current==='groceries'?'← Dinner':'← Logistics';$('apwNext').textContent=current==='dinner'?'Continue to groceries →':'Review final outputs →';}
+function go(where){if(!names.includes(where))return;if((where==='dinner'||where==='groceries')&&!planReady()){current='logistics';render();alert('First build the logistics plan. Once it is ready, return here to plan dinner and groceries.');return}current=where;save({lastStage:where});if(where==='outputs'){document.querySelector('[data-tab="outputs"]')?.click();$('v500StageFinal')?.scrollIntoView({block:'start'});}render();$('apWorkflow')?.scrollIntoView({block:'start',behavior:'instant'});}
+function init(){if(!$('apWorkflow'))return;document.querySelectorAll('[data-apw]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.apw)));$('apwBack').addEventListener('click',()=>go(current==='groceries'?'dinner':'logistics'));$('apwNext').addEventListener('click',()=>go(current==='dinner'?'groceries':'outputs'));['v500StartDate','startDate'].forEach(id=>$(id)?.addEventListener('change',render));window.addEventListener('suite-plan-finalized',()=>{render()});const observer=new MutationObserver(records=>{if(current!=='dinner'&&current!=='groceries')return;const host=$('v524MealHQ');if(host&&host.parentElement!==$('apwMealsSlot'))attachMeal()});observer.observe($('apModuleStage'),{childList:true,subtree:false});observer.observe($('v500StageReview')||document.body,{childList:true,subtree:true});setInterval(()=>{if((current==='dinner'||current==='groceries')&&planReady())attachMeal();const summary=$('apwSummary');if(summary&&summary.dataset.ready!==String(planReady())){summary.dataset.ready=String(planReady());render()}},1300);render()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
 <div id="v500App">
 <div class="v500-wrap">
 <div class="v500-brand">AutoPilot · Family Logistics Planner <span style="font-size:9px;opacity:.55">v52.8</span></div>
@@ -3475,7 +3537,7 @@ function reviewAttentionState(row,event){
   const missingRequiredLocation=transport==='required'&&!locationLooksUseful(event.location);
   const ambiguous=/Ambiguous|transport not explicit/i.test(reason) && !manuallyDecided;
   const unassigned=event.child==='Unassigned';
-  return missingRequiredLocation||ambiguous||unassigned;
+  return !apNotGoing(event)&&(missingRequiredLocation||ambiguous||unassigned);
 }
 function syncLegClassification(row){
   const drop=row.querySelector('.a-drop')?.value==='yes',pick=row.querySelector('.a-pick')?.value==='yes';
@@ -3525,6 +3587,34 @@ async function refreshPlanAfterReviewEdit(row=null){
   }
   renderQuickPlanningReview();
 }
+// v54.9: attendance is independent from original calendar data and applies to one occurrence only.
+const AP_NOT_GOING_KEY='autopilot.attendance.notGoing.v1';
+function apNotGoingStore(){try{return JSON.parse(localStorage.getItem(AP_NOT_GOING_KEY)||'{}')||{}}catch{return {}}}
+function apNotGoing(event){return apNotGoingStore()[wallOccurrenceKey(event)]===true}
+function apSetNotGoing(event,notGoing){
+ const rules=apNotGoingStore(),key=wallOccurrenceKey(event);
+ if(notGoing)rules[key]=true;else delete rules[key];
+ localStorage.setItem(AP_NOT_GOING_KEY,JSON.stringify(rules));
+ const row=[...$('activityBody').children].find(r=>wallOccurrenceKey(rowToCalendarEvent(r))===key);
+ if(row){
+   if(notGoing){row.dataset.preNotGoingDrop=row.querySelector('.a-drop')?.value||'no';row.dataset.preNotGoingPick=row.querySelector('.a-pick')?.value||'no';}
+   row.querySelector('.a-drop').value=notGoing?'no':(row.dataset.preNotGoingDrop||'no');
+   row.querySelector('.a-pick').value=notGoing?'no':(row.dataset.preNotGoingPick||'no');
+   if(notGoing){row.dataset.transportClass='info';row.dataset.transportOverride='info';row.dataset.transportManual='true';}
+   else syncLegClassification(row);
+ }
+ try{if(typeof markPlanStale==='function')markPlanStale('Attendance updated');}catch{}
+ try{if(typeof scheduleNonzeroAgendaPublish==='function')scheduleNonzeroAgendaPublish();}catch{}
+ try{if(typeof renderMobilePlan==='function')renderMobilePlan();}catch{}
+ try{window.dispatchEvent(new Event('suite-plan-finalized'))}catch{}
+ renderQuickPlanningReview();
+}
+// v54.7: independent presentation visibility; source calendar records are never deleted.
+const AP_PUBLISHED_VIS_KEY='autopilot.publishedVisibility.v1';
+function publishedRules(){try{const x=JSON.parse(localStorage.getItem(AP_PUBLISHED_VIS_KEY)||'{}');return {series:x.series||{},occurrence:x.occurrence||{}}}catch{return {series:{},occurrence:{}}}}
+function publishedHidden(a){if(apNotGoing(a))return true;const r=publishedRules(),o=wallOccurrenceKey(a),k=wallSeriesKey(a);return Object.prototype.hasOwnProperty.call(r.occurrence,o)?r.occurrence[o]===true:r.series[k]===true}
+function publishedSeriesHidden(a){return publishedRules().series[wallSeriesKey(a)]===true}
+function setPublishedHidden(a,scope,hidden){const r=publishedRules(),k=scope==='series'?wallSeriesKey(a):wallOccurrenceKey(a);if(scope==='series'){if(hidden)r.series[k]=true;else delete r.series[k];}else if(hidden)r.occurrence[k]=true;else if(r.series[wallSeriesKey(a)])r.occurrence[k]=false;else delete r.occurrence[k];localStorage.setItem(AP_PUBLISHED_VIS_KEY,JSON.stringify(r));try{scheduleNonzeroAgendaPublish();renderMobilePlan();}catch{};try{window.dispatchEvent(new Event('suite-plan-finalized'))}catch{};renderQuickPlanningReview()}
 function renderQuickPlanningReview(){
   const host=$('quickReviewDays'),progress=$('quickReviewProgress'),badge=$('reviewTabBadge');
   if(!host||!progress)return;
@@ -3545,11 +3635,12 @@ function renderQuickPlanningReview(){
     return `<div class="quick-day"><div class="quick-day-head"><div class="quick-day-title">${esc(label)}</div><div class="quick-day-count">${items.length} activit${items.length===1?'y':'ies'}</div></div>${items.map(({row,index,event})=>{
       const needs=reviewAttentionState(row,event),ls=quickLocationStatus(row),source=(event.source||'Manual').replace(/^Shared calendar:\s*/i,'');
       const drop=row.querySelector('.a-drop')?.value||'no',pick=row.querySelector('.a-pick')?.value||'no';
-      return `<div class="activity-review-card ${needs?'attention':'handled'}" data-quick-row="${index}">
+      return `<div class="activity-review-card ${apNotGoing(event)?'ap-not-going':''} ${needs?'attention':'handled'}" data-quick-row="${index}">
         <div><div class="activity-review-title">${esc(event.start?displayTime12h(event.start)+' · ':'')}${esc(event.title)}</div><div class="activity-review-meta">${esc(source)}${event.end?` · ends ${esc(displayTime12h(event.end))}`:''}${needs?' · CHECK':''}</div><div class="activity-review-child"><label>Who<select data-review-child>${quickChildOptions(event.child)}</select></label></div></div>
-        <div class="activity-review-controls"><label>Drop-off<select data-review-drop class="${drop==='yes'?'leg-yes':'leg-no'}"><option value="no"${drop==='no'?' selected':''}>No</option><option value="yes"${drop==='yes'?' selected':''}>Yes</option></select></label><label>Pickup<select data-review-pick class="${pick==='yes'?'leg-yes':'leg-no'}"><option value="no"${pick==='no'?' selected':''}>No</option><option value="yes"${pick==='yes'?' selected':''}>Yes</option></select></label></div>
+        <div class="activity-review-attendance"><label>Attendance<select data-review-attendance aria-label="Attendance for this activity"><option value="going"${!apNotGoing(event)?' selected':''}>Going / planned</option><option value="not-going"${apNotGoing(event)?' selected':''}>Not Going</option></select></label><small>${apNotGoing(event)?'No trip or driver needed · excluded from published plans':'Choose Not Going to remove transportation for this occurrence'}</small></div>
+        <div class="activity-review-controls"><label>Drop-off<select data-review-drop ${apNotGoing(event)?'disabled':''} class="${drop==='yes'?'leg-yes':'leg-no'}"><option value="no"${drop==='no'?' selected':''}>No</option><option value="yes"${drop==='yes'?' selected':''}>Yes</option></select></label><label>Pickup<select data-review-pick ${apNotGoing(event)?'disabled':''} class="${pick==='yes'?'leg-yes':'leg-no'}"><option value="no"${pick==='no'?' selected':''}>No</option><option value="yes"${pick==='yes'?' selected':''}>Yes</option></select></label></div>
         <div class="activity-review-location"><label>Location / pickup point<input data-review-location value="${esc(event.location||'')}" placeholder="Venue, Central, or address"></label><div class="activity-review-status ${ls.cls}">${esc(ls.text)}</div>
-          <div class="wall-review-control"><span class="wall-review-label">GARAGE WALL</span><button type="button" class="wall-review-btn ${isWallEventVisible(event)?'on':'off'}" data-wall-occ>${isWallEventVisible(event)?'SHOWING ✓':'HIDDEN —'}</button><button type="button" class="wall-review-btn series ${wallSeriesExcluded(event)?'off':''}" data-wall-series>${wallSeriesExcluded(event)?'SHOW ALL LIKE THIS':'HIDE ALL LIKE THIS'}</button><div class="wall-hidden-note">${isWallEventVisible(event)?'Included in the NonZero daily agenda.':'Still used by AutoPilot planning; excluded only from the garage wall.'}</div></div>
+          <div class="ap-publish-visibility"><span class="wall-review-label">PHONE + NONZERO WALL</span><button type="button" class="wall-review-btn ${publishedHidden(event)?'off':'on'}" data-publish-occ>${publishedHidden(event)?'RESTORE TO VIEWS':'HIDE THIS EVENT'}</button><button type="button" class="wall-review-btn series" data-publish-series>${publishedSeriesHidden(event)?'RESTORE REPEATING EVENTS':'HIDE REPEATING SERIES'}</button><div class="wall-hidden-note">${publishedHidden(event)?'Hidden from finalized phone and wall; retained in planning review.':'Shown in published views. For no-transport appointments, also set drop-off and pickup to No.'}</div></div><div class="wall-review-control"><span class="wall-review-label">GARAGE WALL</span><button type="button" class="wall-review-btn ${isWallEventVisible(event)?'on':'off'}" data-wall-occ>${isWallEventVisible(event)?'SHOWING ✓':'HIDDEN —'}</button><button type="button" class="wall-review-btn series ${wallSeriesExcluded(event)?'off':''}" data-wall-series>${wallSeriesExcluded(event)?'SHOW ALL LIKE THIS':'HIDE ALL LIKE THIS'}</button><div class="wall-hidden-note">${isWallEventVisible(event)?'Included in the NonZero daily agenda.':'Still used by AutoPilot planning; excluded only from the garage wall.'}</div></div>
         </div>
       </div>`;
     }).join('')}</div>`;
@@ -3558,8 +3649,11 @@ function renderQuickPlanningReview(){
     const actual=rows.find(x=>x.index===+card.dataset.quickRow);if(!actual)return;const row=actual.row;
     const child=card.querySelector('[data-review-child]');child.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-child');main.value=child.value;row.dataset.childManual='true';await refreshPlanAfterReviewEdit(row)};
     const bindLeg=(selector,mainClass)=>{const ctl=card.querySelector(selector);ctl.onchange=async()=>{setLastReviewChange(row);row.querySelector(mainClass).value=ctl.value;syncLegClassification(row);await refreshPlanAfterReviewEdit(row)}};
+    const attendance=card.querySelector('[data-review-attendance]');if(attendance)attendance.onchange=()=>apSetNotGoing(rowToCalendarEvent(row),attendance.value==='not-going');
     bindLeg('[data-review-drop]','.a-drop');bindLeg('[data-review-pick]','.a-pick');
     const loc=card.querySelector('[data-review-location]');loc.onchange=async()=>{setLastReviewChange(row);const main=row.querySelector('.a-loc');main.value=loc.value.trim();row.dataset.locationOrigin=locationLooksUseful(main.value)?'manual':'missing';if(locationLooksUseful(main.value))rememberEventLocation(rowToCalendarEvent(row),main.value,'manual');await refreshPlanAfterReviewEdit(row)};
+    const pubOcc=card.querySelector('[data-publish-occ]');if(pubOcc)pubOcc.onclick=()=>{const ev=rowToCalendarEvent(row);setPublishedHidden(ev,'occurrence',!publishedHidden(ev))};
+    const pubSeries=card.querySelector('[data-publish-series]');if(pubSeries)pubSeries.onclick=()=>{const ev=rowToCalendarEvent(row);setPublishedHidden(ev,'series',!publishedSeriesHidden(ev))};
     const wallOcc=card.querySelector('[data-wall-occ]');if(wallOcc)wallOcc.onclick=()=>{const ev=rowToCalendarEvent(row);setWallOccurrenceVisibility(ev,!isWallEventVisible(ev));renderQuickPlanningReview()};
     const wallSeries=card.querySelector('[data-wall-series]');if(wallSeries)wallSeries.onclick=()=>{const ev=rowToCalendarEvent(row);setWallSeriesVisibility(ev,wallSeriesExcluded(ev));renderQuickPlanningReview()};
   });
@@ -3587,7 +3681,7 @@ function getActivities(){
     const k=[a.date,a.start,a.end,a.title,a.child].join('|').toLowerCase();
     if(!keys.has(k)){explicit.push({...a,transportClass:a.transportClass||'required'});keys.add(k)}
   }
-  return explicit;
+  return explicit.filter(a=>!apNotGoing(a));
 }
 function getAdhoc(){return [...$('adhocBody').children].map(r=>({date:r.querySelector('.h-date').value,who:r.querySelector('.h-who').value,type:r.querySelector('.h-type').value,start:r.querySelector('.h-start').value,end:r.querySelector('.h-end').value,location:r.querySelector('.h-location').value.trim(),homeDrive:+r.querySelector('.h-drive').value||20,impact:r.querySelector('.h-impact').value})).filter(x=>x.date)}
 
@@ -4083,6 +4177,7 @@ function planForMobileDate(d){
 function groupedAssignments(p){
   const grouped={};
   for(const a of (p?.assignments||[])){
+    if(publishedHidden(a.activity||{}))continue;
     const k=[a.activity.child,a.activity.title,a.activity.start,a.activity.end].join('|');
     if(!grouped[k])grouped[k]={activity:a.activity,legs:[]};
     grouped[k].legs.push(a);
@@ -4748,7 +4843,7 @@ function wallSeriesExcluded(a={}){
   const s=wallVisibilityStore(),k=wallSeriesKey(a);
   return s.series[k]?.visible===false;
 }
-function isWallEventVisible(a={}){
+function isWallEventVisible(a={}){if(apNotGoing(a))return false;
   const s=wallVisibilityStore(),ok=wallOccurrenceKey(a),sk=wallSeriesKey(a);
   if(Object.prototype.hasOwnProperty.call(s.occurrence,ok))return s.occurrence[ok]?.visible!==false;
   if(Object.prototype.hasOwnProperty.call(s.series,sk))return s.series[sk]?.visible!==false;
@@ -4828,12 +4923,13 @@ function buildNonzeroAgendaDay(p,date,updatedAt){
   for(const a of (p.assignments||[]))add(a.activity||{},a);
   // Weekend plans often have no transportation assignments, so publish all visible calendar/context commitments too.
   for(const act of [...(p.activities||[]),...(p.contextActivities||[]),...(p.adhoc||[])])add(act);
-  let items=[...grouped.values()].sort((a,b)=>toMin(a.activity.start||'23:59')-toMin(b.activity.start||'23:59')).map(x=>{
+  let items=[...grouped.values()].filter(x=>!publishedHidden(x.activity||{})).sort((a,b)=>toMin(a.activity.start||'23:59')-toMin(b.activity.start||'23:59')).map(x=>{
     const act=x.activity||{},legs=x.legs||[];
     const legText=legs.map(l=>`${l.kind}: ${l.primary}${l.primary==='Backup'?' ⚠':''}`).join(' · ');
     const place=String(act.location||'').trim(),child=childLabel(act.child||'');
-    return {time:displayTimeForNonzero(act.start),title:`${child} · ${act.title||'Family commitment'}`,meta:[legText,place].filter(Boolean).join(' · '),location:place,child,source:act.source||'AutoPilot',showOnWall:isWallEventVisible(act),transport:legs.map(l=>({kind:l.kind,driver:l.primary,departure24:l.departure24||'',arrival24:act[l.kind==='Pickup'?'end':'start']||''})),arrangementNotes:act.arrangementNotes||'',uid:act.uid||'',calendarId:act.calendarId||'',originalDate:act.originalDate||date,start24:act.start||'',end24:act.end||'',rawTitle:act.title||''};
+    return {time:displayTimeForNonzero(act.start),title:`${child} · ${act.title||'Family commitment'}`,meta:[legText,place].filter(Boolean).join(' · '),location:place,child,source:act.source||'AutoPilot',showOnWall:isWallEventVisible(act)&&!publishedHidden(act),transport:legs.map(l=>({kind:l.kind,driver:l.primary,departure24:l.departure24||'',arrival24:act[l.kind==='Pickup'?'end':'start']||''})),arrangementNotes:act.arrangementNotes||'',uid:act.uid||'',calendarId:act.calendarId||'',originalDate:act.originalDate||date,start24:act.start||'',end24:act.end||'',rawTitle:act.title||''};
   });
+  items=items.filter(i=>!publishedHidden({uid:i.uid,calendarId:i.calendarId,date:i.originalDate||date,start:i.start24,end:i.end24,title:i.rawTitle,source:i.source,child:i.child}));
   if(p.onsite&&!p.weekend&&!p.holiday){
     if(p.departHome!=null&&Number.isFinite(Number(p.departHome)))items.push({time:fmt(p.departHome),title:`Chris · Leave home for ${p.site||'work'}`,meta:'Departure deadline',source:'AutoPilot',showOnWall:true});
     if(p.leaveWork!=null&&Number.isFinite(Number(p.leaveWork)))items.push({time:fmt(p.leaveWork),title:'Chris · Leave work',meta:'Departure deadline',source:'AutoPilot',showOnWall:true});
@@ -6662,7 +6758,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
 .v526-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}.v526-step{padding:13px 14px;border-right:1px solid #e2dbd1;min-width:0}.v526-step:last-child{border-right:0}
 .v526-step small{display:block;text-transform:uppercase;letter-spacing:.055em;font-size:8.5px;font-weight:950;color:#847a6d}.v526-step strong{display:block;font-size:13px;margin-top:3px;color:#28241f}.v526-step span{display:block;font-size:9.5px;color:#70685f;margin-top:3px;line-height:1.35}
 .v526-step button{margin-top:8px;min-height:34px;font-size:9px;font-weight:950;width:100%}
-#v524MealHQ.v526-simple .v525-week{display:none}.v526-meal-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:0 14px 14px}.v526-meal-pill{border:1px solid #ddd5ca;border-radius:9px;padding:8px;background:#fff;min-width:0}.v526-meal-pill b{display:block;font-size:8.5px;color:#7b7268;text-transform:uppercase}.v526-meal-pill span{display:block;font-size:10px;font-weight:900;line-height:1.25;margin-top:3px;overflow-wrap:anywhere}.v526-meal-pill em{display:block;font-style:normal;font-size:8.5px;color:#756d63;margin-top:3px}
+#v524MealHQ.v526-simple > .v525-week{display:none} #v526ChangePanel[hidden]{display:none!important} #v526ChangePanel .v525-week{display:grid!important}.v526-meal-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:0 14px 14px}.v526-meal-pill{border:1px solid #ddd5ca;border-radius:9px;padding:8px;background:#fff;min-width:0}.v526-meal-pill b{display:block;font-size:8.5px;color:#7b7268;text-transform:uppercase}.v526-meal-pill span{display:block;font-size:10px;font-weight:900;line-height:1.25;margin-top:3px;overflow-wrap:anywhere}.v526-meal-pill em{display:block;font-style:normal;font-size:8.5px;color:#756d63;margin-top:3px}
 .v526-meal-actions{display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 14px}.v526-meal-actions button{min-height:40px;font-weight:950}.v526-meal-actions .primary{flex:1;min-width:230px}.v526-change-panel{margin:0 14px 14px;border:1px solid #ddd5ca;border-radius:10px;padding:12px;background:#fff}.v526-change-panel .v524-grid{margin-top:8px}
 .v526-hidden-advanced{display:none!important}.v526-grocery-ready{border:2px solid #9eb599!important}.v526-grocery-ready .v524-grocery-head{background:#f2f7ef}
 @media(max-width:900px){.v526-meal-strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -6694,36 +6790,47 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
    $('v526GoGroceries')?.addEventListener('click',()=>{const b=$('v526ApproveMeals'); if(b)b.click(); else $('v524Grocery')?.click();});
  }
  function simplifyMeals(){
-   const host=$('v524MealHQ'); if(!host||host.dataset.v526==='1')return;
-   host.dataset.v526='1'; host.classList.add('v526-simple');
-   const header=host.querySelector('.v524-head');
-   if(header){const h=header.querySelector('h3'),p=header.querySelector('p'); if(h)h.textContent='Dinner plan + grocery list'; if(p)p.textContent='AutoPilot has already made the first pass. Approve the week or change only the meals that clearly will not work.';}
-   const oldActions=header?.querySelector('.v524-actions'); if(oldActions)oldActions.classList.add('v526-hidden-advanced');
+   const host=$('v524MealHQ'); if(!host)return;
+   const cards=[...host.querySelectorAll('.v525-week .v524-card[data-date]')];
+   if(!cards.length)return;
+   if(host.querySelector('#v526ChangeMeals'))return;
+   host.dataset.v526='1';host.classList.add('v526-simple');
+   const oldActions=host.querySelector('.v524-head .v524-actions');if(oldActions)oldActions.classList.add('v526-hidden-advanced');
    const week=host.querySelector('.v525-week');
-   const cards=[...host.querySelectorAll('.v525-week .v524-card')];
-   const strip=document.createElement('div'); strip.className='v526-meal-strip';
-   cards.slice(0,7).forEach(c=>{
-      const d=c.querySelector('.v524-date')?.textContent||''; const n=c.querySelector('.v525-mealname')?.textContent||''; const m=c.querySelector('.v525-simplemeta span')?.textContent||'';
-      const x=document.createElement('div');x.className='v526-meal-pill';x.innerHTML=`<b>${d}</b><span>${n}</span><em>${m}</em>`;strip.appendChild(x);
-   });
-   if(week)week.insertAdjacentElement('beforebegin',strip);
-   const actions=document.createElement('div');actions.className='v526-meal-actions';actions.innerHTML='<button type="button" id="v526ApproveMeals" class="primary">DINNERS LOOK GOOD → BUILD GROCERY LIST</button><button type="button" id="v526ChangeMeals">CHANGE A DINNER</button><button type="button" id="v526MealSetup">MEAL SETTINGS</button>';
+   const strip=document.createElement('div');strip.className='v526-meal-strip';
+   function updateStrip(){strip.replaceChildren();[...week.querySelectorAll('.v524-card[data-date]')].slice(0,10).forEach(c=>{
+     const date=c.querySelector('.v524-date')?.textContent||c.dataset.date||'';
+     const name=c.querySelector('.v525-mealname')?.textContent||c.querySelector('.v524-dinner option:checked')?.textContent||'Choose dinner';
+     const pill=document.createElement('div');pill.className='v526-meal-pill';
+     const d=document.createElement('b');d.textContent=date;const n=document.createElement('span');n.textContent=name;
+     pill.append(d,n);strip.appendChild(pill);
+   });}
+   updateStrip();week.insertAdjacentElement('beforebegin',strip);
+   const actions=document.createElement('div');actions.className='v526-meal-actions';
+   actions.innerHTML='<button type="button" id="v526ApproveMeals" class="primary">APPROVE DINNERS / GROCERY LIST</button><button type="button" id="v526ChangeMeals" aria-expanded="false" aria-controls="v526ChangePanel">CHANGE A DINNER</button><button type="button" id="v526MealSetup">MEAL SETTINGS</button>';
    strip.insertAdjacentElement('afterend',actions);
-   const change=document.createElement('div');change.id='v526ChangePanel';change.className='v526-change-panel';change.style.display='none';change.innerHTML='<b>Change only what will not work</b><div class="v526-change-body"></div>';
-   actions.insertAdjacentElement('afterend',change);
-   if(week){const body=change.querySelector('.v526-change-body');body.appendChild(week);week.style.display='block';}
-   $('v526ChangeMeals')?.addEventListener('click',()=>{const open=change.style.display!=='block';change.style.display=open?'block':'none';$('v526ChangeMeals').textContent=open?'DONE CHANGING':'CHANGE A DINNER';});
-   $('v526MealSetup')?.addEventListener('click',()=>{const t=$('v524Taste'); if(t){t.click(); const panel=$('v524TastePanel'); if(panel)scrollToEl(panel);}});
-   $('v526ApproveMeals')?.addEventListener('click',()=>{
-      const wrap=$('v524GroceryWrap'); if(wrap)wrap.style.display='none';
-      const txt=$('v524GroceryText'); if(txt && typeof groceryText==='function') try{txt.textContent=groceryText();}catch(e){}
-      $('v524Grocery')?.click();
-      if(wrap){wrap.style.display='block';wrap.classList.add('v526-grocery-ready');scrollToEl(wrap);}
-   });
+   const panel=document.createElement('section');panel.id='v526ChangePanel';panel.className='v526-change-panel';panel.hidden=true;
+   const heading=document.createElement('strong');heading.textContent='Edit each dinner using the menu or shuffle button';
+   panel.append(heading,week);actions.insertAdjacentElement('afterend',panel);
+   week.style.setProperty('display','grid','important');
+   function toggle(open){panel.hidden=!open;panel.style.display=open?'block':'none';actions.querySelector('#v526ChangeMeals').textContent=open?'DONE CHANGING':'CHANGE A DINNER';actions.querySelector('#v526ChangeMeals').setAttribute('aria-expanded',String(open));}
+   toggle(window.__apMealEditing===true);
+   actions.querySelector('#v526ChangeMeals').onclick=()=>{window.__apMealEditing=panel.hidden;toggle(window.__apMealEditing);};
+   actions.querySelector('#v526MealSetup').onclick=()=>{$('v524Taste')?.click();$('v524TastePanel')?.scrollIntoView({behavior:'smooth',block:'nearest'});};
+   actions.querySelector('#v526ApproveMeals').onclick=()=>{
+     const wrap=$('v524GroceryWrap');if(!wrap)return;
+     if(wrap.style.display!=='block')$('v524Grocery')?.click();
+     wrap.classList.add('v526-grocery-ready');wrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+   };
+   const header=host.querySelector('.v524-head h3');if(header)header.textContent='Dinner plan + grocery list';
  }
- function refresh(){buildSprint();simplifyMeals();}
- const mo=new MutationObserver(()=>setTimeout(refresh,0));
- function init(){refresh();const st=$('v500StageReview');if(st)mo.observe(st,{childList:true,subtree:true,attributes:true});setTimeout(refresh,500);setTimeout(refresh,1500);}
+ let pending=false;
+ function refresh(){pending=false;buildSprint();simplifyMeals();}
+ const mo=new MutationObserver(records=>{
+   const relevant=records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.id==='v524MealHQ'||n.querySelector?.('#v524MealHQ')||n.classList?.contains('v524-card')))||[...r.removedNodes].some(n=>n.nodeType===1&&(n.id==='v526ChangeMeals'||n.id==='v524MealHQ'||n.querySelector?.('#v526ChangeMeals'))));
+   if(relevant&&!pending){pending=true;setTimeout(refresh,20);}
+ });
+ function init(){refresh();const st=$('v500StageReview');if(st)mo.observe(st,{childList:true,subtree:true});setTimeout(refresh,500);setTimeout(refresh,1500);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
@@ -6907,6 +7014,69 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  function reset(){localStorage.setItem(KEY,JSON.stringify(defaults));renderValues();const st=$('v513PatternStatus');if(st)st.textContent='Restored the original weekday pattern.'}
  function install(){const host=$('v510SettingsHost');if(!host)return setTimeout(install,120);if($('v513Pattern'))return;const names={1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday'},opts=sites();const card=document.createElement('div');card.id='v513Pattern';card.className='v513-pattern';const fields=[1,2,3,4,5].map(function(d){const optionHtml=opts.map(function(x){const safe=String(x).replace(/"/g,'&quot;');return '<option value="'+safe+'">'+x+'</option>'}).join('');return '<label>'+names[d]+'<select id="v513d'+d+'">'+optionHtml+'</select></label>'}).join('');card.innerHTML='<h3>Default work pattern</h3><p>Choose Chris’s normal starting recommendation for each weekday. AutoPilot may still override the pattern when family logistics or a specific exception require it.</p><div class="v513-pattern-grid">'+fields+'</div><div class="v513-pattern-actions"><button type="button" class="v513-save" id="v513PatternSave">SAVE WORK PATTERN</button><button type="button" id="v513PatternReset">Restore original pattern</button><span class="v513-status" id="v513PatternStatus">Changes apply to newly built/refreshed plans.</span></div>';host.insertBefore(card,host.firstChild);renderValues();$('v513PatternSave').onclick=save;$('v513PatternReset').onclick=reset;host.querySelectorAll('.autopilot-tab-panel,.tab-panel,.simple-panel').forEach(el=>{el.style.display='block';el.style.visibility='visible';el.style.opacity='1'})}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
+
+<style id="apFavoriteMealsCSS">
+#apFavoritesHQ{margin:16px 14px;padding:18px;border:1px solid #d6dfe7;border-radius:14px;background:linear-gradient(140deg,#fcfdff,#f1f5f8);color:#243446;font-family:inherit}#apFavoritesHQ *{box-sizing:border-box}#apFavoritesHQ .apf-head{display:flex;justify-content:space-between;gap:12px;align-items:center}#apFavoritesHQ h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-.02em}#apFavoritesHQ p{margin:5px 0 12px;font-size:12px;line-height:1.5;color:#5b6978}#apFavoritesHQ .apf-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px}#apFavoritesHQ label{display:block;font-size:11px;font-weight:800;color:#425366;margin:9px 0 4px}#apFavoritesHQ input,#apFavoritesHQ textarea,#apFavoritesHQ select{width:100%;padding:10px 11px;border:1px solid #cbd5df;border-radius:8px;background:#fff;color:#223245;font:12px inherit}#apFavoritesHQ textarea{min-height:70px;resize:vertical}#apFavoritesHQ button{border:1px solid #bccbd9;border-radius:8px;padding:9px 12px;background:#fff;color:#213c57;font-size:11px;font-weight:800;cursor:pointer}#apFavoritesHQ button.apf-primary{background:#183d5a;border-color:#183d5a;color:white}#apFavoritesHQ .apf-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}#apFavoritesHQ .apf-item{background:#fff;border:1px solid #d9e1e8;border-radius:9px;padding:10px;margin-top:7px}#apFavoritesHQ .apf-item strong{font-size:12px}#apFavoritesHQ .apf-item small{display:block;color:#607183;font-size:10px;margin-top:4px}#apFavoritesHQ .apf-chip{background:#e5f0e9;color:#20523a;border-radius:99px;font-size:9px;font-weight:850;padding:3px 7px;margin-left:5px}#apFavoritesHQ .apf-note{font-size:11px;color:#597083}#apFavoritesHQ .apf-status{min-height:16px;font-size:11px;margin-top:7px;color:#205b42}#apFavoritesHQ .apf-sectiontitle{font-size:12px;font-weight:850;margin:13px 0 5px}#apFavoritesHQ .apf-suggestion{background:#fff;border:1px solid #dae3ec;border-radius:8px;padding:10px;margin:7px 0}#apFavoritesHQ .apf-suggestion small{display:block;color:#677889;font-size:10px;margin:4px 0 8px}@media(max-width:800px){#apFavoritesHQ .apf-columns{grid-template-columns:1fr}}
+</style>
+<script id="apFavoriteMealsFeature">
+(function(){'use strict';
+const KEY='autopilot.mealHQ.v1';
+const $=id=>document.getElementById(id);
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function read(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');s.customRecipes=Array.isArray(s.customRecipes)?s.customRecipes:[];s.favorites=Array.isArray(s.favorites)?s.favorites:[];s.feedback=s.feedback||{};return s}catch{return {customRecipes:[],favorites:[],feedback:{}}}}
+function write(s){localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem('autopilot.suite.mealsChangedAt',String(Date.now()));window.dispatchEvent(new Event('suite-meals-change'))}
+const suggestions=[
+{name:'Sheet-pan lemon chicken and potatoes',mins:35,mode:'sheet pan',ingredients:['chicken','potatoes','lemon','broccoli'],prep:'Roast chicken, potatoes and broccoli on one sheet pan.'},
+{name:'Chicken taco rice bowls',mins:25,mode:'one pan',ingredients:['chicken','rice','beans','salsa'],prep:'Serve warm chicken and rice with toppings buffet-style.'},
+{name:'Slow-cooker BBQ pulled chicken',mins:10,mode:'slow cooker',ingredients:['chicken','bbq sauce','rolls','coleslaw'],prep:'Start chicken before work; shred and serve on rolls.'},
+{name:'Turkey burger bowls',mins:30,mode:'skillet',ingredients:['ground turkey','potatoes','lettuce','tomatoes'],prep:'Turkey patties with roast potatoes and salad.'},
+{name:'Pesto chicken tortellini',mins:20,mode:'one pot',ingredients:['chicken','tortellini','pesto','peas'],prep:'Toss cooked tortellini with chicken, pesto and peas.'},
+{name:'Baked turkey and cheese quesadillas',mins:20,mode:'oven',ingredients:['turkey','cheese','tortillas','beans'],prep:'Assemble and bake quesadillas for the family.'},
+{name:'Honey garlic chicken stir-fry',mins:25,mode:'skillet',ingredients:['chicken','rice','broccoli','honey','garlic'],prep:'Cook chicken and vegetables with simple honey garlic sauce.'},
+{name:'Greek chicken grain bowls',mins:25,mode:'skillet',ingredients:['chicken','rice','cucumber','feta','tomatoes'],prep:'Build bowls with chicken, rice and Greek toppings.'},
+{name:'One-pot sausage and spinach pasta',mins:25,mode:'one pot',ingredients:['chicken sausage','pasta','spinach','marinara'],prep:'Cook pasta and finish with sausage, spinach and sauce.'},
+{name:'Slow-cooker turkey taco soup',mins:12,mode:'slow cooker',ingredients:['ground turkey','beans','tomatoes','corn','taco seasoning'],prep:'Combine ingredients in slow cooker; add toppings at dinner.'},
+{name:'Chicken parmesan sliders',mins:30,mode:'oven',ingredients:['chicken','marinara','mozzarella','rolls'],prep:'Bake chicken, marinara and mozzarella on slider rolls.'},
+{name:'Breakfast egg and potato skillet',mins:25,mode:'skillet',ingredients:['eggs','potatoes','peppers','cheese'],prep:'Cook potatoes and peppers, then add eggs and cheese.'}
+];
+function tokens(m){return (String(m.name)+' '+(m.ingredients||[]).join(' ')+' '+String(m.mode||'')).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3&&!['with','chicken','dinner','quick','easy'].includes(w))}
+function recommendations(s){const fav=s.customRecipes.filter(m=>s.favorites.includes(m.id));const pool=fav.length?fav:s.customRecipes;const seen=new Set(pool.flatMap(tokens));const nameSet=new Set(s.customRecipes.map(x=>x.name.toLowerCase()));return suggestions.filter(m=>!nameSet.has(m.name.toLowerCase())).map(m=>{const overlap=tokens(m).filter(t=>seen.has(t));const times=pool.map(f=>Math.abs(Number(f.mins||30)-m.mins));const timeBonus=times.length?Math.max(0,12-Math.min(...times)/3):0;const modeBonus=pool.some(f=>f.mode===m.mode)?12:0;return {...m,overlap,score:overlap.length*12+modeBonus+timeBonus}}).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name)).slice(0,5)}
+function create(name,extras={}){const clean=String(name||'').trim();if(!clean)return null;return {id:'family-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),name:clean,mins:Math.max(5,Math.min(240,Number(extras.mins)||30)),mode:extras.mode||'family favorite',prep:extras.prep||'Family-tested dinner.',advance:'',ingredients:extras.ingredients||[],sourceUrl:extras.sourceUrl||'',health:3,source:'Family favorites',notes:extras.notes||''}}
+function addRecipe(recipe){const s=read(),existing=s.customRecipes.find(x=>x.name.toLowerCase()===recipe.name.toLowerCase());if(existing){if(!s.favorites.includes(existing.id))s.favorites.push(existing.id);write(s);return 'Already saved; marked as a favorite.'}s.customRecipes.push(recipe);s.favorites.push(recipe.id);s.feedback[recipe.id]={...(s.feedback[recipe.id]||{}),winner:1};write(s);return 'Saved to the family meal rotation and marked as a proven favorite.'}
+function html(){return `<div class="apf-head"><h3>Family favorites & recipe library</h3><span class="apf-chip">Learns from your meals</span></div><p>Add the dinners you already know work. AutoPilot will favor these in future plans and recommend similar meals to try. All entries are stored in this browser.</p><div class="apf-columns"><div><div class="apf-sectiontitle">Add several meals at once</div><label for="apfBulk">One meal per line</label><textarea id="apfBulk" placeholder="Chicken parmesan\nTaco Tuesday\nTurkey meatballs and pasta"></textarea><div class="apf-actions"><button type="button" id="apfAddBulk" class="apf-primary">Save all as favorites</button></div><div class="apf-sectiontitle">Add a complete recipe</div><label for="apfName">Meal name</label><input id="apfName" placeholder="Grandma's baked chicken"/><div class="apf-columns"><div><label for="apfMins">Prep / cook minutes</label><input id="apfMins" type="number" min="5" max="240" value="30"/></div><div><label for="apfMode">Cooking method</label><select id="apfMode"><option>family favorite</option><option>sheet pan</option><option>slow cooker</option><option>skillet</option><option>one pot</option><option>oven</option><option>no-fuss</option></select></div></div><label for="apfIngredients">Ingredients (one per line or comma-separated)</label><textarea id="apfIngredients" placeholder="Chicken breast, marinara, mozzarella"></textarea><label for="apfInstructions">Recipe / preparation notes</label><textarea id="apfInstructions" placeholder="How we actually make it, substitutions, kid preferences..."></textarea><label for="apfUrl">Recipe link (optional)</label><input id="apfUrl" placeholder="https://..."/><div class="apf-actions"><button type="button" class="apf-primary" id="apfAddDetail">Save recipe as favorite</button></div><div id="apfStatus" class="apf-status" aria-live="polite"></div></div><div><div class="apf-sectiontitle">Saved family favorites <span id="apfCount"></span></div><div id="apfSaved"></div><div class="apf-sectiontitle">Suggested next meals</div><p class="apf-note">Ranked by ingredient overlap, cooking method and prep time. Suggestions are ideas—not imported recipes or guaranteed family favorites.</p><div id="apfRecommendations"></div></div></div>`}
+function update(){const root=$('apFavoritesHQ');if(!root)return;const s=read(),fav=s.customRecipes.filter(m=>s.favorites.includes(m.id));$('apfCount').textContent=`(${fav.length})`;$('apfSaved').innerHTML=fav.length?fav.map(m=>`<div class="apf-item"><strong>${esc(m.name)}</strong><span class="apf-chip">Proven favorite</span><small>${m.mins||30} min · ${esc(m.mode||'family favorite')}</small><div class="apf-actions"><button type="button" data-apf-edit="${esc(m.id)}">Edit</button><button type="button" data-apf-unfav="${esc(m.id)}">Remove favorite</button></div></div>`).join(''):'<p class="apf-note">No saved favorites yet. Add your known-good meals to get started.</p>';$('apfRecommendations').innerHTML=recommendations(s).map((m,i)=>`<div class="apf-suggestion"><strong>${esc(m.name)}</strong><small>${m.mins} min · ${esc(m.mode)} · ${m.overlap.length?'Similar ingredients: '+esc(m.overlap.slice(0,3).join(', ')):'A different dinner to try'}</small><button type="button" data-apf-suggest="${i}">Add to meal rotation</button></div>`).join('');root.querySelectorAll('[data-apf-unfav]').forEach(b=>b.onclick=()=>{const z=read();z.favorites=z.favorites.filter(id=>id!==b.dataset.apfUnfav);write(z);update()});root.querySelectorAll('[data-apf-edit]').forEach(b=>b.onclick=()=>{const m=read().customRecipes.find(x=>x.id===b.dataset.apfEdit);if(!m)return;$('apfName').value=m.name;$('apfMins').value=m.mins||30;$('apfMode').value=[...$('apfMode').options].some(x=>x.value===m.mode)?m.mode:'family favorite';$('apfIngredients').value=(m.ingredients||[]).join('\n');$('apfInstructions').value=m.prep||'';$('apfUrl').value=m.sourceUrl||'';root.dataset.editing=m.id;$('apfAddDetail').textContent='Save changes';$('apfName').focus()});root.querySelectorAll('[data-apf-suggest]').forEach(b=>b.onclick=()=>{const m=recommendations(read())[Number(b.dataset.apfSuggest)];if(!m)return;const z=read();z.customRecipes.push({...create(m.name,m),source:'Suggested idea',prep:m.prep});write(z);$('apfStatus').textContent='Added suggestion to rotation. Try it and rate it in Meal HQ.';update()})}
+function wire(){const root=$('apFavoritesHQ');if(!root)return;$('apfAddBulk').onclick=()=>{const names=$('apfBulk').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!names.length){$('apfStatus').textContent='Enter at least one meal.';return}let count=0;for(const name of names){const s=read();if(s.customRecipes.some(x=>x.name.toLowerCase()===name.toLowerCase()))continue;addRecipe(create(name));count++}$('apfBulk').value='';$('apfStatus').textContent=`Saved ${count} new family favorite${count===1?'':'s'}; duplicates skipped.`;update()};$('apfAddDetail').onclick=()=>{const name=$('apfName').value.trim();if(!name){$('apfStatus').textContent='Enter a meal name.';return}const raw=$('apfIngredients').value;const extras={mins:$('apfMins').value,mode:$('apfMode').value,ingredients:raw.split(/[\n,]/).map(x=>x.trim()).filter(Boolean),prep:$('apfInstructions').value,sourceUrl:$('apfUrl').value.trim()};const edit=root.dataset.editing;if(edit){const s=read(),m=s.customRecipes.find(x=>x.id===edit);if(m){Object.assign(m,{name,mins:Math.max(5,Math.min(240,Number(extras.mins)||30)),mode:extras.mode,ingredients:extras.ingredients,prep:extras.prep,sourceUrl:extras.sourceUrl});write(s)}delete root.dataset.editing;$('apfAddDetail').textContent='Save recipe as favorite';$('apfStatus').textContent='Recipe updated.'}else $('apfStatus').textContent=addRecipe(create(name,extras));for(const id of ['apfName','apfIngredients','apfInstructions','apfUrl'])$(id).value='';update()};update()}
+function mount(){const host=$('v524MealHQ');if(!host)return;let root=$('apFavoritesHQ');if(root&&root.parentElement===host)return;if(root)root.remove();root=document.createElement('section');root.id='apFavoritesHQ';root.innerHTML=html();const week=host.querySelector('.v525-week');if(week)week.before(root);else host.appendChild(root);wire()}
+let scheduled=false;const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;if($('v524MealHQ')&&!$('apFavoritesHQ'))mount()})});function start(){observer.observe(document.body,{childList:true,subtree:true});mount()};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+<style id="apDiscoveryStyle">
+#apDiscovery{margin:16px 0 24px;padding:20px;border:1px solid #d6dce2;border-radius:14px;background:#fff;color:#1c2c3a;box-shadow:0 4px 18px #152b4210}
+#apDiscovery h3{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}#apDiscovery p{font-size:12px;color:#526477;margin:0 0 12px}
+#apDiscovery .apd-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}#apDiscovery button{cursor:pointer;border:1px solid #9baaba;border-radius:8px;background:#fff;color:#19354e;padding:8px 11px;font-weight:700;font-size:12px}#apDiscovery button.apd-primary{background:#153d5c;color:white;border-color:#153d5c}#apDiscovery button:disabled{opacity:.5;cursor:wait}
+#apDiscovery select{max-width:230px;padding:8px;border:1px solid #a6b4c1;border-radius:8px;background:white}#apDiscovery .apd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}#apDiscovery .apd-card{border:1px solid #d9e0e8;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:7px}#apDiscovery .apd-card strong{font-size:13px}#apDiscovery .apd-card small{font-size:11px;color:#5b6e7d}#apDiscovery .apd-card a{font-size:12px}#apDiscovery .apd-card button{align-self:start}#apDiscovery .apd-status{font-size:12px;color:#4c6071;min-height:17px;margin:4px 0 10px}#apDiscovery .apd-recipe-detail{padding:10px;background:#f6f8fa;border:1px solid #d9e1e8;border-radius:8px;font-size:11px;line-height:1.5;max-height:350px;overflow:auto}#apDiscovery .apd-recipe-detail ul{margin:6px 0 12px;padding-left:18px}#apDiscovery .apd-recipe-detail p{white-space:normal;line-height:1.6}#apDiscovery .apd-card img{width:100%;height:110px;object-fit:cover;border-radius:7px}
+</style>
+<script id="apRecipeDiscovery">
+(function(){'use strict';
+const KEY='autopilot.mealHQ.v1', $=id=>document.getElementById(id), escape=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const stop=new Set('and with pasta chicken dinner recipe easy quick homemade delicious the sauce baked grilled simple'.split(' '));
+const related={taco:['chicken','beef','rice','beans'],parmesan:['chicken','cheese','tomato'],pizza:['cheese','tomato','bread'],meatball:['beef','pork','tomato'],salmon:['salmon','fish'],burger:['beef','bread'],soup:['chicken','potato'],turkey:['turkey','chicken'],pasta:['tomato','cheese']};
+function store(){try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');x.customRecipes=Array.isArray(x.customRecipes)?x.customRecipes:[];x.favorites=Array.isArray(x.favorites)?x.favorites:[];return x}catch{return {customRecipes:[],favorites:[]}}}
+function seeds(favs){const scores=new Map();for(const m of favs){const words=(m.name+' '+(m.ingredients||[]).join(' ')).toLowerCase().replace(/[^a-z ]/g,' ').split(/\s+/);for(const w of words){if(w.length<4||stop.has(w))continue;for(const term of related[w]||[w]) scores.set(term,(scores.get(term)||0)+1)}}return [...scores].sort((a,b)=>b[1]-a[1]).map(x=>x[0]).filter(w=>/^[a-z]+$/.test(w)).slice(0,8)}
+function panel(){return `<h3>Discover dinners like your favorites</h3><p>Search real published recipes using ingredients and meal styles from your family's successful dinners. Review ideas before adding them to the meal rotation.</p><div class="apd-row"><label for="apdSeed">Start from</label><select id="apdSeed"><option value="all">All saved favorites</option></select><button class="apd-primary" id="apdDiscover" type="button">Find similar recipes</button></div><div id="apdStatus" class="apd-status" role="status" aria-live="polite">Add at least one favorite, then find similar recipes.</div><div id="apdResults" class="apd-grid"></div><p style="margin-top:12px">Source: TheMealDB public recipe catalog. Availability depends on your network and browser. Recipes are not family-approved until you choose them.</p>`}
+let results=[],busy=false;
+function selectFavs(){const s=store(),f=s.customRecipes.filter(m=>s.favorites.includes(m.id));const sel=$('apdSeed');if(!sel)return f;const current=sel.value;sel.innerHTML='<option value="all">All saved favorites</option>'+f.map(m=>`<option value="${escape(m.id)}">${escape(m.name)}</option>`).join('');if([...sel.options].some(x=>x.value===current))sel.value=current;return f}
+async function json(url){const c=new AbortController(),timer=setTimeout(()=>c.abort(),5500);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw Error('Recipe provider unavailable');return await r.json()}finally{clearTimeout(timer)}}
+function rank(m,words,favs){const text=(m.strMeal+' '+(m.strCategory||'')+' '+Array.from({length:20},(_,i)=>m['strIngredient'+(i+1)]||'').join(' ')).toLowerCase();const overlap=words.filter(w=>text.includes(w));const recognized=favs.filter(f=>f.name.toLowerCase().split(/\s+/).some(w=>w.length>4&&text.includes(w)));return {meal:m,overlap,score:overlap.length*10+recognized.length*3}}
+async function discover(){if(busy)return;const fav=selectFavs();const choice=$('apdSeed').value;const chosen=choice==='all'?fav:fav.filter(m=>m.id===choice);const words=seeds(chosen);if(!chosen.length){$('apdStatus').textContent='Save a family favorite first.';return}if(!words.length){$('apdStatus').textContent='Add ingredients or more descriptive meal names to improve matching.';return}busy=true;$('apdDiscover').disabled=true;$('apdStatus').textContent='Finding recipes that match: '+words.slice(0,5).join(', ')+'…';$('apdResults').innerHTML='';try{const ids=new Set(),previews=[];for(const word of words.slice(0,4)){try{const r=await json('https://www.themealdb.com/api/json/v1/1/filter.php?i='+encodeURIComponent(word));for(const m of r.meals||[]){if(!ids.has(m.idMeal)){ids.add(m.idMeal);previews.push(m)}}}catch(e){}if(previews.length>=25)break}if(!previews.length)throw Error('No matching recipes returned');const all=await Promise.all(previews.slice(0,24).map(async x=>{try{return (await json('https://www.themealdb.com/api/json/v1/1/lookup.php?i='+encodeURIComponent(x.idMeal))).meals?.[0]}catch{return null}}));const exists=new Set(store().customRecipes.map(x=>x.name.toLowerCase()));results=all.filter(Boolean).filter(x=>!exists.has(x.strMeal.toLowerCase())).map(m=>rank(m,words,chosen)).sort((a,b)=>b.score-a.score).slice(0,9);if(!results.length){$('apdStatus').textContent='No new recipes found. Try another favorite or add ingredients.';return}$('apdStatus').textContent=results.length+' new recipe ideas. Preview ingredients and instructions, then import the complete recipe to your rotation.';$('apdResults').innerHTML=results.map((x,i)=>`<div class="apd-card"><strong>${escape(x.meal.strMeal)}</strong><small>${escape(x.meal.strArea||'')} · ${escape(x.meal.strCategory||'Dinner')}</small><small>${x.overlap.length?'Matching ingredients: '+escape(x.overlap.slice(0,4).join(', ')):'Related recipe idea'}</small><a href="${escape(x.meal.strSource&&/^https:\/\//.test(x.meal.strSource)?x.meal.strSource:'https://www.themealdb.com/meal/'+x.meal.idMeal)}" target="_blank" rel="noopener noreferrer">View source recipe ↗</a><button type="button" data-apd-preview="${i}">View ingredients & recipe</button><button type="button" data-apd-add="${i}">Import recipe + ingredients</button><div class="apd-recipe-detail" id="apd-detail-${i}" hidden></div></div>`).join('');}catch(e){$('apdStatus').textContent='Recipe catalog could not be reached. Your existing favorites and local suggestions still work.'}finally{busy=false;$('apdDiscover').disabled=false}}
+function ingredientLines(m){const lines=[];for(let i=1;i<=20;i++){const item=String(m['strIngredient'+i]||'').trim(),measure=String(m['strMeasure'+i]||'').trim();if(item)lines.push([measure,item].filter(Boolean).join(' '))}return lines}
+function recipeUrl(m){return m.strSource&&/^https:\/\//i.test(m.strSource)?m.strSource:'https://www.themealdb.com/meal/'+encodeURIComponent(m.idMeal)}
+function preview(idx){const m=results[idx]?.meal,el=$('apd-detail-'+idx);if(!m||!el)return;const lines=ingredientLines(m);el.innerHTML='<strong>Ingredients & quantities</strong><ul>'+lines.map(x=>'<li>'+escape(x)+'</li>').join('')+'</ul><strong>Method</strong><p>'+escape(m.strInstructions||'Instructions not supplied by source.').replace(/\n/g,'<br>')+'</p><a href="'+escape(recipeUrl(m))+'" target="_blank" rel="noopener noreferrer">Original recipe ↗</a>';el.hidden=!el.hidden}
+function add(idx){const m=results[idx]?.meal;if(!m)return;const s=store();if(s.customRecipes.some(x=>String(x.id)==='discovered-'+m.idMeal||x.name.toLowerCase()===m.strMeal.toLowerCase())){$('apdStatus').textContent='This recipe is already in your rotation.';return}const ingredients=ingredientLines(m),recipe={id:'discovered-'+m.idMeal,name:m.strMeal,mins:30,mode:'recipe discovery',prep:m.strInstructions||'',ingredients,sourceUrl:recipeUrl(m),health:3,source:'TheMealDB (untried)',notes:'Imported ingredients include recipe quantities. Not yet tested by family; review servings before grocery planning.',recipeServings:m.strYield||'',recipeProviderId:String(m.idMeal)};s.customRecipes.push(recipe);try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){$('apdStatus').textContent='Could not save recipe: browser storage unavailable.';return}localStorage.setItem('autopilot.suite.mealsChangedAt',String(Date.now()));window.dispatchEvent(new Event('suite-meals-change'));$('apdStatus').textContent='Imported '+m.strMeal+' with '+ingredients.length+' ingredient lines and full preparation instructions. Add this meal to your plan to include its ingredients in the grocery list.';const btn=$('apdResults').querySelector(`[data-apd-add="${idx}"]`);if(btn){btn.disabled=true;btn.textContent='Recipe imported'}}
+function mount(){const host=$('apFavoritesHQ');if(!host)return;let root=$('apDiscovery');if(!root){root=document.createElement('section');root.id='apDiscovery';root.innerHTML=panel();host.insertAdjacentElement('afterend',root);root.addEventListener('click',e=>{if(e.target.id==='apdDiscover')discover();const previewButton=e.target.closest('[data-apd-preview]');if(previewButton)preview(Number(previewButton.dataset.apdPreview));const b=e.target.closest('[data-apd-add]');if(b)add(Number(b.dataset.apdAdd))})}selectFavs()}
+let queued=false;const obs=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;if($('apFavoritesHQ')&&!$('apDiscovery'))mount()})});function start(){obs.observe(document.body,{childList:true,subtree:true});mount();window.addEventListener('suite-meals-change',()=>{if($('apDiscovery'))selectFavs()})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
 </html>
@@ -7612,14 +7782,78 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 let active=false,started=0,phase=0,watch=null,deadline=null;
 const labels=['Refreshing calendars','Checking activities','Building recommendations','Reviewing plan'];
 const $=id=>document.getElementById(id);
-function create(){if($('apBuildProgress'))return;const el=document.createElement('section');el.id='apBuildProgress';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.innerHTML='<div class="ap-head"><div class="ap-heading">Preparing your family plan</div><button id="apCloseProgress" type="button">Hide</button></div><div class="ap-sub">Calendar refresh → activities → recommendations → review</div><div class="ap-steps">'+labels.map(x=>'<div class="ap-step">'+x+'</div>').join('')+'</div><div class="ap-track"><div class="ap-bar"></div></div><div class="ap-note">Starting…</div>';document.body.appendChild(el);$('apCloseProgress').addEventListener('click',()=>{el.classList.remove('ap-show')});const badge=document.createElement('div');badge.id='apReleaseBadge546';badge.textContent='AUTOPILOT v54.6 · BUILD-RECOVERY';document.body.appendChild(badge);document.title='AutoPilot v54.6 · Family Logistics';}
+function create(){if($('apBuildProgress'))return;const el=document.createElement('section');el.id='apBuildProgress';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.innerHTML='<div class="ap-head"><div class="ap-heading">Preparing your family plan</div><button id="apCloseProgress" type="button">Hide</button></div><div class="ap-sub">Calendar refresh → activities → recommendations → review</div><div class="ap-steps">'+labels.map(x=>'<div class="ap-step">'+x+'</div>').join('')+'</div><div class="ap-track"><div class="ap-bar"></div></div><div class="ap-note">Starting…</div>';document.body.appendChild(el);$('apCloseProgress').addEventListener('click',()=>{el.classList.remove('ap-show')});const badge=document.createElement('div');badge.id='apReleaseBadge546';badge.textContent='AUTOPILOT v55.5 · LOGISTICS TRANSFER';document.body.appendChild(badge);document.title='AutoPilot v55.5 · Family Logistics';}
 function display(n,note){create();phase=Math.max(phase,n);const el=$('apBuildProgress');el.classList.add('ap-show');el.querySelectorAll('.ap-step').forEach((x,i)=>{x.classList.toggle('ap-done',i<phase);x.classList.toggle('ap-active',i===phase)});el.querySelector('.ap-bar').style.width=((phase+1)*25)+'%';el.querySelector('.ap-note').textContent=note||labels[phase]+'…'}
 function stage(){const ids=['v500StageStart','v500StageSetup','v500StageReview'];return ids.map(x=>{const e=$(x);return e?{id:x,hidden:e.hidden||getComputedStyle(e).display==='none'||getComputedStyle(e).visibility==='hidden'}:null}).filter(Boolean)}
-function hasReview(){const e=$('v500StageReview');if(!e)return false;return !e.hidden&&getComputedStyle(e).display!=='none'&&!!(window.plans?.length||document.querySelector('#v504ReviewRows .v504-day,.v500-day-card,.v510-plan-card'))}
-function tick(){if(!active)return;const elapsed=Date.now()-started;const st=stage();if(hasReview()||((window.plans?.length||0)>0&&st.some(x=>x.id==='v500StageReview'&&!x.hidden))){display(3,'Your plan is ready for review.');clearInterval(watch);clearTimeout(deadline);active=false;setTimeout(()=>{$('apBuildProgress')?.classList.remove('ap-show')},4200);return}
+function hasReview(){const e=$('v500StageReview');if(!e)return false;const visible=!e.hidden&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden';return visible&&!!(e.querySelector('.v500-day,.v500-tiles,.v500-person,.v500-event,.v510-plan-card')||document.querySelector('#v500StageFinal:not([hidden]) .v500-card'))}
+function tick(){if(!active)return;const elapsed=Date.now()-started;const st=stage();if(hasReview()||document.querySelector('#v500StageFinal[style*="block"]')){display(3,'Your plan is ready for review.');clearInterval(watch);clearTimeout(deadline);active=false;setTimeout(()=>{$('apBuildProgress')?.classList.remove('ap-show')},4200);return}
 if(elapsed>1800&&phase<1)display(1,'Checking imported activities and calendar coverage…');if(elapsed>4500&&phase<2)display(2,'Calculating transportation and driver recommendations…');}
 function start(){create();clearInterval(watch);clearTimeout(deadline);started=Date.now();phase=0;active=true;display(0,'Refreshing connected calendar feeds…');watch=setInterval(tick,500);deadline=setTimeout(()=>{if(!active)return;active=false;clearInterval(watch);display(phase,'This plan has not completed. Check Backstage calendar activity counts, then try Build Plan again.');$('apBuildProgress').querySelector('.ap-heading').textContent='Plan needs attention';const b=$('v500StartNext');if(b){b.disabled=false;b.textContent='TRY BUILD AGAIN'}},45000)}
-function wire(){create();document.addEventListener('click',e=>{const b=e.target.closest('#v500StartNext');if(!b||b.disabled)return;start()},true);document.addEventListener('click',e=>{if(e.target.closest('#v502RestartCycle,#v510StartOver')){active=false;clearInterval(watch);clearTimeout(deadline);$('apBuildProgress')?.classList.remove('ap-show')}},true);}
+function wire(){create();window.addEventListener('suite-plan-finalized',()=>{if(active){display(3,'Plan generated and finalized.');active=false;clearInterval(watch);clearTimeout(deadline);setTimeout(()=>{$('apBuildProgress')?.classList.remove('ap-show')},1700)}});document.addEventListener('click',e=>{const b=e.target.closest('#v500StartNext');if(!b||b.disabled)return;start()},true);document.addEventListener('click',e=>{if(e.target.closest('#v502RestartCycle,#v510StartOver')){active=false;clearInterval(watch);clearTimeout(deadline);$('apBuildProgress')?.classList.remove('ap-show')}},true);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);else wire();
+})();
+</script>
+<!-- AutoPilot v54.8: isolated keyboard support for daily activity review. -->
+<style>
+#quickReviewDays [data-review-child]:focus-visible,#quickReviewDays [data-review-drop]:focus-visible,#quickReviewDays [data-review-pick]:focus-visible,#quickReviewDays [data-review-location]:focus-visible{outline:3px solid #24749b!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(36,116,155,.12)!important}
+</style>
+<script>
+(()=>{'use strict';
+ const names=['data-review-child','data-review-attendance','data-review-drop','data-review-pick','data-review-location'];
+ const selector=names.map(n=>'['+n+']').join(',');
+ let pending=null, generation=0;
+ function controls(){return [...document.querySelectorAll('#quickReviewDays '+selector)].filter(el=>!el.disabled&&el.getClientRects().length)}
+ function advance(target){const host=document.getElementById('quickReviewDays');if(!host)return false;
+   const el=host.querySelector('[data-quick-row="'+target.row+'"] ['+target.field+']');
+   if(!el||el.disabled||!el.getClientRects().length)return false;
+   el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',behavior:'instant'});return document.activeElement===el;
+ }
+ document.addEventListener('keydown',event=>{
+   if(event.key!=='Tab'||event.altKey||event.ctrlKey||event.metaKey||event.defaultPrevented)return;
+   const active=document.activeElement;if(!active?.matches?.(selector)||!active.closest('#quickReviewDays'))return;
+   const all=controls(),idx=all.indexOf(active),next=all[idx+(event.shiftKey?-1:1)];
+   if(!next)return; // Preserve standard browser navigation at review boundaries.
+   event.preventDefault();const card=next.closest('[data-quick-row]');const field=names.find(n=>next.hasAttribute(n));
+   if(!card||!field)return;
+   const dest={row:card.dataset.quickRow,field},token=++generation;
+   active.blur(); // Commit edited fields (including onchange and asynchronous plan recalculation).
+   advance(dest);
+   // Some review edits rebuild the entire event list. Restore the intended focus after redraws.
+   for(const delay of [0,60,180,400,900])setTimeout(()=>{
+     if(token!==generation)return;
+     const current=document.activeElement;
+     if(current?.closest?.('#quickReviewDays') && current.matches?.(selector)){
+       const row=current.closest('[data-quick-row]')?.dataset.quickRow;
+       if(row===dest.row&&current.hasAttribute(dest.field))return;
+     }
+     advance(dest);
+   },delay);
+ },true);
+})();
+</script>
+
+<style id="apV555TransferStyle">
+#apPlanTransfer{margin:16px 0;padding:19px 22px;border:1px solid #cbd5df;border-radius:14px;background:#fff;color:#173247;box-shadow:0 5px 18px #142a4210;font:13px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+#apPlanTransfer h3{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;color:#173247}#apPlanTransfer p{margin:4px 0 13px;color:#516677}#apPlanTransfer .ap-transfer-actions{display:flex;gap:8px;flex-wrap:wrap}#apPlanTransfer button{background:#153c58;color:#fff;border:1px solid #153c58;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer}#apPlanTransfer button.secondary{color:#173247;background:#f4f7fa;border-color:#c5d2dd}#apPlanTransfer button:focus-visible{outline:3px solid #348bb9;outline-offset:2px}#apPlanTransfer .ap-transfer-report{border:1px solid #dae2e7;border-radius:9px;background:#f7f9fb;margin-top:13px;padding:13px;white-space:pre-wrap;color:#234357}#apPlanTransfer .ap-transfer-warning{color:#875a13;background:#fff9e7;padding:9px;border-radius:7px;margin-top:10px}#apPlanTransfer .ap-transfer-toolbar{font-size:11px;font-weight:800;letter-spacing:.07em;color:#51768b;text-transform:uppercase}#apPlanTransfer label{display:flex;gap:7px;align-items:center;margin-top:9px}#apPlanTransfer input[type=file]{display:none}#apPlanTransfer .ap-transfer-good{color:#256046}
+</style>
+<script id="apV555TransferScript">
+(()=>{'use strict';if(window.__apV555Transfer)return;window.__apV555Transfer=true;
+const NAME='AutoPilot Logistics Transfer', KIND='autopilot-logistics-snapshot',VERSION=1;
+const PLAN_KEYS=['autopilot.v532.livePlan.v1','autopilot.v532.futurePlan.v1','autopilot.v532.editMode','familyOptimizerV23.currentPlan.v1','familyOptimizerV23.cycle','familyOptimizerV23.v500FinalSnapshot','familyOptimizerV23.v4732PendingEdits','familyOptimizerV23.v500DailyText','familyOptimizerV23.v500RawText','familyOptimizerV23.v507TenDayEdits','familyOptimizerV23.v490DailyText','familyOptimizerV23.v490RawText','familyOptimizerV23.v490FinalSnapshot','familyOptimizerV23.wallVisibility.v1','autopilot.publishedVisibility.v1','autopilot.attendance.notGoing.v1','autopilot.cycleDays'];
+const safeKeys=()=>{const names=new Set(PLAN_KEYS);for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&/^(autopilot|familyOptimizerV23)\./.test(k)&&/(visibility|notgoing|not.going|attendance|pendingedit|manual|override|finalsnapshot|approvedfuture)/i.test(k))names.add(k)}return [...names].sort()};
+const j=raw=>{try{return JSON.parse(raw)}catch{return null}};
+function capture(){const entries={};for(const key of safeKeys()){const val=localStorage.getItem(key);if(val!==null)entries[key]=val}return {kind:KIND,version:VERSION,exportedAt:new Date().toISOString(),source:document.title,entries}}
+function summarize(snapshot){const e=snapshot.entries||{}, get=k=>j(e[k]);const candidates=[get('autopilot.v532.livePlan.v1'),get('autopilot.v532.futurePlan.v1'),get('familyOptimizerV23.currentPlan.v1')].filter(x=>Array.isArray(x?.plans)&&x.plans.length);const cycle=get('familyOptimizerV23.cycle');const counts=candidates.map(x=>x.plans.length);const plans=candidates.flatMap(x=>x.plans);const dates=plans.map(p=>String(p.dateStr||p.date||'').slice(0,10)).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x)).sort();return {plans:counts.reduce((a,b)=>a+b,0),range:dates.length?dates[0]+' through '+dates.at(-1):'Not available',assignments:plans.reduce((a,p)=>a+(Array.isArray(p.assignments)?p.assignments.length:0),0),cycle:!!cycle,final:!!e['familyOptimizerV23.v500FinalSnapshot'],keys:Object.keys(e).length}}
+function validate(x){if(!x||x.kind!==KIND||x.version!==VERSION||!x.entries||Array.isArray(x.entries)||typeof x.entries!=='object')throw Error('This is not an AutoPilot logistics transfer file. Use Export Logistics Snapshot, not the regular backup.');const keys=Object.keys(x.entries);if(keys.length>80)throw Error('Unexpected number of fields.');if(!keys.every(k=>safeKeys().includes(k)||/^(autopilot|familyOptimizerV23)\./.test(k)&&/(visibility|notgoing|not.going|attendance|pendingedit|manual|override|finalsnapshot|approvedfuture)/i.test(k)))throw Error('The file contains unsupported storage fields.');for(const [k,v]of Object.entries(x.entries)){if(typeof v!=='string'||v.length>8000000)throw Error('An imported field is invalid or too large: '+k)}const stats=summarize(x);if(!stats.plans&&!stats.final&&!stats.cycle)throw Error('No saved logistics plan was found in this file.');return stats}
+function download(data,name){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
+function mount(){if(document.getElementById('apPlanTransfer'))return;const host=document.createElement('section');host.id='apPlanTransfer';host.innerHTML='<div class="ap-transfer-toolbar">Logistics · Transfer between versions</div><h3>Import Previous Logistics Plan</h3><p>Restore reviewed drivers, attendance, publication choices and saved plans without replacing your dinners or grocery lists.</p><div class="ap-transfer-actions"><button type="button" id="apTransferSaved">Find existing saved plan</button><button type="button" id="apTransferImport" class="secondary">Import transfer file</button><button type="button" id="apTransferExport" class="secondary">Export logistics snapshot</button></div><input type="file" id="apTransferFile" accept=".json,application/json"><div id="apTransferReport" class="ap-transfer-report" aria-live="polite">No transfer has been applied. Your current plans are unchanged.</div><div id="apTransferPreview"></div>';
+const target=document.getElementById('v532PlanHome')||document.getElementById('v510Journey')||document.getElementById('tab-plan');if(target?.parentElement)target.insertAdjacentElement('afterend',host);else document.body.prepend(host);
+const $=id=>document.getElementById(id),report=(msg)=>{$('apTransferReport').textContent=msg};let proposed=null;
+function propose(x){try{const st=validate(x);proposed=x;report('Found '+st.plans+' saved planning days ('+st.range+'), '+st.assignments+' driver assignments, '+st.keys+' logistics fields. Final snapshot: '+(st.final?'yes':'not found')+'.');$('apTransferPreview').innerHTML='<div class="ap-transfer-warning">This restores logistics storage only. Dinner and grocery data will not be touched. Your current logistics will be backed up automatically before replacement. Review the dates above before continuing.</div><label><input type="checkbox" id="apTransferAgree"> I checked the plan dates and want to replace my current logistics plan.</label><div class="ap-transfer-actions" style="margin-top:9px"><button id="apTransferApply" type="button" disabled>Restore reviewed logistics</button><button id="apTransferCancel" type="button" class="secondary">Cancel</button></div>';$('apTransferAgree').onchange=e=>$('apTransferApply').disabled=!e.target.checked;$('apTransferCancel').onclick=()=>{proposed=null;$('apTransferPreview').innerHTML='';report('Import canceled. No changes were made.')};$('apTransferApply').onclick=()=>{if(!proposed||!$('apTransferAgree').checked)return;const backup=capture();try{localStorage.setItem('autopilot.v555.beforeTransfer',JSON.stringify(backup));for(const [k,v]of Object.entries(proposed.entries))localStorage.setItem(k,v);const state=j(proposed.entries['autopilot.v532.livePlan.v1'])||j(proposed.entries['familyOptimizerV23.currentPlan.v1']);if(state?.plans?.length){window.plans=state.plans;try{if(typeof plans!=='undefined')plans=state.plans}catch{}}report('Logistics restored successfully. Reload AutoPilot to display the imported plan. A rollback snapshot was saved locally.');$('apTransferPreview').innerHTML='<div class="ap-transfer-actions"><button id="apTransferReload">Reload and view imported logistics</button><button id="apTransferUndo" class="secondary">Undo import</button></div>';$('apTransferReload').onclick=()=>location.reload();$('apTransferUndo').onclick=()=>{for(const k of Object.keys(proposed.entries))if(!(k in backup.entries))localStorage.removeItem(k);for(const [k,v]of Object.entries(backup.entries))localStorage.setItem(k,v);location.reload()}}catch(e){for(const [k,v]of Object.entries(backup.entries))try{localStorage.setItem(k,v)}catch{};report('Import failed: '+e.message+'. Prior data restored where possible.')}}}catch(e){proposed=null;$('apTransferPreview').innerHTML='';report(e.message)}}
+$('apTransferSaved').onclick=()=>{const snap=capture();try{propose(snap)}catch(e){report('No existing saved plan was detected in this browser context. Open the old AutoPilot file and create a logistics transfer file using the companion helper, then import it here.') }};
+$('apTransferImport').onclick=()=>$('apTransferFile').click();$('apTransferFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>15000000)throw Error('File exceeds 15 MB.');propose(JSON.parse(await f.text()))}catch(err){report('Could not read transfer: '+err.message)}e.target.value=''};
+$('apTransferExport').onclick=()=>{const snap=capture();try{validate(snap);download(snap,'AutoPilot-Logistics-Transfer-'+new Date().toISOString().slice(0,10)+'.json');report('Logistics transfer downloaded. Keep it as your portable approved-plan backup.')}catch(e){report('No saved logistics plan found to export: '+e.message)}};
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 })();
 </script>
