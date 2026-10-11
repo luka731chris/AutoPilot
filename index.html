@@ -2135,12 +2135,18 @@ async function refreshAllCalendarsCore({quiet=false,reason='manual'}={}){
     }catch{failed.push(name)}
   }
   renderSavedCalendarLinks();renderCalendarSyncSummary();
+  const missing=getSavedCalendarLinks().filter(x=>x.lastStatus==='ok'&&Number(x.lastCount||0)>0&&Number(x.lastLoadedCount||0)===0);
+  if(missing.length){
+    const message='Feeds reachable but no planner activities loaded: '+missing.map(x=>x.label).join(', ')+'. Check event dates, calendar hygiene filters, and calendar roles.';
+    const el=$('importStatus');if(el)el.textContent=message;
+    const guided=$('v500RefreshStatus');if(guided)guided.textContent=message;
+  }
   const refreshedAt=Date.now();
   try{localStorage.setItem('familyOptimizerV23.v502LastCalendarRefresh',String(refreshedAt))}catch{}
   const label=reason==='open'?'App-open sync':'Calendar refresh';
   const msg=`${label}: ${new Date(refreshedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
   setStartupCalendarSyncStatus(msg);
-  if(!quiet)$('importStatus').textContent=`Calendar refresh complete · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
+  if(!quiet&&!missing.length)$('importStatus').textContent=`Calendar refresh complete · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
   return {ok,total:links.length,failed};
 }
 async function refreshAllCalendars(){return refreshAllCalendarsCore({quiet:false,reason:'manual'})}
@@ -2856,7 +2862,7 @@ function renderSavedCalendarLinks(){
   el.innerHTML=links.map((x,i)=>`<div class="calendar-source-item">
     <div class="source-main">
       <div class="source-name"><span class="calendar-status-dot ${x.lastStatus==='ok'?'ok':x.lastStatus==='bad'?'bad':'warn'}"></span>${esc(x.label||('Calendar '+(i+1)))}<span class="source-role-badge ${calendarRoleClass(x.role)}">${calendarRoleLabel(x.role)}</span><span class="source-health ${sourceHealth(x).cls}">${sourceHealth(x).label}</span><span class="provider-badge">${calendarProviderLabel(x.url)}</span></div>
-      <div class="source-meta">${esc(x.source||'ICS')} · ${x.lastRefresh?`refreshed ${formatStamp(x.lastRefresh)}`:'not refreshed yet'}${x.lastCount!=null?` · ${x.lastCount} events`:''}${x.lastMethod==='gateway'||x.lastMethod==='proxy'?' · Gateway':''}</div>
+      <div class="source-meta">${esc(x.source||'ICS')} · ${x.lastRefresh?`refreshed ${formatStamp(x.lastRefresh)}`:'not refreshed yet'}${x.lastCount!=null?` · ${x.lastCount} in date window`:''}${x.lastLoadedCount!=null?` · ${x.lastLoadedCount} loaded`:''}${x.lastMethod==='gateway'||x.lastMethod==='proxy'?' · Gateway':''}</div>
     </div>
     <div class="calendar-actions" style="margin:0">
       <select class="source-role-select" data-role-id="${esc(x.id)}">
@@ -3077,9 +3083,14 @@ async function importSharedCalendarLink(linkObj,saveIfNew=true){
     // rows are still present in the active planner. Rehydrate when the current window expects
     // events but none from this source are loaded (for example after changing planning windows).
     const activeSourceRows=[...$('activityBody').children].filter(r=>r.dataset.source===sourceName&&inPlanningWindow(r.querySelector('.a-date')?.value||''));
-    const needsRehydrate=windowRows.length>0&&activeSourceRows.length===0;
-    const stats=(unchanged&&!needsRehydrate)?{total:windowRows.length}:processImportedRows(rows,label,{replaceSource:sourceName});
-    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:effectiveId,url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:identityLink.role,childRole:identityLink.childRole,lastDataSignature:sig,lastRefresh:new Date().toISOString(),lastCount:stats.total,lastStatus:'ok',lastMethod:fetched.via,lastProvider:fetched.provider||calendarProvider(rawUrl),lastError:'',lastAttempts:fetched.attempts||[]};
+    // The upstream signature is not sufficient: verify the planner actually contains each
+    // non-shift occurrence. A source can be healthy while its rows are absent.
+    const inPlanner=new Set(activeSourceRows.map(r=>[r.querySelector('.a-date')?.value||'',r.querySelector('.a-start')?.value||'',r.querySelector('.a-title')?.value||''].join('|').toLowerCase()));
+    const expectedRows=windowRows.filter(x=>!(identityLink.role==='primaryFamily'&&detectKiraShift(x.title,x.source)));
+    const missingRows=expectedRows.filter(x=>!inPlanner.has([x.date,x.start,x.title].join('|').toLowerCase()));
+    const needsRehydrate=missingRows.length>0;
+    const stats=(unchanged&&!needsRehydrate)?{total:windowRows.length,activityCount:activeSourceRows.length}:processImportedRows(rows,label,{replaceSource:sourceName});
+    const updated={...(idx>=0?links[idx]:{}),...linkObj,id:effectiveId,url:rawUrl.trim(),normalizedUrl:url,label,source,kind,role:identityLink.role,childRole:identityLink.childRole,lastDataSignature:sig,lastRefresh:new Date().toISOString(),lastCount:stats.total,lastLoadedCount:stats.activityCount??activeSourceRows.length,lastStatus:'ok',lastMethod:fetched.via,lastProvider:fetched.provider||calendarProvider(rawUrl),lastError:'',lastAttempts:fetched.attempts||[]};
     if(idx>=0)links[idx]=updated;else if(saveIfNew||linkObj.url)links.push(updated);
     saveCalendarLinks(links,updated.role==='primaryFamily'?updated.id:'');
     applySavedLocationsToCurrentActivities();
@@ -6153,10 +6164,22 @@ async function refreshPlan(){
     load(3,'Building recommendations…','Applying work-site, commute, drop-off, pickup, and departure rules.');
     await v515Paint();
 
+    // Planning must remain deterministic even when public geocoding/routing endpoints hang.
+    // Feed refresh has already completed above. Use the configured fallback commute values
+    // during recommendation generation; restore the user's routing preference afterwards.
     let buildResult;
-    if(typeof generateCore==='function')buildResult=await timeout(generateCore(),8000);
-    else if(typeof generate==='function')buildResult=await timeout(generate(),8000);
-    else throw new Error('Plan generator is unavailable.');
+    const routingControl=$('liveRouting');
+    const previousRouting=routingControl?.value;
+    try{
+      if(routingControl)routingControl.value='no';
+      const task=typeof generateCore==='function'?generateCore():
+        typeof generate==='function'?generate():Promise.reject(new Error('Plan generator is unavailable.'));
+      buildResult=await timeout(task,30000);
+      if(buildResult?.timeout)throw new Error('Recommendation calculation exceeded 30 seconds. Your calendar feeds are not the issue. Check the browser console for a planning error, then retry.');
+      if(buildResult?.ok===false)throw buildResult.error;
+    }finally{
+      if(routingControl)routingControl.value=previousRouting;
+    }
 
     captureWorkingPlans();
     let ps=workPlans();
@@ -6173,7 +6196,7 @@ async function refreshPlan(){
   }catch(e){
     console.error(e);clock(false);
     const st=$('v500RefreshStatus');
-    if(st){st.className='v512-live';st.innerHTML='<div><b>Plan build stopped.</b> '+esc(e?.message||String(e))+'<br><span style="font-size:11px;color:#6d655c">Retry once. If it repeats, open Backstage → Calendar connections to identify the feed that needs attention.</span></div>'}
+    if(st){st.className='v512-live';st.innerHTML='<div><b>Plan build stopped.</b> '+esc(e?.message||String(e))+'<br><span style="font-size:11px;color:#6d655c">Calendar connectivity and recommendation calculation are separate. Review the error above; retry without live routing if the calculation fails.</span></div>'}
     if(b)b.style.display='inline-flex';
   }finally{if(b)b.disabled=false}
 }
@@ -6532,7 +6555,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
            for(const p of plans){const k=String(p?.dateStr||'');if(!k||seen.has(k))continue;seen.add(k);clean.push(p)}
            if(clean.length!==plans.length)plans.splice(0,plans.length,...clean);
            const work=plans.filter(p=>!p.weekend);
-           if(work.length<10)throw new Error(`Plan generation produced only ${work.length} unique workdays.`);
+           if(work.length<(window.__apCycleDays===5?5:10))throw new Error(`Plan generation produced only ${work.length} unique workdays.`);
          }
          return result;
        }finally{generationPromise=null}
@@ -6548,7 +6571,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v54.2';
+   document.title='AutoPilot — Family Logistics Planner v54.3';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6569,7 +6592,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v54.2';
+   document.title='AutoPilot — Family Logistics Planner v54.3';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6809,7 +6832,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 
 <!-- AutoPilot v53.3: Premium-tested baseline + Current/Upcoming dual-plan planning layer. -->
-<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v54.2';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
+<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v54.3';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
 <style id="v534SyncStyle">
 #v534Sync{max-width:1120px;margin:0 auto 14px;padding:14px 16px;border:1px solid #d8d0c5;border-left:4px solid #3d7350;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(37,32,25,.06);color:#211f1b}
 #v534Sync .v534-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -6931,7 +6954,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();renderWallExclusionManager();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This is taking longer than normal.</b> AutoPilot will continue with the latest saved calendar data rather than leave you stuck on this screen.'}},12000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v54.2';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v54.3';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
@@ -7288,7 +7311,7 @@ window.__suitePlanner={renderToday,refreshShared,applySavedAgenda};if(document.r
  const $=id=>document.getElementById(id);
  function polish(){
    const brand=document.querySelector('#v510Journey .v510-wordmark small');if(brand)brand.textContent='Family Logistics Planner · v53.9';
-   document.title='AutoPilot — Family Logistics Planner v54.2';
+   document.title='AutoPilot — Family Logistics Planner v54.3';
    const cc=$('apCommandCenter');if(cc)cc.setAttribute('aria-label','Today at a glance');
    const start=$('v500StartNext');if(start){const n=Number(localStorage.getItem('autopilot.cycleDays')||window.__apCycleDays||10)===5?5:10;if(!start.disabled)start.textContent=`BUILD ${n}-DAY PLAN`;}
  }
@@ -7479,7 +7502,7 @@ window.v538AssignmentReason=function(p,a,k){
 
 /* Version identity */
 function identity(){
-  document.title='AutoPilot — Family Logistics Planner v54.2';
+  document.title='AutoPilot — Family Logistics Planner v54.3';
   document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v53.9');
   document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v53.9'});
 }
@@ -7488,7 +7511,7 @@ function init(){identity();setTimeout(()=>{identity();refreshChronology()},160);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v54.2";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v53.9"},1200);</script>
+<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v54.3";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v53.9"},1200);</script>
 <style id="v539MobileBounds">
 @media(max-width:600px){
  #v510Journey{margin:0 0 8px!important;padding:8px 10px 6px!important;max-width:100%;box-sizing:border-box}
@@ -7577,3 +7600,4 @@ async function run(){const b=document.getElementById('apexGo'),st=document.getEl
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+<!-- v54.3: bounded recommendation calculation; routing fallbacks; correct 5-day invariant. -->
