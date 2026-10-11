@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v56.3</title>
+<title>AutoPilot — Family Logistics Planner v56.4</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1255,10 +1255,10 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 #v500App .v507-event .ap-editday-actions button{display:inline-flex!important;visibility:visible!important;opacity:1!important;padding:8px 10px;min-height:34px;font:700 10px/1.25 system-ui,sans-serif;background:#f2f6f9;border:1px solid #b9cbd8;border-radius:7px;color:#1c354a;cursor:pointer}
 #v500App .v507-event .ap-editday-actions button.active{background:#deeee6;border-color:#77aa92;color:#154c36}
 #v500App .v507-event{overflow:visible!important}
-</style><meta name="autopilot-build" content="v56.3-RELEASE-GATES">
+</style><meta name="autopilot-build" content="v56.4-RELEASE-GATES">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v56.3',build:'RELEASE-GATES',label:'AutoPilot v56.3'});
+const release=Object.freeze({version:'v56.4',build:'RELEASE-GATES',label:'AutoPilot v56.4'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -1273,6 +1273,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <style id="apReleaseCurrentStyle">.ap-release-current{position:fixed;right:10px;bottom:10px;z-index:9999;background:#203346;color:#fff;border-radius:8px;padding:6px 10px;font:700 11px system-ui,sans-serif;pointer-events:none}#v500ReviewBody .ap-editday-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}#v500ReviewBody .ap-editday-actions button{font:600 12px system-ui,sans-serif;padding:7px 10px;border:1px solid #c2cfda;border-radius:7px;background:#f6f9fb;color:#1c354b;cursor:pointer}#v500ReviewBody .ap-editday-actions button.active{background:#d9ebe7;border-color:#4e9385;color:#145747}#v500ReviewBody .ap-editday-actions button:focus-visible{outline:3px solid #266c9b;outline-offset:2px}</style>
+<style id="ap-editday-independent-v564">
+#v500ReviewBody .ap-editday-actions{display:flex!important;align-items:center;flex-wrap:wrap;gap:6px;margin:9px 0 4px;padding-top:8px;border-top:1px solid #e4e9ed}
+#v500ReviewBody .ap-editday-actions button{font:600 10px/1.2 system-ui,sans-serif!important;min-height:29px!important;padding:6px 10px!important;border:1px solid #cbd7df!important;border-radius:999px!important;background:#f7f9fa!important;color:#45596a!important;box-shadow:none!important}
+#v500ReviewBody .ap-editday-actions button.active{background:#e3f0eb!important;border-color:#83a99d!important;color:#1c5d49!important}
+#v500ReviewBody .ap-editday-actions button.active::before{content:'✓ ';font-weight:800}
+#v500ReviewBody .ap-editday-actions button:focus-visible{outline:2px solid #247caa!important;outline-offset:2px}
+#v500ReviewBody .ap-decision-saved{font:500 10px system-ui,sans-serif;color:#547d6c}
+#v500ReviewBody .ap-event-notgoing>.v500-eventtop,#v500ReviewBody .ap-event-notgoing>.v507-sectionlabel{opacity:.55}
+#v500ReviewBody .ap-event-notgoing .v500-legs{opacity:.45}
+#v500ReviewBody .ap-event-noride .v507-ride{opacity:.6}
+</style>
 </head>
 <body>
 
@@ -1304,7 +1315,7 @@ body.apw-dinner #apModuleStage,body.apw-groceries #apModuleStage{display:block!i
 @media print{#apWorkflow,#apModuleStage{display:none!important}}
 </style>
 <div id="apWorkflow" role="navigation" aria-label="Family planning workflow">
-  <div class="apw-head"><div><div class="apw-title">Family planning workspace <span id="apWorkspaceVersion" style="font-weight:600;color:#61798b;font-size:11px">v56.3</span></div><div class="apw-sub" id="apwSummary">Choose a start date, then complete one decision at a time.</div></div><span id="apwProgress" style="font-size:11px;color:#566d7d" aria-live="polite">Ready to start</span></div>
+  <div class="apw-head"><div><div class="apw-title">Family planning workspace <span id="apWorkspaceVersion" style="font-weight:600;color:#61798b;font-size:11px">v56.4</span></div><div class="apw-sub" id="apwSummary">Choose a start date, then complete one decision at a time.</div></div><span id="apwProgress" style="font-size:11px;color:#566d7d" aria-live="polite">Ready to start</span></div>
   <div class="apw-nav"><button type="button" data-apw="logistics" aria-current="step">01 · Logistics<small>Dates, calendars, rides</small></button><button type="button" data-apw="dinner">02 · Dinner<small>Who cooks, what works</small></button><button type="button" data-apw="groceries">03 · Groceries<small>Ingredients, shopping list</small></button><button type="button" data-apw="outputs">04 · Share<small>Publish final logistics</small></button></div>
 </div>
 <section id="apModuleStage" hidden aria-live="polite"><div class="apw-stage-head"><div><h2 id="apwStageTitle">Dinner planning</h2><p id="apwStageSub">Dinner decisions are separate from transportation decisions.</p></div></div><div class="apw-notice" id="apwStageMessage"></div><div id="apwCookArea" class="apw-cook"></div><div id="apwMealsSlot"></div><div class="apw-actions"><button type="button" id="apwBack">← Previous stage</button><button type="button" class="primary" id="apwNext">Continue →</button></div></section>
@@ -6231,33 +6242,39 @@ function v507ToMin(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})$/);return 
 function v507RideValue(p,a,k){const v=assignment(p,a,k);return v==='Plan suggestion'?'':v==='No ride needed'?'No ride needed':v}
 function stage(n){phase=n;['Start','Calendars','Review','Prelim','Final'].forEach((x,j)=>$('v500Stage'+x)?.classList.toggle('on',j+1===n));document.querySelectorAll('.v500-step').forEach((e,j)=>{e.classList.toggle('on',j+1===n);e.classList.toggle('done',j+1<n)});window.scrollTo({top:0,behavior:'smooth'})}
 function apDayEvent(p,a){return {...a,date:a.date||dkey(p),child:a.child||safeOwner(a)};}
+// Independent, reversible review decisions. Never rebuild the active Edit Day view on a toggle.
+const AP_DAY_RIDE_FLAGS='autopilot.editDay.noRideFlags.v1';
+function apRideFlags(){try{return JSON.parse(localStorage.getItem(AP_DAY_RIDE_FLAGS)||'{}')||{}}catch{return {}}}
+function apRideKey(date,key){return date+'|'+key}
+function apRideSelected(date,key){const flags=apRideFlags(),id=apRideKey(date,key);if(Object.prototype.hasOwnProperty.call(flags,id))return flags[id]===true;const x=pending();return ['Drop','Pickup'].every(k=>x.ride[id+'|'+k]==='__NONE__')}
+function apSaveRideFlag(date,key,selected){const flags=apRideFlags();flags[apRideKey(date,key)]=selected;localStorage.setItem(AP_DAY_RIDE_FLAGS,JSON.stringify(flags));}
 function apDayControls(p,a){
- const ev=apDayEvent(p,a),date=dkey(p),key=ak(a),notGoing=typeof apNotGoing==='function'&&apNotGoing(ev),hidden=typeof publishedHidden==='function'&&publishedHidden(ev);
- const x=pending(),noRide=['Drop','Pickup'].every(k=>x.ride[date+'|'+key+'|'+k]==='__NONE__');
- return `<div class="ap-editday-actions" data-ap-date="${esc(date)}" data-ap-key="${esc(key)}">
- <button type="button" data-ap-day-action="noride" aria-pressed="${noRide}" class="${noRide?'active':''}">${noRide?'✓ No Ride Needed':'No Ride Needed'}</button>
- <button type="button" data-ap-day-action="notgoing" aria-pressed="${notGoing}" class="${notGoing?'active':''}">${notGoing?'↶ Restore Going':'Not Going / Remove'}</button>
- <button type="button" data-ap-day-action="hidden" aria-pressed="${hidden}" class="${hidden?'active':''}">${hidden?'↶ Show on Phone + Wall':'Hide from Phone + Wall'}</button></div>`;
+ const ev=apDayEvent(p,a),date=dkey(p),key=ak(a),notGoing=typeof apNotGoing==='function'&&apNotGoing(ev),hidden=typeof publishedHidden==='function'&&publishedHidden(ev),noRide=apRideSelected(date,key);
+ return `<div class="ap-editday-actions" data-ap-date="${esc(date)}" data-ap-key="${esc(key)}" role="group" aria-label="Event decisions">
+ <button type="button" data-ap-day-action="noride" aria-pressed="${noRide}" class="${noRide?'active':''}">No ride needed</button>
+ <button type="button" data-ap-day-action="notgoing" aria-pressed="${notGoing}" class="${notGoing?'active':''}">Not going</button>
+ <button type="button" data-ap-day-action="hidden" aria-pressed="${hidden}" class="${hidden?'active':''}">Hide from phone + wall</button><span class="ap-decision-saved" aria-live="polite"></span></div>`;
 }
-// Delegated listener survives the daily review renderer replacing its contents.
+function apPaintDecision(wrap,p,a){const date=wrap.dataset.apDate,key=wrap.dataset.apKey,ev=apDayEvent(p,a);const states={noride:apRideSelected(date,key),notgoing:!!apNotGoing(ev),hidden:!!publishedHidden(ev)};
+ wrap.querySelectorAll('[data-ap-day-action]').forEach(btn=>{const on=states[btn.dataset.apDayAction];btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));btn.setAttribute('aria-label',(on?'Deselect ':'Select ')+btn.textContent.trim())});
+ const row=wrap.closest('.v500-event,.v507-event');if(row){row.classList.toggle('ap-event-notgoing',states.notgoing);row.classList.toggle('ap-event-noride',states.noride||states.notgoing);row.classList.toggle('ap-event-hidden',states.hidden);row.querySelectorAll('.v500-ride,.v507-ride').forEach(el=>{el.disabled=states.notgoing||states.noride;});}
+}
 document.addEventListener('click',function(e){
  const b=e.target.closest('[data-ap-day-action]');if(!b||!b.closest('#v500ReviewBody'))return;
  e.preventDefault();e.stopPropagation();
- const wrap=b.closest('.ap-editday-actions'),p=workPlans().find(z=>dkey(z)===wrap.dataset.apDate);
- const a=p&&acts(p).find(z=>ak(z)===wrap.dataset.apKey);if(!a)return;
- const ev=apDayEvent(p,a),act=b.dataset.apDayAction,base=dkey(p)+'|'+ak(a);
+ const wrap=b.closest('.ap-editday-actions'),p=workPlans().find(z=>dkey(z)===wrap.dataset.apDate),a=p&&acts(p).find(z=>ak(z)===wrap.dataset.apKey);if(!a)return;
+ const ev=apDayEvent(p,a),act=b.dataset.apDayAction,base=apRideKey(wrap.dataset.apDate,wrap.dataset.apKey),status=wrap.querySelector('.ap-decision-saved');
  try{
- if(act==='noride'){
-   let x=pending(),turnOn=!['Drop','Pickup'].every(k=>x.ride[base+'|'+k]==='__NONE__');
-   for(const k of ['Drop','Pickup'])x.ride[base+'|'+k]=turnOn?'__NONE__':'__AUTO__';
-   savePending(x);try{if(typeof applyTransportOverridesToPlan==='function')applyTransportOverridesToPlan(p)}catch{}
- }else if(act==='notgoing'){
-   const next=!apNotGoing(ev);apSetNotGoing(ev,next);
-   if(next){let x=pending();for(const k of ['Drop','Pickup'])x.ride[base+'|'+k]='__NONE__';savePending(x)}
- }else if(act==='hidden')setPublishedHidden(ev,'occurrence',!publishedHidden(ev));
- try{if(typeof saveAllNow==='function')saveAllNow()}catch{}
- renderReview();const st=document.getElementById('v500ReviewStatus');if(st){st.className='v500-status good';st.textContent='Event decision saved. Review the remaining activities before finalizing.'}
- }catch(err){console.error('Edit Day action failed',err);const st=document.getElementById('v500ReviewStatus');if(st){st.className='v500-status warn';st.textContent='Could not save this event: '+err.message}}
+  if(act==='noride'){
+   const selected=!apRideSelected(wrap.dataset.apDate,wrap.dataset.apKey);apSaveRideFlag(wrap.dataset.apDate,wrap.dataset.apKey,selected);
+   const x=pending();for(const k of ['Drop','Pickup'])x.ride[base+'|'+k]=selected?'__NONE__':'__AUTO__';savePending(x);
+   try{if(typeof applyTransportOverridesToPlan==='function')applyTransportOverridesToPlan(p)}catch{}
+  }else if(act==='notgoing')apSetNotGoing(ev,!apNotGoing(ev));
+  else if(act==='hidden')setPublishedHidden(ev,'occurrence',!publishedHidden(ev));
+  try{if(typeof saveAllNow==='function')saveAllNow()}catch{}
+  apPaintDecision(wrap,p,a);
+  if(status){status.textContent='Saved';status.classList.add('show')}
+ }catch(err){console.error('Edit Day action failed',err);if(status)status.textContent='Could not save';}
 });
 function renderDay(){let ps=workPlans();if(!ps.length){$('v500ReviewBody').innerHTML='<div class="v500-status warn">No plan is loaded yet.</div>';return}dayIndex=Math.max(0,Math.min(dayIndex,ps.length-1));let p=ps[dayIndex],d=dkey(p),sl=siteList();if(!sl.includes(site(p)))sl.unshift(site(p));$('v500Count').textContent=`Day ${dayIndex+1} of ${ps.length}`;$('v500Prev').disabled=dayIndex===0;$('v500Next').disabled=dayIndex===ps.length-1;let g=groups(p);$('v500ReviewBody').innerHTML=`<div class="v500-day"><div class="v500-dayhead"><div class="v500-date">${esc(dateLabel(p,true))}</div><div class="v500-workgrid"><div class="v500-work"><b>Chris work schedule</b>${esc(chris(p))}<br><select class="v500-site" data-date="${esc(d)}">${sl.map(x=>`<option value="${esc(x)}" ${x===site(p)?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="v500-work"><b>Kira work schedule</b>${esc(kira(p))}</div></div>${v505TimeEditor(p)}</div>${g.length?g.map(([person,evs])=>`<div class="v500-person"><div class="v500-personhead">${esc(person)}</div>${evs.map(a=>`<div class="v500-event"><div class="v500-eventtop"><span class="v500-time">${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}</span><span class="v500-etitle">${esc(a.title)}${sportsVenueBadge(a)}</span>${a.location?`<span class="v500-loc">${esc(a.location)}</span>`:''}</div>${isContextEvent(a)?`<div class="ap-context-note">Calendar event · visible for family context · no transportation assumed</div>`:`<div class="v500-legs"><div><div class="v500-leglabel">Drop-off · ${esc(start(a))}</div>${ridePills(p,a,'Drop')}</div><div><div class="v500-leglabel">Pickup · ${esc(end(a))}</div>${ridePills(p,a,'Pickup')}</div></div>`}${apDayControls(p,a)}</div>`).join('')}</div>`).join(''):'<div class="v500-person"><div class="v500-event">No transportation events for this day.</div></div>'}<div class="v500-textbox" style="margin:10px"><label>Anything different about this day?</label><textarea class="v500-daily" data-date="${esc(d)}" placeholder="Example: Kira picks Whitney up from gymnastics. I need to stay at Wheeling until 6 PM.">${esc(daily()[d]||'')}</textarea><small>This note applies only to ${esc(dateLabel(p,true))}.</small><div class="v501-savehint">Your selections and notes are saved as you make them. “Save + next day” keeps this day and opens the next one.</div></div></div>`}
 function v500TimeInput(m){m=Number(m);if(!Number.isFinite(m))return'';m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0')}
@@ -6780,7 +6797,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
    refreshGate=true;setTimeout(()=>{refreshGate=false},1800);
  },true);
  function init(){
-   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent=window.AutoPilotRelease?.version||'v56.3';
+   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent=window.AutoPilotRelease?.version||'v56.4';
    
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
@@ -6803,7 +6820,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
 (function(){
  if(window.__apV512)return;window.__apV512=true;
  function init(){
-   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent=window.AutoPilotRelease?.version||'v56.3';
+   const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent=window.AutoPilotRelease?.version||'v56.4';
    
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
@@ -7243,7 +7260,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function updateCopy(){const n=selected(),app=$('v500App');if(!app)return;const startSub=$('v500StageStart')?.querySelector('.v500-sub');if(startSub)startSub.textContent=`Choose the first day. AutoPilot will refresh every saved calendar, build the next ${n} workdays, and open one recommended plan for review. Your permanent setup stays backstage.`;if($('v500StartNext'))$('v500StartNext').textContent=`BUILD MY ${n}-DAY PLAN`;const h=$('v500StageReview')?.querySelector('.v510-reviewintro h1');if(h)h.textContent=`Review the ${n}-day family plan`;if($('v500ViewTen'))$('v500ViewTen').textContent=`ALL ${n} DAYS`;const rawHelp=$('v500Raw')?.nextElementSibling;if(rawHelp)rawHelp.textContent=`Use this only for unusual exceptions. The ${n}-day plan is already recommended from your normal work pattern and family transportation rules.`;document.querySelectorAll('[data-v510-cycle-label]').forEach(el=>el.textContent=String(n));}
   function phase(){if($('v500StageFinal')?.classList.contains('on'))return 3;if($('v500StageReview')?.classList.contains('on'))return 2;return 1}
   function syncJourney(){const p=phase();document.querySelectorAll('.v510-step').forEach((e,i)=>{e.classList.toggle('on',i+1===p);e.classList.toggle('done',i+1<p)});const status=$('v510JourneyStatus');if(status){const n=selected();status.textContent=p===1?`Choose a ${n}-day cycle and start date.`:p===2?`${n}-day working plan · review recommendations and change only exceptions.`:`${n}-day final plan · one source for print, calendar, phone, Phil, and NonZero.`}const edit=$('v510Edit'),fin=$('v510Finalize');if(edit)edit.disabled=p===1;if(fin)fin.disabled=p!==2;}
-  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v56.3</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
+  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v56.4</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildStart(){const st=$('v500StageStart');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<h1 class="v500-q">Build the next family planning cycle</h1><p class="v500-sub"></p><div class="v510-cyclechoice"><button type="button" class="v510-cycle" data-days="5"><strong>5 workdays</strong><span>Use for a one-week planning pass or a shorter reset.</span></button><button type="button" class="v510-cycle" data-days="10"><strong>10 workdays</strong><span>Use for the full two-week family operating cycle.</span></button></div><div class="v510-startrow"><label>Cycle starts<input id="v500StartDate" type="date" aria-label="First day of plan"></label><button id="v500StartNext" type="button" class="v500-btn primary">BUILD MY PLAN</button></div><div class="v510-promise"><strong>What happens next:</strong> AutoPilot refreshes your connected schedules, applies the normal work-site pattern and transportation logic, and gives you one recommended plan. You only change exceptions.</div>`;document.querySelectorAll('.v510-cycle').forEach(b=>b.onclick=()=>setCycle(Number(b.dataset.days)));}
   function buildLoading(){const st=$('v500StageCalendars');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<div class="v510-loader"></div><h1 class="v500-q">Building the family plan</h1><p class="v500-sub">AutoPilot is building the plan now. Slow calendar feeds will not hold up the planning cycle; the latest saved data is used automatically when needed.</p><div class="v512-progress"><div class="v512-step active" data-loadstep="1">Refresh calendars</div><div class="v512-step" data-loadstep="2">Apply family rules</div><div class="v512-step" data-loadstep="3">Build recommendations</div><div class="v512-step" data-loadstep="4">Prepare review</div></div><div id="v500RefreshStatus" class="v512-live"><div><b><span class="v512-dot"></span>Starting planning cycle…</b>Connecting to saved schedules.</div></div><div id="v512Elapsed" class="v512-elapsed">Working · 0s</div><button id="v500Refresh" type="button" class="v500-btn primary" style="display:none">RETRY</button>`;}
   let __v512Timer=null,__v512Started=0;
