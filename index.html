@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v54.5</title>
+<title>AutoPilot — Family Logistics Planner v53.2</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -4946,31 +4946,6 @@ function render(){document.querySelectorAll('[data-v]').forEach(b=>b.classList.t
 
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
 <!-- AutoPilot v52.9: per-event/series NonZero wall visibility controls + Backstage exclusions manager; planning logic remains independent. -->
-
-<style id="apReleaseIdentityCSS">
-#apReleaseIdentity{position:fixed;right:14px;bottom:14px;z-index:2147483000;background:#10263f;color:#fff;border:1px solid #7097bd;border-radius:10px;padding:9px 13px;box-shadow:0 7px 25px rgba(0,0,0,.24);font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45;letter-spacing:.01em;user-select:text}
-#apReleaseIdentity strong{font-size:13px;color:#fff;font-weight:750}#apReleaseIdentity small{display:block;color:#bfd2e5;font-size:10px}
-@media print{#apReleaseIdentity{display:none!important}}
-</style>
-<script id="apReleaseIdentityScript">
-(()=>{
- 'use strict';
- const RELEASE='v54.5',BUILD='2026-10-11 · VERSION-IDENTITY',LABEL='Family Logistics Planner · '+RELEASE;
- window.AutoPilotRelease=Object.freeze({version:RELEASE,build:BUILD});
- function render(){
-   document.title='AutoPilot — Family Logistics Planner '+RELEASE;
-   document.querySelectorAll('#v510Journey .v510-wordmark small').forEach(n=>{if(n.textContent!==LABEL)n.textContent=LABEL});
-   document.querySelectorAll('#v500App .v500-brand span').forEach(n=>{if(/^v\d/i.test(n.textContent||'')&&n.textContent!==RELEASE)n.textContent=RELEASE});
-   let el=document.getElementById('apReleaseIdentity');
-   if(!el){el=document.createElement('div');el.id='apReleaseIdentity';el.setAttribute('role','status');document.body.appendChild(el)}
-   const content='<strong>AutoPilot '+RELEASE+'</strong><small>Build '+BUILD+'</small>';
-   if(el.innerHTML!==content)el.innerHTML=content;
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
- // Some older app modules rerender their chrome after startup; reassert once per second.
- setInterval(render,1000);
-})();
-</script>
 </body></html>
 <!-- AutoPilot v50.2: anytime non-destructive calendar refresh; clean planning-cycle restart preserving durable setup; final-step NONZERO publish/test receipt + auto-publish visibility. -->`;
 }
@@ -5102,31 +5077,6 @@ body{background:#fff;color:#111}
 <!-- AutoPilot v47.38: day editor mounted at body root; navigation cannot be removed by legacy container rerenders. -->
 
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
-
-<style id="apReleaseIdentityCSS">
-#apReleaseIdentity{position:fixed;right:14px;bottom:14px;z-index:2147483000;background:#10263f;color:#fff;border:1px solid #7097bd;border-radius:10px;padding:9px 13px;box-shadow:0 7px 25px rgba(0,0,0,.24);font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45;letter-spacing:.01em;user-select:text}
-#apReleaseIdentity strong{font-size:13px;color:#fff;font-weight:750}#apReleaseIdentity small{display:block;color:#bfd2e5;font-size:10px}
-@media print{#apReleaseIdentity{display:none!important}}
-</style>
-<script id="apReleaseIdentityScript">
-(()=>{
- 'use strict';
- const RELEASE='v54.5',BUILD='2026-10-11 · VERSION-IDENTITY',LABEL='Family Logistics Planner · '+RELEASE;
- window.AutoPilotRelease=Object.freeze({version:RELEASE,build:BUILD});
- function render(){
-   document.title='AutoPilot — Family Logistics Planner '+RELEASE;
-   document.querySelectorAll('#v510Journey .v510-wordmark small').forEach(n=>{if(n.textContent!==LABEL)n.textContent=LABEL});
-   document.querySelectorAll('#v500App .v500-brand span').forEach(n=>{if(/^v\d/i.test(n.textContent||'')&&n.textContent!==RELEASE)n.textContent=RELEASE});
-   let el=document.getElementById('apReleaseIdentity');
-   if(!el){el=document.createElement('div');el.id='apReleaseIdentity';el.setAttribute('role','status');document.body.appendChild(el)}
-   const content='<strong>AutoPilot '+RELEASE+'</strong><small>Build '+BUILD+'</small>';
-   if(el.innerHTML!==content)el.innerHTML=content;
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
- // Some older app modules rerender their chrome after startup; reassert once per second.
- setInterval(render,1000);
-})();
-</script>
 </body>
 </html>`;
 }
@@ -5829,31 +5779,6 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
     const d=frame.contentDocument||frame.contentWindow.document;d.open();d.write(`<!doctype html><html><head><title>${title}</title><style>${printableCss()}</style><style id="suiteStyle">.suite-card{background:var(--card,#fff);color:var(--text,#211f1b);border:1px solid var(--border,#d8d0c5);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}.suite-card h2{font-size:18px;margin:0}.suite-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.suite-muted{color:var(--muted,#645d53);font-size:14px;line-height:1.45}.suite-card p{line-height:1.4;overflow-wrap:anywhere}.suite-card button,.suite-change button{min-height:44px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}.suite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.suite-card label,.suite-change label{display:block;font-size:14px;margin:10px 0}.suite-card input:not([type=checkbox]),.suite-change input:not([type=checkbox]),.suite-change select{display:block;box-sizing:border-box;width:100%;min-height:44px;font-size:16px;margin-top:4px;padding:8px;border:1px solid var(--border,#aaa);border-radius:8px}.suite-card details{margin-top:12px}.suite-card summary{cursor:pointer;min-height:34px;font-size:15px;font-weight:700}.suite-code{font-size:14px;word-break:break-all;user-select:all}.suite-change{padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;margin:10px 0;font-size:15px}.suite-change p{margin:6px 0}.suite-ride{display:grid;grid-template-columns:90px 1fr 110px;gap:8px}.suite-today-detail{padding:12px 16px;border-top:1px solid var(--border,#ddd);font-size:15px}.suite-today-detail strong{display:block;font-size:18px;margin-bottom:5px}.suite-modal{position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.suite-modal[hidden]{display:none}.suite-modal-panel{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border-radius:16px;padding:20px}.suite-event{padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.suite-event strong{font-size:17px}.suite-event p{margin:5px 0;font-size:15px}.suite-dinner{border-left:3px solid #dba64b;padding-left:10px}.suite-save{font-size:14px}.suite-card .suite-decision-status{font-size:14px;color:var(--green,#356c4a)}@media(max-width:480px){.suite-heading{align-items:flex-start;flex-direction:column}.suite-ride{grid-template-columns:1fr 1fr}.suite-ride label:first-child{grid-column:1/-1}}body.trainingFocus #suiteChanges,body.trainingFocus #suiteFamilyModal{display:none} 
 </style></head><body><h1>${title}</h1><div class="sub">AutoPilot ${V} · ${new Date().toLocaleString()}</div>${src.innerHTML}
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
-
-<style id="apReleaseIdentityCSS">
-#apReleaseIdentity{position:fixed;right:14px;bottom:14px;z-index:2147483000;background:#10263f;color:#fff;border:1px solid #7097bd;border-radius:10px;padding:9px 13px;box-shadow:0 7px 25px rgba(0,0,0,.24);font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45;letter-spacing:.01em;user-select:text}
-#apReleaseIdentity strong{font-size:13px;color:#fff;font-weight:750}#apReleaseIdentity small{display:block;color:#bfd2e5;font-size:10px}
-@media print{#apReleaseIdentity{display:none!important}}
-</style>
-<script id="apReleaseIdentityScript">
-(()=>{
- 'use strict';
- const RELEASE='v54.5',BUILD='2026-10-11 · VERSION-IDENTITY',LABEL='Family Logistics Planner · '+RELEASE;
- window.AutoPilotRelease=Object.freeze({version:RELEASE,build:BUILD});
- function render(){
-   document.title='AutoPilot — Family Logistics Planner '+RELEASE;
-   document.querySelectorAll('#v510Journey .v510-wordmark small').forEach(n=>{if(n.textContent!==LABEL)n.textContent=LABEL});
-   document.querySelectorAll('#v500App .v500-brand span').forEach(n=>{if(/^v\d/i.test(n.textContent||'')&&n.textContent!==RELEASE)n.textContent=RELEASE});
-   let el=document.getElementById('apReleaseIdentity');
-   if(!el){el=document.createElement('div');el.id='apReleaseIdentity';el.setAttribute('role','status');document.body.appendChild(el)}
-   const content='<strong>AutoPilot '+RELEASE+'</strong><small>Build '+BUILD+'</small>';
-   if(el.innerHTML!==content)el.innerHTML=content;
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
- // Some older app modules rerender their chrome after startup; reassert once per second.
- setInterval(render,1000);
-})();
-</script>
 </body></html>`);d.close();
     const launch=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(err){console.error('Print launch failed',err);alert('The browser could not open print preview. Use Ctrl+P while the schedule preview is visible.')}setTimeout(()=>frame.remove(),2500)};
     if(d.readyState==='complete')setTimeout(launch,80);else frame.onload=()=>setTimeout(launch,80);
@@ -6048,31 +5973,6 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 
 
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
-
-<style id="apReleaseIdentityCSS">
-#apReleaseIdentity{position:fixed;right:14px;bottom:14px;z-index:2147483000;background:#10263f;color:#fff;border:1px solid #7097bd;border-radius:10px;padding:9px 13px;box-shadow:0 7px 25px rgba(0,0,0,.24);font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45;letter-spacing:.01em;user-select:text}
-#apReleaseIdentity strong{font-size:13px;color:#fff;font-weight:750}#apReleaseIdentity small{display:block;color:#bfd2e5;font-size:10px}
-@media print{#apReleaseIdentity{display:none!important}}
-</style>
-<script id="apReleaseIdentityScript">
-(()=>{
- 'use strict';
- const RELEASE='v54.5',BUILD='2026-10-11 · VERSION-IDENTITY',LABEL='Family Logistics Planner · '+RELEASE;
- window.AutoPilotRelease=Object.freeze({version:RELEASE,build:BUILD});
- function render(){
-   document.title='AutoPilot — Family Logistics Planner '+RELEASE;
-   document.querySelectorAll('#v510Journey .v510-wordmark small').forEach(n=>{if(n.textContent!==LABEL)n.textContent=LABEL});
-   document.querySelectorAll('#v500App .v500-brand span').forEach(n=>{if(/^v\d/i.test(n.textContent||'')&&n.textContent!==RELEASE)n.textContent=RELEASE});
-   let el=document.getElementById('apReleaseIdentity');
-   if(!el){el=document.createElement('div');el.id='apReleaseIdentity';el.setAttribute('role','status');document.body.appendChild(el)}
-   const content='<strong>AutoPilot '+RELEASE+'</strong><small>Build '+BUILD+'</small>';
-   if(el.innerHTML!==content)el.innerHTML=content;
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
- // Some older app modules rerender their chrome after startup; reassert once per second.
- setInterval(render,1000);
-})();
-</script>
 </body>
 
 
@@ -6375,31 +6275,6 @@ function renderPhone(n=0){if(!finalData?.length)return;phoneIndex=Math.max(0,Mat
 function phoneHtml(){let data=finalData||snapshot();return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoPilot Family Plan</title><style>body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f5f3ef;color:#211f1b;margin:0;padding:12px}.c{max-width:620px;margin:auto;background:#fff;border:1px solid #ddd5ca;border-radius:16px;padding:14px}.top{display:flex;gap:6px;margin-bottom:10px}.top button{flex:1}.n{display:flex;justify-content:space-between;align-items:center;gap:8px}.n button,button{min-height:44px;border:1px solid #aaa;border-radius:10px;background:#fff;font-weight:850;padding:8px 12px}.top button.on{background:#211f1b;color:#fff}.b{font-size:15px;line-height:1.45;margin-top:10px}hr{border:0;border-top:1px solid #e7e0d7;margin:9px 0}.ten{display:grid;gap:8px}.d{border:1px solid #ddd5ca;border-radius:10px;padding:10px}.d h3{margin:0 0 5px;font-size:15px}.sm{font-size:12px;line-height:1.35}</style><style id="suiteStyle">.suite-card{background:var(--card,#fff);color:var(--text,#211f1b);border:1px solid var(--border,#d8d0c5);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}.suite-card h2{font-size:18px;margin:0}.suite-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.suite-muted{color:var(--muted,#645d53);font-size:14px;line-height:1.45}.suite-card p{line-height:1.4;overflow-wrap:anywhere}.suite-card button,.suite-change button{min-height:44px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}.suite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.suite-card label,.suite-change label{display:block;font-size:14px;margin:10px 0}.suite-card input:not([type=checkbox]),.suite-change input:not([type=checkbox]),.suite-change select{display:block;box-sizing:border-box;width:100%;min-height:44px;font-size:16px;margin-top:4px;padding:8px;border:1px solid var(--border,#aaa);border-radius:8px}.suite-card details{margin-top:12px}.suite-card summary{cursor:pointer;min-height:34px;font-size:15px;font-weight:700}.suite-code{font-size:14px;word-break:break-all;user-select:all}.suite-change{padding:12px;border:1px solid var(--border,#ddd);border-radius:10px;margin:10px 0;font-size:15px}.suite-change p{margin:6px 0}.suite-ride{display:grid;grid-template-columns:90px 1fr 110px;gap:8px}.suite-today-detail{padding:12px 16px;border-top:1px solid var(--border,#ddd);font-size:15px}.suite-today-detail strong{display:block;font-size:18px;margin-bottom:5px}.suite-modal{position:fixed;inset:0;background:#0009;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.suite-modal[hidden]{display:none}.suite-modal-panel{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border-radius:16px;padding:20px}.suite-event{padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.suite-event strong{font-size:17px}.suite-event p{margin:5px 0;font-size:15px}.suite-dinner{border-left:3px solid #dba64b;padding-left:10px}.suite-save{font-size:14px}.suite-card .suite-decision-status{font-size:14px;color:var(--green,#356c4a)}@media(max-width:480px){.suite-heading{align-items:flex-start;flex-direction:column}.suite-ride{grid-template-columns:1fr 1fr}.suite-ride label:first-child{grid-column:1/-1}}body.trainingFocus #suiteChanges,body.trainingFocus #suiteFamilyModal{display:none} 
 </style></head><body><div class="c"><div class="top"><button id="one" class="on">DAY AGENDA</button><button id="ten">${data.length}-DAY VIEW</button></div><div id="agenda"><div class="n"><button id="p">←</button><b id="c"></b><button id="n">→</button></div><div class="b" id="b"></div></div><div id="all" style="display:none"></div></div><script>const D=${JSON.stringify(data).replace(/</g,'\\u003c')};let i=0;const e=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));function card(d){return '<div class="d"><h3>'+e(d.label)+'</h3><div class="sm"><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop: '+e(x.drop)+' · Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events')+'</div></div>'}function r(){const d=D[i];c.textContent='Day '+(i+1)+' of '+D.length;p.disabled=i===0;n.disabled=i===D.length-1;b.innerHTML='<b style="font-size:19px">'+e(d.label)+'</b><hr><b>Chris:</b> '+e(d.chris)+'<br><b>Kira:</b> '+e(d.kira)+(d.events.length?'<hr>'+d.events.map(x=>'<b>'+e(x.start)+' '+e(x.person)+' · '+e(x.title)+'</b>'+(x.location?'<br>'+e(x.location):'')+'<br>Drop-off: '+e(x.drop)+'<br>Pickup: '+e(x.pickup)).join('<br><br>'):'<hr>No transportation events.');all.innerHTML='<div class="ten">'+D.map(card).join('')+'</div>'}p.onclick=()=>{i=Math.max(0,i-1);r()};n.onclick=()=>{i=Math.min(D.length-1,i+1);r()};one.onclick=()=>{one.className='on';ten.className='';agenda.style.display='';all.style.display='none'};ten.onclick=()=>{ten.className='on';one.className='';agenda.style.display='none';all.style.display=''};r();<\/script>
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
-
-<style id="apReleaseIdentityCSS">
-#apReleaseIdentity{position:fixed;right:14px;bottom:14px;z-index:2147483000;background:#10263f;color:#fff;border:1px solid #7097bd;border-radius:10px;padding:9px 13px;box-shadow:0 7px 25px rgba(0,0,0,.24);font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45;letter-spacing:.01em;user-select:text}
-#apReleaseIdentity strong{font-size:13px;color:#fff;font-weight:750}#apReleaseIdentity small{display:block;color:#bfd2e5;font-size:10px}
-@media print{#apReleaseIdentity{display:none!important}}
-</style>
-<script id="apReleaseIdentityScript">
-(()=>{
- 'use strict';
- const RELEASE='v54.5',BUILD='2026-10-11 · VERSION-IDENTITY',LABEL='Family Logistics Planner · '+RELEASE;
- window.AutoPilotRelease=Object.freeze({version:RELEASE,build:BUILD});
- function render(){
-   document.title='AutoPilot — Family Logistics Planner '+RELEASE;
-   document.querySelectorAll('#v510Journey .v510-wordmark small').forEach(n=>{if(n.textContent!==LABEL)n.textContent=LABEL});
-   document.querySelectorAll('#v500App .v500-brand span').forEach(n=>{if(/^v\d/i.test(n.textContent||'')&&n.textContent!==RELEASE)n.textContent=RELEASE});
-   let el=document.getElementById('apReleaseIdentity');
-   if(!el){el=document.createElement('div');el.id='apReleaseIdentity';el.setAttribute('role','status');document.body.appendChild(el)}
-   const content='<strong>AutoPilot '+RELEASE+'</strong><small>Build '+BUILD+'</small>';
-   if(el.innerHTML!==content)el.innerHTML=content;
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
- // Some older app modules rerender their chrome after startup; reassert once per second.
- setInterval(render,1000);
-})();
-</script>
 </body></html>`}
 function download(name,text,type='text/plain'){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function finalize(){finalData=snapshot();localStorage.setItem(FINAL,JSON.stringify(finalData));$('v500Fridge').innerHTML=snapshotTiles(finalData);$('v500BossMessage').value=bossMessage();renderPhone(0);stage(5);window.dispatchEvent(new Event('suite-plan-finalized'));try{if(__nonzeroPublishTimer){clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=null}const cfg=nonzeroIntegrationConfig();if(cfg.auto)setTimeout(()=>publishNonzeroFromFinal(false),150)}catch{}}
@@ -6696,7 +6571,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  },true);
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.11';
-   document.title='AutoPilot — Family Logistics Planner v54.5';
+   document.title='AutoPilot — Family Logistics Planner v54.3';
    const h=document.getElementById('v510Health');if(h)h.textContent='Hardened recommended-plan mode';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6717,7 +6592,7 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
  if(window.__apV512)return;window.__apV512=true;
  function init(){
    const brand=document.querySelector('#v500App .v500-brand span');if(brand)brand.textContent='v50.12';
-   document.title='AutoPilot — Family Logistics Planner v54.5';
+   document.title='AutoPilot — Family Logistics Planner v54.3';
    const h=document.getElementById('v510Health');if(h)h.textContent='Balanced review · manual overrides authoritative';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -6774,31 +6649,6 @@ body.v510-setup-open > .app-shell{display:block!important;margin-top:12px!import
 
 
 
-
-<style id="apReleaseIdentityCSS">
-#apReleaseIdentity{position:fixed;right:14px;bottom:14px;z-index:2147483000;background:#10263f;color:#fff;border:1px solid #7097bd;border-radius:10px;padding:9px 13px;box-shadow:0 7px 25px rgba(0,0,0,.24);font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45;letter-spacing:.01em;user-select:text}
-#apReleaseIdentity strong{font-size:13px;color:#fff;font-weight:750}#apReleaseIdentity small{display:block;color:#bfd2e5;font-size:10px}
-@media print{#apReleaseIdentity{display:none!important}}
-</style>
-<script id="apReleaseIdentityScript">
-(()=>{
- 'use strict';
- const RELEASE='v54.5',BUILD='2026-10-11 · VERSION-IDENTITY',LABEL='Family Logistics Planner · '+RELEASE;
- window.AutoPilotRelease=Object.freeze({version:RELEASE,build:BUILD});
- function render(){
-   document.title='AutoPilot — Family Logistics Planner '+RELEASE;
-   document.querySelectorAll('#v510Journey .v510-wordmark small').forEach(n=>{if(n.textContent!==LABEL)n.textContent=LABEL});
-   document.querySelectorAll('#v500App .v500-brand span').forEach(n=>{if(/^v\d/i.test(n.textContent||'')&&n.textContent!==RELEASE)n.textContent=RELEASE});
-   let el=document.getElementById('apReleaseIdentity');
-   if(!el){el=document.createElement('div');el.id='apReleaseIdentity';el.setAttribute('role','status');document.body.appendChild(el)}
-   const content='<strong>AutoPilot '+RELEASE+'</strong><small>Build '+BUILD+'</small>';
-   if(el.innerHTML!==content)el.innerHTML=content;
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render);else render();
- // Some older app modules rerender their chrome after startup; reassert once per second.
- setInterval(render,1000);
-})();
-</script>
 </body></html>`}
 })();
 </script>
@@ -6982,7 +6832,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 
 <!-- AutoPilot v53.3: Premium-tested baseline + Current/Upcoming dual-plan planning layer. -->
-<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v54.5';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v54.5'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
+<script id="v533ReleaseIdentity">(()=>{const apply=()=>{document.title='AutoPilot — Family Logistics Planner v54.3';const b=document.querySelector('#v500App .v500-brand span');if(b)b.textContent='v53.3'};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();})();</script>
 <style id="v534SyncStyle">
 #v534Sync{max-width:1120px;margin:0 auto 14px;padding:14px 16px;border:1px solid #d8d0c5;border-left:4px solid #3d7350;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(37,32,25,.06);color:#211f1b}
 #v534Sync .v534-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -7091,7 +6941,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function updateCopy(){const n=selected(),app=$('v500App');if(!app)return;const startSub=$('v500StageStart')?.querySelector('.v500-sub');if(startSub)startSub.textContent=`Choose the first day. AutoPilot will refresh every saved calendar, build the next ${n} workdays, and open one recommended plan for review. Your permanent setup stays backstage.`;if($('v500StartNext'))$('v500StartNext').textContent=`BUILD MY ${n}-DAY PLAN`;const h=$('v500StageReview')?.querySelector('.v510-reviewintro h1');if(h)h.textContent=`Review the ${n}-day family plan`;if($('v500ViewTen'))$('v500ViewTen').textContent=`ALL ${n} DAYS`;const rawHelp=$('v500Raw')?.nextElementSibling;if(rawHelp)rawHelp.textContent=`Use this only for unusual exceptions. The ${n}-day plan is already recommended from your normal work pattern and family transportation rules.`;document.querySelectorAll('[data-v510-cycle-label]').forEach(el=>el.textContent=String(n));}
   function phase(){if($('v500StageFinal')?.classList.contains('on'))return 3;if($('v500StageReview')?.classList.contains('on'))return 2;return 1}
   function syncJourney(){const p=phase();document.querySelectorAll('.v510-step').forEach((e,i)=>{e.classList.toggle('on',i+1===p);e.classList.toggle('done',i+1<p)});const status=$('v510JourneyStatus');if(status){const n=selected();status.textContent=p===1?`Choose a ${n}-day cycle and start date.`:p===2?`${n}-day working plan · review recommendations and change only exceptions.`:`${n}-day final plan · one source for print, calendar, phone, Phil, and NonZero.`}const edit=$('v510Edit'),fin=$('v510Finalize');if(edit)edit.disabled=p===1;if(fin)fin.disabled=p!==2;}
-  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v54.5</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
+  function buildChrome(){const wrap=$('v500App')?.querySelector('.v500-wrap');if(!wrap||$('v510Journey'))return;const j=document.createElement('div');j.id='v510Journey';j.innerHTML=`<div class="v510-top"><div class="v510-wordmark">AutoPilot<small>Family Logistics Planner · v53.9</small></div><div class="v510-steps"><div class="v510-step">1 · PLAN</div><div class="v510-step">2 · REVIEW</div><div class="v510-step">3 · FINALIZE</div></div><button class="v510-backstage-btn" id="v510BackstageBtn">BACKSTAGE ⚙</button></div><div class="v510-actions"><span class="status" id="v510JourneyStatus"></span><button id="v510Refresh">↻ REFRESH</button><button id="v510Print">PRINT / SAVE</button><button id="v510Edit">EDIT PLAN</button><button class="primary" id="v510Finalize">FINALIZE</button></div>`;wrap.insertBefore(j,wrap.firstChild);$('v510BackstageBtn').onclick=openBackstage;$('v510Refresh').onclick=()=>$('v504RefreshPlan')?.click();$('v510Print').onclick=()=>$('v504PrintPlan')?.click();$('v510Edit').onclick=()=>$('v504EditPlan')?.click();$('v510Finalize').onclick=()=>$('v504FinalizePlan')?.click();}
   function buildStart(){const st=$('v500StageStart');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<h1 class="v500-q">Build the next family planning cycle</h1><p class="v500-sub"></p><div class="v510-cyclechoice"><button type="button" class="v510-cycle" data-days="5"><strong>5 workdays</strong><span>Use for a one-week planning pass or a shorter reset.</span></button><button type="button" class="v510-cycle" data-days="10"><strong>10 workdays</strong><span>Use for the full two-week family operating cycle.</span></button></div><div class="v510-startrow"><label>Cycle starts<input id="v500StartDate" type="date" aria-label="First day of plan"></label><button id="v500StartNext" type="button" class="v500-btn primary">BUILD MY PLAN</button></div><div class="v510-promise"><strong>What happens next:</strong> AutoPilot refreshes your connected schedules, applies the normal work-site pattern and transportation logic, and gives you one recommended plan. You only change exceptions.</div>`;document.querySelectorAll('.v510-cycle').forEach(b=>b.onclick=()=>setCycle(Number(b.dataset.days)));}
   function buildLoading(){const st=$('v500StageCalendars');if(!st||st.dataset.v510)return;st.dataset.v510='1';const card=st.querySelector('.v500-card');card.innerHTML=`<div class="v510-loader"></div><h1 class="v500-q">Building the family plan</h1><p class="v500-sub">AutoPilot is building the plan now. Slow calendar feeds will not hold up the planning cycle; the latest saved data is used automatically when needed.</p><div class="v512-progress"><div class="v512-step active" data-loadstep="1">Refresh calendars</div><div class="v512-step" data-loadstep="2">Apply family rules</div><div class="v512-step" data-loadstep="3">Build recommendations</div><div class="v512-step" data-loadstep="4">Prepare review</div></div><div id="v500RefreshStatus" class="v512-live"><div><b><span class="v512-dot"></span>Starting planning cycle…</b>Connecting to saved schedules.</div></div><div id="v512Elapsed" class="v512-elapsed">Working · 0s</div><button id="v500Refresh" type="button" class="v500-btn primary" style="display:none">RETRY</button>`;}
   let __v512Timer=null,__v512Started=0;
@@ -7104,7 +6954,7 @@ body.ap-cycle5 #v504PrintSheet .v504-print-grid{grid-template-columns:repeat(5,1
   function openBackstage(){buildBackstage();renderWallExclusionManager();$('v510Backstage').classList.add('open');document.body.classList.add('v510-backstage-open')}
   function closeBackstage(){$('v510Backstage')?.classList.remove('open');document.body.classList.remove('v510-backstage-open')}
   function wire(){const start=$('v500StartNext');if(start){start.onclick=e=>{e.preventDefault();e.stopPropagation();start.disabled=true;start.textContent='BUILDING…';localStorage.setItem('autopilot.cycleDays',String(selected()));if(typeof stage==='function')stage(2);syncJourney();const st=$('v500RefreshStatus');if(st){st.className='v512-live';st.innerHTML=`<div><b><span class="v512-dot"></span>Starting ${selected()}-day planning cycle…</b>Preparing saved schedules.</div>`}v512Clock(true);let settled=false;const watchdog=setTimeout(()=>{if(settled)return;const x=$('v500RefreshStatus');if(x&&$('v500StageCalendars')?.classList.contains('on')){x.className='v500-status warn';x.innerHTML='<b>This is taking longer than normal.</b> AutoPilot will continue with the latest saved calendar data rather than leave you stuck on this screen.'}},12000);Promise.resolve().then(v515Paint).then(()=>typeof refreshPlan==='function'?refreshPlan():null).catch(err=>{console.error(err);const x=$('v500RefreshStatus');if(x){x.className='v500-status warn';x.innerHTML='<b>Plan build failed.</b> '+esc(err?.message||String(err))}}).finally(()=>{settled=true;clearTimeout(watchdog);start.disabled=false;start.textContent='BUILD MY PLAN'});return false}}const obs=new MutationObserver(()=>{updateCopy();syncJourney()});['v500StageStart','v500StageReview','v500StageFinal'].forEach(id=>{const el=$(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']})});}
-  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v54.5';syncJourney();}
+  function init(){buildChrome();buildStart();buildLoading();buildReview();buildFinal();buildBackstage();renderWallExclusionManager();setCycle(window.__apCycleDays);wire();let today=new Date(),dow=(today.getDay()+6)%7;today.setDate(today.getDate()-dow);if($('v500StartDate')&&!$('v500StartDate').value)$('v500StartDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;document.title='AutoPilot — Family Logistics Planner v54.3';syncJourney();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
 })();
 </script>
@@ -7460,8 +7310,8 @@ window.__suitePlanner={renderToday,refreshShared,applySavedAgenda};if(document.r
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
  function polish(){
-   const brand=document.querySelector('#v510Journey .v510-wordmark small');if(brand)brand.textContent='Family Logistics Planner · v54.5';
-   document.title='AutoPilot — Family Logistics Planner v54.5';
+   const brand=document.querySelector('#v510Journey .v510-wordmark small');if(brand)brand.textContent='Family Logistics Planner · v53.9';
+   document.title='AutoPilot — Family Logistics Planner v54.3';
    const cc=$('apCommandCenter');if(cc)cc.setAttribute('aria-label','Today at a glance');
    const start=$('v500StartNext');if(start){const n=Number(localStorage.getItem('autopilot.cycleDays')||window.__apCycleDays||10)===5?5:10;if(!start.disabled)start.textContent=`BUILD ${n}-DAY PLAN`;}
  }
@@ -7652,16 +7502,16 @@ window.v538AssignmentReason=function(p,a,k){
 
 /* Version identity */
 function identity(){
-  document.title='AutoPilot — Family Logistics Planner v54.5';
-  document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v54.5');
-  document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v54.5'});
+  document.title='AutoPilot — Family Logistics Planner v54.3';
+  document.querySelectorAll('.v510-wordmark small').forEach(x=>x.textContent='Family Logistics Planner · v53.9');
+  document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d/i.test(x.textContent||''))x.textContent='v53.9'});
 }
 function refreshChronology(){try{if(typeof renderQuickPlanningReview==='function')renderQuickPlanningReview()}catch{}try{if(typeof renderReview==='function'&&document.querySelector('#v500StageReview.on'))renderReview()}catch{}try{if(typeof renderPlanCorrections==='function'&&plans?.length)renderPlanCorrections()}catch{}}
 function init(){identity();setTimeout(()=>{identity();refreshChronology()},160);setTimeout(refreshChronology,900)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v54.5";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v54.5"},1200);</script>
+<script>setTimeout(()=>{document.title="AutoPilot — Family Logistics Planner v54.3";const b=document.querySelector("#v510Journey .v510-wordmark small");if(b)b.textContent="Family Logistics Planner · v53.9"},1200);</script>
 <style id="v539MobileBounds">
 @media(max-width:600px){
  #v510Journey{margin:0 0 8px!important;padding:8px 10px 6px!important;max-width:100%;box-sizing:border-box}
@@ -7751,3 +7601,25 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <!-- v54.3: bounded recommendation calculation; routing fallbacks; correct 5-day invariant. -->
+
+<style id="apV546ProgressCSS">
+#apBuildProgress{position:fixed;z-index:2147483600;left:50%;top:22px;transform:translateX(-50%);width:min(650px,calc(100vw - 30px));background:#fff;border:1px solid #d4d9df;box-shadow:0 20px 65px rgba(19,38,59,.20);border-radius:15px;padding:20px 24px;color:#172d41;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;display:none}
+#apBuildProgress.ap-show{display:block}#apBuildProgress .ap-head{display:flex;align-items:center;justify-content:space-between;gap:8px}#apBuildProgress .ap-heading{font-size:16px;font-weight:750}#apBuildProgress .ap-sub{font-size:12px;color:#5a6876;margin:2px 0 12px}#apBuildProgress .ap-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}#apBuildProgress .ap-step{border-top:4px solid #dce4e9;padding-top:7px;font-size:11px;color:#778390;font-weight:650}#apBuildProgress .ap-step.ap-active{border-color:#276b89;color:#183b52}#apBuildProgress .ap-step.ap-done{border-color:#438267;color:#286248}#apBuildProgress .ap-note{font-size:12px;min-height:20px;margin-top:12px;color:#485b6b}#apBuildProgress button{border:1px solid #cbd6de;border-radius:6px;background:#fff;padding:3px 8px;cursor:pointer;font-size:12px}#apBuildProgress .ap-track{height:4px;border-radius:3px;background:#e7edf0;margin:10px 0;overflow:hidden}#apBuildProgress .ap-bar{height:100%;width:20%;background:#276b89;transition:width .3s}
+#apReleaseBadge546{position:fixed;bottom:10px;right:12px;z-index:999999;background:#163447;color:#fff;border:1px solid #7e9cab;border-radius:9px;padding:5px 9px;font:600 11px system-ui;box-shadow:0 2px 10px #0002}
+</style>
+<script id="apV546ProgressJS">
+(()=>{'use strict';if(window.__apV546Progress)return;window.__apV546Progress=true;
+let active=false,started=0,phase=0,watch=null,deadline=null;
+const labels=['Refreshing calendars','Checking activities','Building recommendations','Reviewing plan'];
+const $=id=>document.getElementById(id);
+function create(){if($('apBuildProgress'))return;const el=document.createElement('section');el.id='apBuildProgress';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.innerHTML='<div class="ap-head"><div class="ap-heading">Preparing your family plan</div><button id="apCloseProgress" type="button">Hide</button></div><div class="ap-sub">Calendar refresh → activities → recommendations → review</div><div class="ap-steps">'+labels.map(x=>'<div class="ap-step">'+x+'</div>').join('')+'</div><div class="ap-track"><div class="ap-bar"></div></div><div class="ap-note">Starting…</div>';document.body.appendChild(el);$('apCloseProgress').addEventListener('click',()=>{el.classList.remove('ap-show')});const badge=document.createElement('div');badge.id='apReleaseBadge546';badge.textContent='AUTOPILOT v54.6 · BUILD-RECOVERY';document.body.appendChild(badge);document.title='AutoPilot v54.6 · Family Logistics';}
+function display(n,note){create();phase=Math.max(phase,n);const el=$('apBuildProgress');el.classList.add('ap-show');el.querySelectorAll('.ap-step').forEach((x,i)=>{x.classList.toggle('ap-done',i<phase);x.classList.toggle('ap-active',i===phase)});el.querySelector('.ap-bar').style.width=((phase+1)*25)+'%';el.querySelector('.ap-note').textContent=note||labels[phase]+'…'}
+function stage(){const ids=['v500StageStart','v500StageSetup','v500StageReview'];return ids.map(x=>{const e=$(x);return e?{id:x,hidden:e.hidden||getComputedStyle(e).display==='none'||getComputedStyle(e).visibility==='hidden'}:null}).filter(Boolean)}
+function hasReview(){const e=$('v500StageReview');if(!e)return false;return !e.hidden&&getComputedStyle(e).display!=='none'&&!!(window.plans?.length||document.querySelector('#v504ReviewRows .v504-day,.v500-day-card,.v510-plan-card'))}
+function tick(){if(!active)return;const elapsed=Date.now()-started;const st=stage();if(hasReview()||((window.plans?.length||0)>0&&st.some(x=>x.id==='v500StageReview'&&!x.hidden))){display(3,'Your plan is ready for review.');clearInterval(watch);clearTimeout(deadline);active=false;setTimeout(()=>{$('apBuildProgress')?.classList.remove('ap-show')},4200);return}
+if(elapsed>1800&&phase<1)display(1,'Checking imported activities and calendar coverage…');if(elapsed>4500&&phase<2)display(2,'Calculating transportation and driver recommendations…');}
+function start(){create();clearInterval(watch);clearTimeout(deadline);started=Date.now();phase=0;active=true;display(0,'Refreshing connected calendar feeds…');watch=setInterval(tick,500);deadline=setTimeout(()=>{if(!active)return;active=false;clearInterval(watch);display(phase,'This plan has not completed. Check Backstage calendar activity counts, then try Build Plan again.');$('apBuildProgress').querySelector('.ap-heading').textContent='Plan needs attention';const b=$('v500StartNext');if(b){b.disabled=false;b.textContent='TRY BUILD AGAIN'}},45000)}
+function wire(){create();document.addEventListener('click',e=>{const b=e.target.closest('#v500StartNext');if(!b||b.disabled)return;start()},true);document.addEventListener('click',e=>{if(e.target.closest('#v502RestartCycle,#v510StartOver')){active=false;clearInterval(watch);clearTimeout(deadline);$('apBuildProgress')?.classList.remove('ap-show')}},true);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);else wire();
+})();
+</script>
