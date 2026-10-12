@@ -1258,7 +1258,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </style><meta name="autopilot-build" content="v56.11-PLAN-NAVIGATION">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v56.11',build:'PLAN-NAVIGATION',label:'AutoPilot v56.11'});
+const release=Object.freeze({version:'v56.13',build:'TASK-NAVIGATION',label:'AutoPilot v56.13'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -8056,7 +8056,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <style id="ap565MealStyle">#ap565Panel{margin:12px 14px;padding:15px;border:1px solid #cfd8df;border-radius:12px;background:#fff;box-shadow:0 4px 20px #142d4010;color:#233648}#ap565Panel[hidden]{display:none!important}.ap565-head{display:flex;justify-content:space-between;gap:14px;align-items:center}.ap565-head strong{display:block;font-size:16px}.ap565-head span{display:block;font-size:11px;color:#627383;margin-top:3px}.ap565-head button,.ap565-row button{border:1px solid #bccad5;background:#f6f8fa;border-radius:7px;padding:9px 12px;font-size:11px;font-weight:700;cursor:pointer}.ap565-toolbar{display:flex;justify-content:space-between;align-items:center;margin:14px 0;gap:12px;font-size:11px}.ap565-toolbar label{flex:1}.ap565-toolbar input{display:block;width:100%;margin-top:5px;min-height:36px;border:1px solid #bac9d4;border-radius:7px;padding:6px 9px}.ap565-row{display:grid;grid-template-columns:110px minmax(180px,1fr) minmax(160px,1fr) 60px;gap:8px;align-items:center;padding:9px 0;border-top:1px solid #e9edf0}.ap565-row strong{font-size:11px}.ap565-row select,.ap565-row input{width:100%;min-width:0;min-height:35px;border:1px solid #bac9d4;border-radius:7px;padding:6px 8px;background:#fff;font-size:11px}.ap565-saved{margin-top:14px;background:#f5f8fa;padding:12px;border-radius:9px;font-size:11px}.ap565-saved p{margin:5px 0 9px;color:#65788a}.ap565-recipe{display:inline-block;border:1px solid #dae3e9;border-radius:20px;background:#fff;padding:5px 8px;margin:3px;font-size:10px}#ap565Status{min-height:18px;font-size:11px;color:#275d50}@media(max-width:720px){.ap565-row{grid-template-columns:1fr 1fr}.ap565-row strong{grid-column:1/-1}.ap565-row input{grid-column:1/-1}.ap565-row button{grid-column:1/-1}}
 </style>
 <script data-module="meal_quick_edit_565">
-/* AutoPilot v56.11: standalone Meal HQ editor, works with existing persisted meal state. */
+/* AutoPilot v56.12: standalone Meal HQ editor, works with existing persisted meal state. */
 (function(){
  'use strict';
  const KEY='autopilot.mealHQ.v1';
@@ -8077,7 +8077,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  function panel(){const host=document.getElementById('v524MealHQ');if(!host)return null;let p=document.getElementById('ap565Panel');if(p?.parentElement===host)return p;p?.remove();p=document.createElement('section');p.id='ap565Panel';p.hidden=true;p.innerHTML=markup;host.querySelector('.v524-head')?.insertAdjacentElement('afterend',p);if(!p.parentElement)host.prepend(p);p.addEventListener('click',e=>{if(e.target.closest('[data-ap565="close"]')){p.hidden=true;lastOpen=false;return}const btn=e.target.closest('[data-ap565="save"]');if(!btn)return;const row=btn.closest('[data-ap565-date]');const manual=row.querySelector('.ap565-manual').value;if(manual.trim())saveCustom(row.dataset.ap565Date,manual);else if(row.querySelector('select').value){apply(row.dataset.ap565Date,row.querySelector('select').value);renderRows()}else status('Select or type a dinner first.');});p.querySelector('#ap565Search').addEventListener('input',renderSaved);renderRows();return p;}
  let lastOpen=false;
  function open(date){const p=panel();if(!p)return;renderRows();p.hidden=false;lastOpen=true;if(date){const row=[...p.querySelectorAll('[data-ap565-date]')].find(x=>x.dataset.ap565Date===date);row?.scrollIntoView({block:'nearest'});row?.querySelector('.ap565-manual')?.focus()}else p.querySelector('#ap565Search')?.focus({preventScroll:true});}
- document.addEventListener('click',e=>{const b=e.target.closest('#v526ChangeMeals');if(b){e.preventDefault();e.stopImmediatePropagation();const p=panel();if(!p)return;if(!p.hidden){p.hidden=true;lastOpen=false}else open();return}const reroll=e.target.closest('#v524MealHQ .v524-reroll');if(reroll){e.preventDefault();e.stopImmediatePropagation();open(reroll.closest('[data-date]')?.dataset.date)}},true);
+ document.addEventListener('click',e=>{const b=e.target.closest('#v526ChangeMeals');if(b){e.preventDefault();e.stopImmediatePropagation();if(window.__apOpenDinnerPlan)window.__apOpenDinnerPlan();else open();return}const reroll=e.target.closest('#v524MealHQ .v524-reroll');if(reroll){e.preventDefault();e.stopImmediatePropagation();if(window.__apOpenDinnerPlan)window.__apOpenDinnerPlan();else open(reroll.closest('[data-date]')?.dataset.date)}},true);
  let queued=false;const watch=new MutationObserver(()=>{if(queued)return;queued=true;setTimeout(()=>{queued=false;const host=document.getElementById('v524MealHQ');if(!host)return;const p=panel();if(lastOpen&&p.hidden){p.hidden=false;renderRows()}},60)});
  const start=()=>{watch.observe(document.body,{subtree:true,childList:true});panel()};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
@@ -8157,6 +8157,46 @@ window.addEventListener('suite-meals-change',()=>{try{if(typeof finalData!=='und
 #ap569Toast[data-status="done"]{border-color:#77a69a}#ap569Toast[data-status="error"]{border-color:#e8a6a0}
 @media(prefers-reduced-motion:reduce){#ap569Pulse.on{animation:none;opacity:.09}#ap569Toast,#ap569Pulse{transition:none}.ap569Spinner{animation:none}}
 </style>
+<style id="ap571DinnerUxStyle">
+#apDinnerShortcut{border:1px solid #a9bccb;background:#153f5b;color:white;border-radius:9px;padding:10px 14px;font:700 12px system-ui;cursor:pointer;min-height:42px;white-space:nowrap}
+#apDinnerShortcut:focus-visible,#apDinnerDialog button:focus-visible,#apDinnerDialog select:focus-visible,#apDinnerDialog input:focus-visible{outline:3px solid #cb9a4c;outline-offset:2px}
+#apDinnerDialog{border:1px solid #cbd8e1;border-radius:16px;box-shadow:0 20px 70px #14263875;max-width:min(850px,calc(100vw - 24px));width:100%;max-height:88dvh;padding:0;font:13px system-ui;color:#18334a}
+#apDinnerDialog::backdrop{background:#0b203b86}#apDinnerDialog .apd-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #dde6ed;position:sticky;top:0;background:#fff;z-index:2}#apDinnerDialog h2{font-size:20px;margin:0}#apDinnerDialog .apd-sub{font-size:12px;color:#607488;margin:3px 0 0}#apDinnerDialog .apd-main{padding:12px 22px 22px;overflow:auto}#apDinnerDialog .apd-row{display:grid;grid-template-columns:minmax(110px,1fr) minmax(170px,2fr) minmax(170px,2fr) auto;gap:9px;align-items:center;border-bottom:1px solid #edf1f4;padding:10px 0}#apDinnerDialog .apd-row strong{font-size:12px}#apDinnerDialog select,#apDinnerDialog input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px solid #c5d3dc;background:#fff;min-width:0;min-height:40px}#apDinnerDialog button{cursor:pointer;border:1px solid #b8c9d6;background:#f5f8fa;padding:10px 12px;border-radius:8px;font-weight:700}#apDinnerDialog .apd-save{background:#193f59;color:#fff;border-color:#193f59}#apDinnerDialog .apd-close{font-size:16px;padding:6px 12px}#apDinnerDialog #apDinnerResult{padding:8px 0;color:#24705c;min-height:20px}#apDinnerDialog .apd-tip{color:#596e7e;font-size:12px;margin:10px 0}#apDinnerShortcut[disabled]{opacity:.6}@media(max-width:720px){#apDinnerDialog .apd-row{grid-template-columns:1fr 1fr}#apDinnerDialog .apd-row strong{grid-column:1/-1}#apDinnerDialog .apd-row button{grid-column:1/-1}#apDinnerDialog .apd-head{padding:13px}#apDinnerDialog .apd-main{padding:12px}}
+</style>
+<script id="ap571DinnerUx">
+(function(){'use strict';
+const KEY='autopilot.mealHQ.v1',escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}};
+const write=s=>{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem('autopilot.suite.mealsChangedAt',String(Date.now()));window.dispatchEvent(new Event('suite-meals-change'))};
+function days(){const set=new Set();document.querySelectorAll('#v524MealHQ .v524-card[data-date]').forEach(e=>set.add(e.dataset.date));try{const p=window.plans||[];p.forEach(x=>{if(/^\d{4}-\d{2}-\d{2}$/.test(x.dateStr||x.date||''))set.add(x.dateStr||x.date)})}catch{};Object.keys(read().byDate||{}).forEach(d=>{if(/^\d{4}-\d{2}-\d{2}$/.test(d))set.add(d)});if(!set.size){const start=document.getElementById('v500StartDate')?.value||document.getElementById('startDate')?.value;if(/^\d{4}-\d{2}-\d{2}$/.test(start)){const d=new Date(start+'T12:00:00');for(let i=0;i<10;i++){const x=new Date(d);x.setDate(d.getDate()+i);set.add([x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-'))}}}return [...set].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort().slice(0,31)}
+function label(d){return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
+function recipes(){const s=read(),m=new Map();document.querySelectorAll('#v524MealHQ select.v524-dinner option').forEach(o=>{if(o.value)m.set(o.value,o.textContent.trim())});(s.customRecipes||[]).forEach(x=>{if(x?.id&&x?.name)m.set(x.id,x.name)});return [...m].map(([id,name])=>({id,name}))}
+function build(){
+const dlg=document.getElementById('apDinnerDialog'), body=dlg.querySelector('.apd-main'), state=read(), options=recipes(), dates=days();
+body.innerHTML='<p class="apd-tip">Choose a saved meal or type a manual override. Save changes without leaving this screen.</p><div id="apDinnerRows"></div><div id="apDinnerResult" role="status" aria-live="polite"></div>';
+const rows=body.querySelector('#apDinnerRows');
+if(!dates.length){rows.textContent='No dated plan found. Choose a start date or build a plan first.';return;}
+for(const date of dates){
+ const line=document.createElement('div');line.className='apd-row';line.dataset.apdDate=date;
+ const day=document.createElement('strong');day.textContent=label(date);line.appendChild(day);
+ const select=document.createElement('select');select.setAttribute('aria-label','Dinner for '+date);
+ const empty=document.createElement('option');empty.value='';empty.textContent='Select saved dinner…';select.appendChild(empty);
+ for(const option of options){const item=document.createElement('option');item.value=option.id;item.textContent=option.name;select.appendChild(item)}
+ select.value=state.byDate?.[date]?.mealId||'';line.appendChild(select);
+ const input=document.createElement('input');input.setAttribute('aria-label','Manual dinner for '+date);input.placeholder='Or type any dinner';line.appendChild(input);
+ const button=document.createElement('button');button.className='apd-save';button.type='button';button.textContent='Save dinner';line.appendChild(button);rows.appendChild(line);
+}
+}
+function open(){const dlg=document.getElementById('apDinnerDialog');if(!dlg)return;build();if(!dlg.open)dlg.showModal();dlg.querySelector('.apd-row select,.apd-row input,.apd-close')?.focus({preventScroll:true})}
+function save(row){const date=row.dataset.apdDate,name=row.querySelector('input').value.trim();let id=row.querySelector('select').value,s=read();s.customRecipes=s.customRecipes||[];if(name){let item=s.customRecipes.find(x=>x.name?.toLowerCase()===name.toLowerCase());if(!item){item={id:'manual-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),name,mins:30,mode:'manual choice',ingredients:[],prep:'',source:'Manual override'};s.customRecipes.push(item)}id=item.id}if(!id){row.querySelector('select').focus();document.getElementById('apDinnerResult').textContent='Choose a recipe or type a dinner first.';return}s.byDate=s.byDate||{};s.byDate[date]={...(s.byDate[date]||{}),mealId:id,auto:false};write(s);document.getElementById('apDinnerResult').textContent=`Saved dinner for ${label(date)}.`;const sel=[...document.querySelectorAll('#v524MealHQ .v524-card[data-date] select.v524-dinner')].find(x=>x.closest('[data-date]')?.dataset.date===date);if(sel){if(![...sel.options].some(x=>x.value===id)){const o=document.createElement('option');o.value=id;o.textContent=name;sel.add(o)}sel.value=id;sel.dispatchEvent(new Event('change',{bubbles:true}))}build()}
+function init(){if(document.getElementById('apDinnerShortcut'))return;const dlg=document.createElement('dialog');dlg.id='apDinnerDialog';dlg.setAttribute('aria-label','Dinner plan editor');dlg.innerHTML='<div class="apd-head"><div><h2>Dinner plan</h2><p class="apd-sub">Review or change dinners without leaving your logistics plan.</p></div><button type="button" class="apd-close" aria-label="Close dinner plan">×</button></div><div class="apd-main"></div>';document.body.appendChild(dlg);dlg.addEventListener('click',e=>{if(e.target.closest('.apd-close'))dlg.close();const btn=e.target.closest('.apd-save');if(btn)save(btn.closest('.apd-row'))});const host=document.querySelector('#apWorkflow .apw-head')||document.getElementById('apWorkflow')||document.body;const b=document.createElement('button');b.type='button';b.id='apDinnerShortcut';b.textContent='🍽 View / Edit Dinners';b.addEventListener('click',open);host.appendChild(b);
+// Handle legacy Change Meal buttons from every renderer, and keep navigation in the user-visible meal editor.
+document.addEventListener('click',e=>{const x=e.target.closest('#v526ChangeMeals,#ap565Open,#v524MealHQ .v524-reroll,[data-ap-dinner-open]');if(!x)return;e.preventDefault();e.stopImmediatePropagation();open()},true);
+window.__apOpenDinnerPlan=open;
+}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+<script id="ap571ReleaseIdentity">(function(){const V='v56.12';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
 <script id="ap570-workflow-feedback">
 (()=>{'use strict';
  const VERSION='56.11';
@@ -8214,5 +8254,49 @@ window.addEventListener('suite-meals-change',()=>{try{if(typeof finalData!=='und
  window.addEventListener('error',()=>{if(document.getElementById('ap569Toast')?.dataset.status==='busy')end(token,'Action encountered an error — review the plan','error')});
  window.addEventListener('unhandledrejection',()=>{if(document.getElementById('ap569Toast')?.dataset.status==='busy')end(token,'Action did not complete — check your connection','error')});
  window.__apWorkflowFeedback={show,end,version:VERSION};
+})();
+</script>
+
+<style id="apTaskNavStyles">
+#apTaskNav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:2147480800;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #c5d3df;background:rgba(255,255,255,.97);color:#223b4d;border-radius:15px;box-shadow:0 5px 28px rgba(15,35,55,.18);font:600 12px system-ui;max-width:calc(100vw - 22px);overflow-x:auto}
+#apTaskNav button{flex:0 0 auto;border:0;background:transparent;color:#28475c;cursor:pointer;border-radius:10px;padding:10px 12px;font:inherit;white-space:nowrap}
+#apTaskNav button:hover,#apTaskNav button:focus-visible{background:#e8f0f5;outline:2px solid #6389a2;outline-offset:-2px}
+#apTaskNav button[aria-current="page"]{background:#163e59;color:white}
+#apTaskNavStatus{position:fixed;left:50%;transform:translateX(-50%);bottom:70px;z-index:2147480799;background:#183749;color:#fff;border-radius:10px;padding:9px 15px;font:500 12px system-ui;box-shadow:0 4px 18px #152c4233;max-width:90vw;text-align:center}
+#apTaskNavStatus[hidden]{display:none}
+body{padding-bottom:74px!important}
+@media(max-width:600px){#apTaskNav{width:calc(100vw - 18px);justify-content:space-between}#apTaskNav button{font-size:11px;padding:10px 9px}}
+@media print{#apTaskNav,#apTaskNavStatus{display:none!important}}
+</style>
+<script data-module="task-navigation-v56.13">
+(()=>{'use strict';
+const tasks=[['logistics','Logistics'],['dinner','Dinners'],['groceries','Groceries'],['outputs','Publish'],['backup','Backup']];
+let noticeTimer=0;
+function notice(message){const node=document.getElementById('apTaskNavStatus');if(!node)return;clearTimeout(noticeTimer);node.textContent=message;node.hidden=false;noticeTimer=setTimeout(()=>node.hidden=true,3600)}
+function visible(el){return !!(el&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden')}
+function navigate(key){
+  if(key==='backup'){
+    const b=document.getElementById('apBackupLaunch');if(!b){notice('Backup is not available on this screen.');return}
+    b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apBackupDialog[open]'))notice('Backup did not open. Please check the application.');});return;
+  }
+  if(key==='dinner'){
+    const b=document.getElementById('apDinnerShortcut');if(b){b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apDinnerDialog[open]')&&!visible(document.getElementById('apDinnerDialog')))notice('Dinner editor did not open.');});return}
+  }
+  const button=document.querySelector('[data-apw="'+key+'"]');if(!button){notice('This workspace is unavailable.');return}
+  button.click();
+  requestAnimationFrame(()=>{
+    const current=document.querySelector('[data-apw="'+key+'"][aria-current="step"]');
+    if(!current){notice('Could not open '+key+'.');return}
+    document.querySelectorAll('#apTaskNav [data-task]').forEach(x=>x.setAttribute('aria-current',x.dataset.task===key?'page':'false'));
+    if(key==='logistics'){
+      const review=document.getElementById('v500StageReview');
+      if(review?.classList.contains('on'))review.scrollIntoView({block:'start',behavior:'instant'});
+      else document.getElementById('apWorkflow')?.scrollIntoView({block:'start',behavior:'instant'});
+    }
+    else document.getElementById('apModuleStage')?.scrollIntoView({block:'start',behavior:'instant'});
+  });
+}
+function init(){if(document.getElementById('apTaskNav'))return;const nav=document.createElement('nav');nav.id='apTaskNav';nav.setAttribute('aria-label','AutoPilot quick navigation');tasks.forEach(([k,label])=>{const b=document.createElement('button');b.type='button';b.dataset.task=k;b.textContent=label;b.setAttribute('aria-current',k==='logistics'?'page':'false');b.addEventListener('click',()=>navigate(k));nav.appendChild(b)});const status=document.createElement('div');status.id='apTaskNavStatus';status.hidden=true;status.setAttribute('role','status');status.setAttribute('aria-live','polite');document.body.append(nav,status);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
