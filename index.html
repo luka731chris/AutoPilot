@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v56.16</title>
+<title>AutoPilot — Family Logistics Planner v56.17</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1255,10 +1255,10 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 #v500App .v507-event .ap-editday-actions button{display:inline-flex!important;visibility:visible!important;opacity:1!important;padding:8px 10px;min-height:34px;font:700 10px/1.25 system-ui,sans-serif;background:#f2f6f9;border:1px solid #b9cbd8;border-radius:7px;color:#1c354a;cursor:pointer}
 #v500App .v507-event .ap-editday-actions button.active{background:#deeee6;border-color:#77aa92;color:#154c36}
 #v500App .v507-event{overflow:visible!important}
-</style><meta name="autopilot-build" content="v56.16-STATIC-NAV">
+</style><meta name="autopilot-build" content="v56.17-STATIC-NAV">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v56.16',build:'STATIC-NAV-REPAIR',label:'AutoPilot v56.16'});
+const release=Object.freeze({version:'v56.17',build:'STATIC-NAV-REPAIR',label:'AutoPilot v56.17'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -1323,16 +1323,27 @@ body.ap-focus #apModuleStage .apw-stage-head{display:none!important}
 body.ap-focus #apCoreNavMessage{bottom:24px!important}
 @media(max-width:650px){body.ap-focus{padding-top:71px!important}body.ap-focus #apCoreNavigation{padding:6px!important;justify-content:space-around!important}body.ap-focus #apCoreNavigation button{font-size:12px!important;padding:10px 7px!important}body.ap-focus #apFocusHeading{margin:7px 7px;padding:12px}body.ap-focus #apFocusHeading h1{font-size:20px}body.ap-focus #apModuleStage{margin:6px!important;padding:10px!important}}
 @media print{#apFocusHeading{display:none!important}body.ap-focus>.app-shell{display:block!important}body.ap-focus{padding:0!important}}
+
+/* v56.17: one icon-label ribbon and an exclusive long-range calendar workspace */
+body.ap-focus #apCoreNavigation{gap:8px!important}
+body.ap-focus #apCoreNavigation button{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:104px!important;line-height:1.15!important;white-space:nowrap!important}
+body.ap-focus #apCoreNavigation button svg{display:block!important;width:17px!important;height:17px!important;flex:0 0 17px!important;pointer-events:none!important}
+body.ap-focus #apCoreNavigation button[aria-current="page"]{background:#1c2634!important;color:#fff!important;border-color:#1c2634!important}
+body.ap-focus #apLongExport{display:none!important}
+body.ap-focus.ap-focus-calendar #apLongExport{display:block!important;margin:14px auto!important;max-width:1320px!important}
+body.ap-focus.ap-focus-calendar > #v500App,body.ap-focus.ap-focus-calendar > #apModuleStage{display:none!important}
+body.ap-focus.ap-focus-calendar #apFocusHeading{display:flex!important}
+@media(max-width:650px){body.ap-focus{padding-top:81px!important}body.ap-focus #apCoreNavigation{gap:2px!important;padding:8px 3px!important}body.ap-focus #apCoreNavigation button{min-width:0!important;flex:1 1 0!important;font-size:10px!important;gap:4px!important;padding:8px 2px!important;flex-direction:column!important}body.ap-focus #apCoreNavigation button svg{width:18px!important;height:18px!important}}
+@media print{body.ap-focus #apLongExport{display:none!important}body.ap-focus #apCoreNavigation{display:none!important}}
 </style>
 </head>
 <body>
-<nav id="apCoreNavigation" aria-label="AutoPilot main navigation" data-release="v56.16">
-<button type="button" data-ap-nav="logistics" aria-current="page">Logistics</button>
-<button type="button" data-ap-nav="dinner">Dinners</button>
-<button type="button" data-ap-nav="groceries">Groceries</button>
-<button type="button" data-ap-nav="outputs">Publish</button>
-<button type="button" data-ap-nav="backup">Backup</button>
-<span class="ap-nav-version">v56.16</span>
+<nav id="apCoreNavigation" aria-label="AutoPilot main navigation" data-release="v56.17">
+<button type="button" data-ap-nav="logistics" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 18h3"/></svg><span>Plan</span></button>
+<button type="button" data-ap-nav="dinner" aria-current="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M17 3v18M17 3c-4 3-4 9 0 10h3V3"/></svg><span>Meals</span></button>
+<button type="button" data-ap-nav="groceries" aria-current="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2 11h12l2-8H6M9 20h.01M18 20h.01"/></svg><span>Groceries</span></button>
+<button type="button" data-ap-nav="outputs" aria-current="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5M5 15v5h14v-5"/></svg><span>Publish</span></button>
+<button type="button" data-ap-nav="calendar" aria-current="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 15h4M8 18h8"/></svg><span>Calendar</span></button>
 </nav><div id="apCoreNavMessage" role="status" aria-live="polite" hidden></div>
 <section id="apFocusHeading" aria-label="Current workspace"><div><h1 id="apFocusTitle">Weekly Plan</h1><p id="apFocusDescription">Your plan, without the setup clutter.</p></div><div class="apf-actions"><button id="apfWeek" class="apf-main" type="button" hidden>← Weekly Plan</button><button id="apfChange" type="button" hidden>Change dinner</button><button id="apfRecipe" type="button" hidden>Add recipe</button><button id="apfSettings" type="button" hidden>Meal settings</button><button id="apfAdvanced" type="button">All tools / Settings</button></div></section>
 <script id="apCoreNavigationController">
@@ -1365,7 +1376,7 @@ function open(key){
  },90);
 }
 nav.addEventListener('click',e=>{const b=e.target.closest('button[data-ap-nav]');if(b){e.preventDefault();open(b.dataset.apNav)}});
-window.AutoPilotNavigation={open,version:'v56.16'};
+window.AutoPilotNavigation={open,version:'v56.17'};
 })();
 </script>
 
@@ -8277,7 +8288,7 @@ window.__apOpenDinnerPlan=open;
 }if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
-<script id="ap571ReleaseIdentity">(function(){const V='v56.16';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
+<script id="ap571ReleaseIdentity">(function(){const V='v56.17';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
 <script id="ap570-workflow-feedback">
 (()=>{'use strict';
  const VERSION='56.11';
@@ -8344,19 +8355,19 @@ window.__apOpenDinnerPlan=open;
 const $=id=>document.getElementById(id);let area='plan';
 function status(t){const m=$('apCoreNavMessage');if(m){m.textContent=t;m.hidden=false;clearTimeout(window.__apfTimer);window.__apfTimer=setTimeout(()=>m.hidden=true,3800)}}
 function legacy(module){const b=document.querySelector('#apWorkflow [data-apw="'+module+'"]');if(!b){status('Workspace is unavailable');return false}b.click();return true}
-function show(k){area=k;document.body.classList.add('ap-focus');document.body.classList.remove('ap-focus-plan','ap-focus-meals','ap-focus-groceries','ap-focus-advanced');document.body.classList.add('ap-focus-'+k);
-const opts={plan:['Weekly Plan','View and update the current family logistics plan.'],meals:['Meal HQ','See this week’s dinners, make changes, or manage recipes.'],groceries:['Groceries','Review ingredients and the shopping list.'],advanced:['All AutoPilot tools','Calendar sources, exports, backup, and advanced settings.']};
+function show(k){area=k;document.body.classList.add('ap-focus');document.body.classList.remove('ap-focus-plan','ap-focus-meals','ap-focus-groceries','ap-focus-advanced','ap-focus-calendar');document.body.classList.add('ap-focus-'+k);
+const opts={calendar:['Calendar Export','Download your family calendar in Word or Excel for any date range.'],plan:['Weekly Plan','View and update the current family logistics plan.'],meals:['Meal HQ','See this week’s dinners, make changes, or manage recipes.'],groceries:['Groceries','Review ingredients and the shopping list.'],advanced:['All AutoPilot tools','Calendar sources, exports, backup, and advanced settings.']};
 $('apFocusTitle').textContent=opts[k][0];$('apFocusDescription').textContent=opts[k][1];
 $('apfWeek').hidden=k==='plan';$('apfChange').hidden=k!=='meals';$('apfRecipe').hidden=k!=='meals';$('apfSettings').hidden=k!=='meals';$('apfAdvanced').textContent=k==='advanced'?'← Back to Weekly Plan':'All tools / Settings';
 if(k==='meals')legacy('dinner');if(k==='groceries')legacy('groceries');if(k==='plan')legacy('logistics');
-document.querySelectorAll('#apCoreNavigation [data-ap-nav]').forEach(b=>b.setAttribute('aria-current',({'plan':'logistics','meals':'dinner','groceries':'groceries'}[k]===b.dataset.apNav)?'page':'false'));
+document.querySelectorAll('#apCoreNavigation [data-ap-nav]').forEach(b=>b.setAttribute('aria-current',({'plan':'logistics','meals':'dinner','groceries':'groceries','calendar':'calendar'}[k]===b.dataset.apNav)?'page':'false'));
 window.scrollTo({top:0,behavior:'instant'});
 if(k==='meals'||k==='groceries')setTimeout(()=>{if($('apModuleStage')?.hidden)status('Could not open this workspace. Use All tools / Settings to troubleshoot.')},180);
 }
 function clickExisting(id){const b=$(id);if(!b){status('That tool is not available in this plan. Open All tools / Settings.');return false}b.click();return true}
 function init(){if(!$('apCoreNavigation')||!$('apFocusHeading'))return;
 // Capture before legacy navigation: one destination, one handler.
-document.addEventListener('click',function(e){const b=e.target.closest?.('#apCoreNavigation [data-ap-nav]');if(!b)return;const k=b.dataset.apNav;if(!['logistics','dinner','groceries','outputs','backup'].includes(k))return;e.preventDefault();e.stopImmediatePropagation();if(k==='logistics')show('plan');else if(k==='dinner')show('meals');else if(k==='groceries')show('groceries');else {show('advanced');if(k==='outputs')legacy('outputs');if(k==='backup')clickExisting('apBackupLaunch');}},true);
+document.addEventListener('click',function(e){const b=e.target.closest?.('#apCoreNavigation [data-ap-nav]');if(!b)return;const k=b.dataset.apNav;if(!['logistics','dinner','groceries','outputs','calendar'].includes(k))return;e.preventDefault();e.stopImmediatePropagation();if(k==='logistics')show('plan');else if(k==='dinner')show('meals');else if(k==='groceries')show('groceries');else if(k==='calendar')show('calendar');else {show('advanced');if(k==='outputs')legacy('outputs');}},true);
 $('apfWeek').onclick=()=>show('plan');$('apfAdvanced').onclick=()=>show(area==='advanced'?'plan':'advanced');
 $('apfChange').onclick=()=>{if(typeof window.__apOpenDinnerPlan==='function')window.__apOpenDinnerPlan();else if(!clickExisting('v526ChangeMeals'))status('Dinner editor unavailable')};
 $('apfRecipe').onclick=()=>{if(!clickExisting('v524Taste'))status('Open advanced Meal HQ to manage recipes');else setTimeout(()=>{$('v524RecipeUrl')?.scrollIntoView({block:'center',behavior:'smooth'});$('v524RecipeUrl')?.focus()},100)};
