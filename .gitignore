@@ -1,0 +1,11 @@
+# Private household data and credentials
+*.backup.json
+*Backup*.json
+*.ics
+*.ical
+.env
+.env.*
+*.pem
+*.key
+node_modules/
+.DS_Store
