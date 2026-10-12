@@ -1258,7 +1258,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </style><meta name="autopilot-build" content="v56.11-PLAN-NAVIGATION">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v56.13',build:'TASK-NAVIGATION',label:'AutoPilot v56.13'});
+const release=Object.freeze({version:'v56.14',build:'NAV-MOUNT-FIX',label:'AutoPilot v56.14'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -7244,6 +7244,50 @@ let queued=false;const obs=new MutationObserver(()=>{if(queued)return;queued=tru
 })();
 
 </script>
+<style id="apTaskNavStyles">
+#apTaskNav{position:fixed!important;visibility:visible!important;opacity:1!important;left:50%;transform:translateX(-50%);bottom:12px;z-index:2147480800;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #c5d3df;background:rgba(255,255,255,.97);color:#223b4d;border-radius:15px;box-shadow:0 5px 28px rgba(15,35,55,.18);font:600 12px system-ui;max-width:calc(100vw - 22px);overflow-x:auto}
+#apTaskNav button{flex:0 0 auto;border:0;background:transparent;color:#28475c;cursor:pointer;border-radius:10px;padding:10px 12px;font:inherit;white-space:nowrap}
+#apTaskNav button:hover,#apTaskNav button:focus-visible{background:#e8f0f5;outline:2px solid #6389a2;outline-offset:-2px}
+#apTaskNav button[aria-current="page"]{background:#163e59;color:white}
+#apTaskNavStatus{position:fixed;left:50%;transform:translateX(-50%);bottom:70px;z-index:2147480799;background:#183749;color:#fff;border-radius:10px;padding:9px 15px;font:500 12px system-ui;box-shadow:0 4px 18px #152c4233;max-width:90vw;text-align:center}
+#apTaskNavStatus[hidden]{display:none}
+body{padding-bottom:74px!important}
+@media(max-width:600px){#apTaskNav{width:calc(100vw - 18px);justify-content:space-between}#apTaskNav button{font-size:11px;padding:10px 9px}}
+@media print{#apTaskNav,#apTaskNavStatus{display:none!important}}
+</style>
+<script data-module="task-navigation-v56.14">
+(()=>{'use strict';
+const tasks=[['logistics','Logistics'],['dinner','Dinners'],['groceries','Groceries'],['outputs','Publish'],['backup','Backup']];
+let noticeTimer=0;
+function notice(message){const node=document.getElementById('apTaskNavStatus');if(!node)return;clearTimeout(noticeTimer);node.textContent=message;node.hidden=false;noticeTimer=setTimeout(()=>node.hidden=true,3600)}
+function visible(el){return !!(el&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden')}
+function navigate(key){
+  if(key==='backup'){
+    const b=document.getElementById('apBackupLaunch');if(!b){notice('Backup is not available on this screen.');return}
+    b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apBackupDialog[open]'))notice('Backup did not open. Please check the application.');});return;
+  }
+  if(key==='dinner'){
+    const b=document.getElementById('apDinnerShortcut');if(b){b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apDinnerDialog[open]')&&!visible(document.getElementById('apDinnerDialog')))notice('Dinner editor did not open.');});return}
+  }
+  const button=document.querySelector('[data-apw="'+key+'"]');if(!button){notice('This workspace is unavailable.');return}
+  button.click();
+  requestAnimationFrame(()=>{
+    const current=document.querySelector('[data-apw="'+key+'"][aria-current="step"]');
+    if(!current){notice('Could not open '+key+'.');return}
+    document.querySelectorAll('#apTaskNav [data-task]').forEach(x=>x.setAttribute('aria-current',x.dataset.task===key?'page':'false'));
+    if(key==='logistics'){
+      const review=document.getElementById('v500StageReview');
+      if(review?.classList.contains('on'))review.scrollIntoView({block:'start',behavior:'instant'});
+      else document.getElementById('apWorkflow')?.scrollIntoView({block:'start',behavior:'instant'});
+    }
+    else document.getElementById('apModuleStage')?.scrollIntoView({block:'start',behavior:'instant'});
+  });
+}
+function init(){if(document.getElementById('apTaskNav'))return;const nav=document.createElement('nav');nav.id='apTaskNav';nav.dataset.release='v56.14';nav.setAttribute('aria-label','AutoPilot quick navigation');tasks.forEach(([k,label])=>{const b=document.createElement('button');b.type='button';b.dataset.task=k;b.textContent=label;b.setAttribute('aria-current',k==='logistics'?'page':'false');b.addEventListener('click',()=>navigate(k));nav.appendChild(b)});const status=document.createElement('div');status.id='apTaskNavStatus';status.hidden=true;status.setAttribute('role','status');status.setAttribute('aria-live','polite');document.body.append(nav,status);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
 <!-- AutoPilot v47.14: non-destructive Review finalization controls; driver/time edits never rebuild active Review workspace. -->
@@ -8257,46 +8301,3 @@ window.__apOpenDinnerPlan=open;
 })();
 </script>
 
-<style id="apTaskNavStyles">
-#apTaskNav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:2147480800;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #c5d3df;background:rgba(255,255,255,.97);color:#223b4d;border-radius:15px;box-shadow:0 5px 28px rgba(15,35,55,.18);font:600 12px system-ui;max-width:calc(100vw - 22px);overflow-x:auto}
-#apTaskNav button{flex:0 0 auto;border:0;background:transparent;color:#28475c;cursor:pointer;border-radius:10px;padding:10px 12px;font:inherit;white-space:nowrap}
-#apTaskNav button:hover,#apTaskNav button:focus-visible{background:#e8f0f5;outline:2px solid #6389a2;outline-offset:-2px}
-#apTaskNav button[aria-current="page"]{background:#163e59;color:white}
-#apTaskNavStatus{position:fixed;left:50%;transform:translateX(-50%);bottom:70px;z-index:2147480799;background:#183749;color:#fff;border-radius:10px;padding:9px 15px;font:500 12px system-ui;box-shadow:0 4px 18px #152c4233;max-width:90vw;text-align:center}
-#apTaskNavStatus[hidden]{display:none}
-body{padding-bottom:74px!important}
-@media(max-width:600px){#apTaskNav{width:calc(100vw - 18px);justify-content:space-between}#apTaskNav button{font-size:11px;padding:10px 9px}}
-@media print{#apTaskNav,#apTaskNavStatus{display:none!important}}
-</style>
-<script data-module="task-navigation-v56.13">
-(()=>{'use strict';
-const tasks=[['logistics','Logistics'],['dinner','Dinners'],['groceries','Groceries'],['outputs','Publish'],['backup','Backup']];
-let noticeTimer=0;
-function notice(message){const node=document.getElementById('apTaskNavStatus');if(!node)return;clearTimeout(noticeTimer);node.textContent=message;node.hidden=false;noticeTimer=setTimeout(()=>node.hidden=true,3600)}
-function visible(el){return !!(el&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden')}
-function navigate(key){
-  if(key==='backup'){
-    const b=document.getElementById('apBackupLaunch');if(!b){notice('Backup is not available on this screen.');return}
-    b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apBackupDialog[open]'))notice('Backup did not open. Please check the application.');});return;
-  }
-  if(key==='dinner'){
-    const b=document.getElementById('apDinnerShortcut');if(b){b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apDinnerDialog[open]')&&!visible(document.getElementById('apDinnerDialog')))notice('Dinner editor did not open.');});return}
-  }
-  const button=document.querySelector('[data-apw="'+key+'"]');if(!button){notice('This workspace is unavailable.');return}
-  button.click();
-  requestAnimationFrame(()=>{
-    const current=document.querySelector('[data-apw="'+key+'"][aria-current="step"]');
-    if(!current){notice('Could not open '+key+'.');return}
-    document.querySelectorAll('#apTaskNav [data-task]').forEach(x=>x.setAttribute('aria-current',x.dataset.task===key?'page':'false'));
-    if(key==='logistics'){
-      const review=document.getElementById('v500StageReview');
-      if(review?.classList.contains('on'))review.scrollIntoView({block:'start',behavior:'instant'});
-      else document.getElementById('apWorkflow')?.scrollIntoView({block:'start',behavior:'instant'});
-    }
-    else document.getElementById('apModuleStage')?.scrollIntoView({block:'start',behavior:'instant'});
-  });
-}
-function init(){if(document.getElementById('apTaskNav'))return;const nav=document.createElement('nav');nav.id='apTaskNav';nav.setAttribute('aria-label','AutoPilot quick navigation');tasks.forEach(([k,label])=>{const b=document.createElement('button');b.type='button';b.dataset.task=k;b.textContent=label;b.setAttribute('aria-current',k==='logistics'?'page':'false');b.addEventListener('click',()=>navigate(k));nav.appendChild(b)});const status=document.createElement('div');status.id='apTaskNavStatus';status.hidden=true;status.setAttribute('role','status');status.setAttribute('aria-live','polite');document.body.append(nav,status);}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
