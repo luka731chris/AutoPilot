@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v56.11</title>
+<title>AutoPilot — Family Logistics Planner v56.15</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1255,10 +1255,10 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 #v500App .v507-event .ap-editday-actions button{display:inline-flex!important;visibility:visible!important;opacity:1!important;padding:8px 10px;min-height:34px;font:700 10px/1.25 system-ui,sans-serif;background:#f2f6f9;border:1px solid #b9cbd8;border-radius:7px;color:#1c354a;cursor:pointer}
 #v500App .v507-event .ap-editday-actions button.active{background:#deeee6;border-color:#77aa92;color:#154c36}
 #v500App .v507-event{overflow:visible!important}
-</style><meta name="autopilot-build" content="v56.11-PLAN-NAVIGATION">
+</style><meta name="autopilot-build" content="v56.15-STATIC-NAV">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v56.14',build:'NAV-MOUNT-FIX',label:'AutoPilot v56.14'});
+const release=Object.freeze({version:'v56.15',build:'STATIC-NAV-REPAIR',label:'AutoPilot v56.15'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -1287,8 +1287,61 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <style id="apGuidedFlowStyle">
 #apWorkflow{position:sticky;top:0;z-index:1600}#apWorkflow .apw-nav button{min-height:44px;cursor:pointer}#apGuidedAction{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #e0e7ed;margin-top:12px;padding-top:12px}#apGuidedAction .apg-note{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#516374}#apGuidedAction .apg-note b{font-size:13px;color:#153a55}#apGuidedAction .apg-buttons{display:flex;align-items:center;gap:8px}#apGuidedAction button{min-height:44px;text-align:center;white-space:normal}#apGuidedPrimary{background:#173f5e!important;border-color:#173f5e!important;color:#fff!important;padding:11px 18px!important;font-size:13px!important}#apGuidedBack{background:#fff!important}#apGuidedBack[hidden]{display:none!important}#apModuleStage>.apw-actions{display:none!important}#apModuleStage .apw-actions{display:none!important}#apWorkflow button:focus-visible{outline:3px solid #c99336;outline-offset:2px}
 @media(max-width:700px){#apGuidedAction{align-items:stretch;flex-direction:column}#apGuidedAction .apg-buttons{width:100%}#apGuidedPrimary{flex:1}}
-</style></head>
+</style><style id="apCoreNavigationStyles">
+#apCoreNavigation{position:fixed!important;left:50%!important;bottom:12px!important;transform:translateX(-50%)!important;z-index:2147483000!important;display:flex!important;visibility:visible!important;opacity:1!important;gap:4px!important;align-items:center!important;background:#fff!important;border:1px solid #b8cad6!important;box-shadow:0 8px 30px #162c4240!important;border-radius:16px!important;padding:6px!important;max-width:calc(100vw - 16px)!important;overflow-x:auto!important;overscroll-behavior-x:contain!important;white-space:nowrap!important;}
+#apCoreNavigation button{appearance:none!important;display:inline-flex!important;align-items:center!important;gap:5px!important;flex:0 0 auto!important;padding:10px 12px!important;min-height:40px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#243c4e!important;font:700 12px system-ui,sans-serif!important;cursor:pointer!important}
+#apCoreNavigation button:focus-visible{outline:3px solid #3989cf!important;outline-offset:-3px!important}
+#apCoreNavigation button[aria-current="page"]{background:#153c56!important;color:#fff!important}
+#apCoreNavigation .ap-nav-version{font:700 9px system-ui,sans-serif!important;color:#657d91!important;padding:0 4px!important}
+#apCoreNavMessage{position:fixed!important;left:50%;transform:translateX(-50%);bottom:77px;z-index:2147483001;background:#173951;color:white;border-radius:10px;padding:10px 14px;max-width:92vw;text-align:center;font:600 12px system-ui,sans-serif}
+#apCoreNavMessage[hidden]{display:none!important}
+body{padding-bottom:88px!important}
+@media(max-width:600px){#apCoreNavigation{bottom:5px!important;width:calc(100vw - 12px)!important;justify-content:space-around!important}#apCoreNavigation button{padding:10px 5px!important;font-size:11px!important}#apCoreNavigation .ap-nav-version{display:none!important}}
+@media print{#apCoreNavigation,#apCoreNavMessage{display:none!important}}
+</style>
+</head>
 <body>
+<nav id="apCoreNavigation" aria-label="AutoPilot main navigation" data-release="v56.15">
+<button type="button" data-ap-nav="logistics" aria-current="page">Logistics</button>
+<button type="button" data-ap-nav="dinner">Dinners</button>
+<button type="button" data-ap-nav="groceries">Groceries</button>
+<button type="button" data-ap-nav="outputs">Publish</button>
+<button type="button" data-ap-nav="backup">Backup</button>
+<span class="ap-nav-version">v56.15</span>
+</nav><div id="apCoreNavMessage" role="status" aria-live="polite" hidden></div>
+<script id="apCoreNavigationController">
+(()=>{'use strict';
+const nav=document.getElementById('apCoreNavigation');
+if(!nav)return;
+const msg=document.getElementById('apCoreNavMessage');let timer;
+const tell=(s)=>{msg.textContent=s;msg.hidden=false;clearTimeout(timer);timer=setTimeout(()=>msg.hidden=true,4000)};
+const mark=(key)=>nav.querySelectorAll('[data-ap-nav]').forEach(b=>b.setAttribute('aria-current',b.dataset.apNav===key?'page':'false'));
+const usable=(el)=>!!(el&&el.isConnected&&el.getClientRects().length);
+function jump(el){try{el?.scrollIntoView({behavior:'instant',block:'start'})}catch(e){el?.scrollIntoView()}}
+function open(key){
+ if(key==='backup'){
+  const b=document.getElementById('apBackupLaunch');if(!b){tell('Backup is unavailable.');return}
+  b.click();setTimeout(()=>{const d=document.getElementById('apBackupDialog');if(!(d?.open||usable(d)))tell('Backup could not open.');else mark(key)},90);return;
+ }
+ if(key==='dinner'){
+  const b=document.getElementById('apDinnerShortcut');
+  if(!b){tell('Dinner editor is unavailable.');return}
+  b.click();setTimeout(()=>{const d=document.getElementById('apDinnerDialog');if(!(d?.open||usable(d)))tell('Dinner editor did not open.');else mark(key)},90);return;
+ }
+ const b=document.querySelector('[data-apw="'+key+'"]');
+ if(!b){tell('The '+key+' workspace is unavailable.');return}
+ b.click();setTimeout(()=>{
+   const active=document.querySelector('[data-apw="'+key+'"][aria-current="step"]');
+   if(!active){tell('Could not open '+key+'.');return}
+   mark(key);
+   if(key==='logistics')jump(document.getElementById('v500StageReview')?.classList.contains('on')?document.getElementById('v500StageReview'):document.getElementById('apWorkflow'));
+   else jump(document.getElementById('apModuleStage')||b);
+ },90);
+}
+nav.addEventListener('click',e=>{const b=e.target.closest('button[data-ap-nav]');if(b){e.preventDefault();open(b.dataset.apNav)}});
+window.AutoPilotNavigation={open,version:'v56.15'};
+})();
+</script>
 
 <!-- AutoPilot v55.7 / modular workflow: isolated UI layer; preserves underlying planning and Meal HQ engines. -->
 <style id="apModularStyle">
@@ -7244,49 +7297,7 @@ let queued=false;const obs=new MutationObserver(()=>{if(queued)return;queued=tru
 })();
 
 </script>
-<style id="apTaskNavStyles">
-#apTaskNav{position:fixed!important;visibility:visible!important;opacity:1!important;left:50%;transform:translateX(-50%);bottom:12px;z-index:2147480800;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #c5d3df;background:rgba(255,255,255,.97);color:#223b4d;border-radius:15px;box-shadow:0 5px 28px rgba(15,35,55,.18);font:600 12px system-ui;max-width:calc(100vw - 22px);overflow-x:auto}
-#apTaskNav button{flex:0 0 auto;border:0;background:transparent;color:#28475c;cursor:pointer;border-radius:10px;padding:10px 12px;font:inherit;white-space:nowrap}
-#apTaskNav button:hover,#apTaskNav button:focus-visible{background:#e8f0f5;outline:2px solid #6389a2;outline-offset:-2px}
-#apTaskNav button[aria-current="page"]{background:#163e59;color:white}
-#apTaskNavStatus{position:fixed;left:50%;transform:translateX(-50%);bottom:70px;z-index:2147480799;background:#183749;color:#fff;border-radius:10px;padding:9px 15px;font:500 12px system-ui;box-shadow:0 4px 18px #152c4233;max-width:90vw;text-align:center}
-#apTaskNavStatus[hidden]{display:none}
-body{padding-bottom:74px!important}
-@media(max-width:600px){#apTaskNav{width:calc(100vw - 18px);justify-content:space-between}#apTaskNav button{font-size:11px;padding:10px 9px}}
-@media print{#apTaskNav,#apTaskNavStatus{display:none!important}}
-</style>
-<script data-module="task-navigation-v56.14">
-(()=>{'use strict';
-const tasks=[['logistics','Logistics'],['dinner','Dinners'],['groceries','Groceries'],['outputs','Publish'],['backup','Backup']];
-let noticeTimer=0;
-function notice(message){const node=document.getElementById('apTaskNavStatus');if(!node)return;clearTimeout(noticeTimer);node.textContent=message;node.hidden=false;noticeTimer=setTimeout(()=>node.hidden=true,3600)}
-function visible(el){return !!(el&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden')}
-function navigate(key){
-  if(key==='backup'){
-    const b=document.getElementById('apBackupLaunch');if(!b){notice('Backup is not available on this screen.');return}
-    b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apBackupDialog[open]'))notice('Backup did not open. Please check the application.');});return;
-  }
-  if(key==='dinner'){
-    const b=document.getElementById('apDinnerShortcut');if(b){b.click();requestAnimationFrame(()=>{if(!document.querySelector('#apDinnerDialog[open]')&&!visible(document.getElementById('apDinnerDialog')))notice('Dinner editor did not open.');});return}
-  }
-  const button=document.querySelector('[data-apw="'+key+'"]');if(!button){notice('This workspace is unavailable.');return}
-  button.click();
-  requestAnimationFrame(()=>{
-    const current=document.querySelector('[data-apw="'+key+'"][aria-current="step"]');
-    if(!current){notice('Could not open '+key+'.');return}
-    document.querySelectorAll('#apTaskNav [data-task]').forEach(x=>x.setAttribute('aria-current',x.dataset.task===key?'page':'false'));
-    if(key==='logistics'){
-      const review=document.getElementById('v500StageReview');
-      if(review?.classList.contains('on'))review.scrollIntoView({block:'start',behavior:'instant'});
-      else document.getElementById('apWorkflow')?.scrollIntoView({block:'start',behavior:'instant'});
-    }
-    else document.getElementById('apModuleStage')?.scrollIntoView({block:'start',behavior:'instant'});
-  });
-}
-function init(){if(document.getElementById('apTaskNav'))return;const nav=document.createElement('nav');nav.id='apTaskNav';nav.dataset.release='v56.14';nav.setAttribute('aria-label','AutoPilot quick navigation');tasks.forEach(([k,label])=>{const b=document.createElement('button');b.type='button';b.dataset.task=k;b.textContent=label;b.setAttribute('aria-current',k==='logistics'?'page':'false');b.addEventListener('click',()=>navigate(k));nav.appendChild(b)});const status=document.createElement('div');status.id='apTaskNavStatus';status.hidden=true;status.setAttribute('role','status');status.setAttribute('aria-live','polite');document.body.append(nav,status);}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
+
 
 </html>
 <!-- AutoPilot v47.15: NONZERO canonical-state integration; privacy-safe daily summary, revision-safe merge, auto-publish + stale-aware Wall contract. -->
@@ -8240,7 +8251,7 @@ window.__apOpenDinnerPlan=open;
 }if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
-<script id="ap571ReleaseIdentity">(function(){const V='v56.12';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
+<script id="ap571ReleaseIdentity">(function(){const V='v56.15';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
 <script id="ap570-workflow-feedback">
 (()=>{'use strict';
  const VERSION='56.11';
