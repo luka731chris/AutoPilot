@@ -1336,7 +1336,7 @@ body.ap-focus.ap-focus-calendar #apFocusHeading{display:flex!important}
 @media(max-width:650px){body.ap-focus{padding-top:81px!important}body.ap-focus #apCoreNavigation{gap:2px!important;padding:8px 3px!important}body.ap-focus #apCoreNavigation button{min-width:0!important;flex:1 1 0!important;font-size:10px!important;gap:4px!important;padding:8px 2px!important;flex-direction:column!important}body.ap-focus #apCoreNavigation button svg{width:18px!important;height:18px!important}}
 @media print{body.ap-focus #apLongExport{display:none!important}body.ap-focus #apCoreNavigation{display:none!important}}
 </style>
-</head>
+<style id="mobileCalendarHealthStyles">#mobileCalendarHealth{position:relative;background:#f7fafc;color:#172334;border:1px solid #b9c9d6;border-radius:14px;padding:15px;margin:12px 0;font:inherit}#mobileCalendarHealth .healthButtons{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0}#mobileCalendarHealth button{min-height:44px;padding:9px 14px;border-radius:9px;background:#174c70;color:white;border:0}#mobileCalendarHealth [role=status]{font-weight:700}#mobileCalendarHealth small{display:block;line-height:1.5;color:#44566a}#mobileCalendarHealth .healthWarn{color:#985700}#mobileCalendarHealth .healthError{color:#a12424}#mobileCalendarHealth .healthOk{color:#17633c}@media(max-width:600px){#mobileCalendarHealth .healthButtons button{flex:1 1 100%}}</style></head>
 <body>
 <nav id="apCoreNavigation" aria-label="AutoPilot main navigation" data-release="v56.17">
 <button type="button" data-ap-nav="logistics" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M14 14h3M8 18h3"/></svg><span>Plan</span></button>
@@ -2368,7 +2368,7 @@ async function refreshAllCalendarsCore({quiet=false,reason='manual'}={}){
   const msg=`${label}: ${new Date(refreshedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
   setStartupCalendarSyncStatus(msg);
   if(!quiet&&!missing.length)$('importStatus').textContent=`Calendar refresh complete · ${ok}/${links.length} refreshed${failed.length?` · ${failed.length} need attention`:''}.`;
-  return {ok,total:links.length,failed};
+  return {ok,total:links.length,failed,missing:missing.map(x=>x.label||'Unnamed calendar')};
 }
 async function refreshAllCalendars(){return refreshAllCalendarsCore({quiet:false,reason:'manual'})}
 async function refreshCalendarsOnAppOpen(){
@@ -6252,6 +6252,40 @@ if($('undoLastReviewBtn'))$('undoLastReviewBtn').onclick=()=>{if(__lastReviewCha
 
 
 <!-- AutoPilot v52.1 SEVEN-DAY NONZERO: retired legacy UI/workflow generations removed; retained v47.21-v47.25 calendar/identity integrity layer + v50/v51 canonical planner. -->
+<script id="mobileCalendarHealthScript">
+(function(){'use strict';
+function init(){
+ const anchor=document.getElementById('calendarSyncSummary');if(!anchor||document.getElementById('mobileCalendarHealth'))return;
+ const panel=document.createElement('section');panel.id='mobileCalendarHealth';
+ panel.innerHTML='<strong>📅 Calendar connection health</strong><div id="mobileHealthState" class="healthWarn" role="status" aria-live="polite">Not tested on this device</div><div id="mobileHealthDetail" aria-live="polite">This browser stores its own calendar subscriptions. No cross-device sync is configured.</div><div class="healthButtons"><button type="button" id="mobileHealthTest">Test calendar feeds</button><button type="button" id="mobileHealthRefresh">Refresh calendar events</button></div><div id="mobileHealthSaved"></div>';
+ anchor.parentElement.insertBefore(panel,anchor);
+ const state=document.getElementById('mobileHealthState'),detail=document.getElementById('mobileHealthDetail'),saved=document.getElementById('mobileHealthSaved');
+ const buttons=[document.getElementById('mobileHealthTest'),document.getElementById('mobileHealthRefresh')];
+ const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const feeds=()=>{try{return typeof getSavedCalendarLinks==='function'?getSavedCalendarLinks():null}catch{return null}};
+ function render(){const list=feeds();if(!list){saved.textContent='Calendar configuration unavailable in this build.';return}if(!list.length){saved.textContent='No calendar subscriptions saved in this browser. Add your calendar URLs in Calendar Hub; another device’s subscriptions will not appear automatically.';return}
+ saved.innerHTML=list.map(x=>{const status=x.lastStatus==='ok'?'Last fetch succeeded':x.lastStatus==='blocked'?'Gateway required':x.lastStatus==='bad'?'Fetch failed':x.lastStatus==='needs-file'?'File import needed':'Not verified';const date=x.lastRefresh?new Date(x.lastRefresh).toLocaleString():'Never';return '<div class="mobile-feed-item"><b>'+safe(x.label||'Unnamed calendar')+'</b><span>'+safe(status)+'</span><small>Last attempt: '+safe(date)+' · '+safe(x.lastCount??'Unknown')+' events in window · '+safe(x.lastLoadedCount??'Unknown')+' loaded</small></div>'}).join('');}
+ function set(kind,message,explanation){state.className=kind;state.textContent=message;detail.textContent=explanation;}
+ let busy=false;
+ async function run(mode){if(busy)return;busy=true;buttons.forEach(b=>b.disabled=true);set('healthWarn',mode==='test'?'Testing calendars…':'Refreshing calendars…','Checking the actual per-feed results. Existing plan will not be replaced by this operation.');
+ try{
+ if(typeof refreshAllCalendarsCore!=='function')throw Error('Calendar refresh engine unavailable.');
+ const before=feeds();if(!before)throw Error('Saved calendar list cannot be read.');
+ if(!before.length){set('healthWarn','No saved calendar feeds on this device','Safari and Chrome have separate browser storage. Add calendar URLs in Calendar Hub or import a verified backup before refreshing the plan.');return;}
+ const result=await refreshAllCalendarsCore({quiet:false,reason:mode==='test'?'diagnostic':'manual'});
+ const after=feeds()||[];const failures=[];const missing=[];
+ for(const original of before){const current=after.find(x=>x.id===original.id);const name=original.label||'Unnamed calendar';if(!current||current.lastStatus!=='ok'){failures.push(name+(current?.lastStatus?' ('+current.lastStatus+')':''));continue}if(Number(current.lastCount||0)>0&&Number(current.lastLoadedCount||0)===0)missing.push(name);}
+ const count=Number(result?.ok)||0;const total=before.length;
+ if(result?.total!==total||count!==total||failures.length){set('healthError',count+' of '+total+' feeds refreshed','Needs attention: '+(failures.join(', ')||result?.failed?.join(', ')||'Inconsistent refresh result')+'. Do not generate a new plan until feeds are checked.');}
+ else if(missing.length){set('healthWarn',total+' feeds reachable; planner events missing','Feeds with events but none loaded into the planner: '+missing.join(', ')+'. Check date range, filters and calendar roles before updating the plan.');}
+ else{set('healthOk',total+' of '+total+' feeds refreshed successfully','All saved feeds reported successful fetches. Confirm the event counts below before generating your weekly plan.');}
+ }catch(e){set('healthError','Calendar check failed',String(e?.message||e));}finally{busy=false;buttons.forEach(b=>b.disabled=false);render();}}
+ buttons[0].addEventListener('click',()=>run('test'));buttons[1].addEventListener('click',()=>run('refresh'));
+ render();const list=document.getElementById('savedCalendarLinks');if(list)new MutationObserver(render).observe(list,{childList:true,subtree:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 
 
@@ -8374,5 +8408,37 @@ $('apfRecipe').onclick=()=>{if(!clickExisting('v524Taste'))status('Open advanced
 $('apfSettings').onclick=()=>clickExisting('v524Taste');
 show('plan');}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+<style>
+#apCloudPanel{margin:12px auto;max-width:1080px;padding:16px;border:1px solid #66778966;border-radius:16px;background:var(--card,#152334);color:inherit}#apCloudPanel button{min-height:44px;margin:4px;padding:9px 13px;border-radius:9px;cursor:pointer}#apCloudPanel input{display:block;width:100%;max-width:650px;padding:12px;margin:5px 0 12px;border-radius:8px;border:1px solid #8899aa;background:var(--input-bg,#fff);color:#111}#apCloudPanel .ap-cloud-actions{display:flex;flex-wrap:wrap;gap:5px}#apCloudPanel .ap-cloud-status{padding:10px 0;overflow-wrap:anywhere}#apCloudPanel details{margin-top:8px}#apCloudPanel small{display:block;opacity:.8}
+</style>
+<script>
+/* AutoPilot v56.20: explicitly confirmed cross-device calendar settings synchronization. */
+(()=>{'use strict';
+const SETTINGS='autopilot.cloudCalendar.v1', LINKS='familyOptimizerV21.calendarLinks';
+let busy=false, revision=null, remoteCache=null, localDirty=false;
+const $=id=>document.getElementById(id);
+function settings(){try{return JSON.parse(localStorage.getItem(SETTINGS)||'{}')}catch{return{}}}
+function setSettings(v){localStorage.setItem(SETTINGS,JSON.stringify(v))}
+function status(msg,bad=false){const el=$('apCloudStatus');if(el){el.textContent=msg;el.style.color=bad?'#fca5a5':''}}
+function localFeeds(){try{return typeof getSavedCalendarLinks==='function'?getSavedCalendarLinks():JSON.parse(localStorage.getItem(LINKS)||'[]')}catch{return[]}}
+function safeFeeds(feeds){if(!Array.isArray(feeds)||feeds.length>100)throw Error('Invalid feed list');return feeds.map(f=>{if(!f||typeof f!=='object'||typeof f.url!=='string'||!/^https?:\/\//i.test(f.url)||f.url.length>4096)throw Error('Invalid calendar URL');return {...f};})}
+function config(){const x=settings();if(!/^https:\/\/[a-z0-9.-]+(?:\/[^?#]*)?$/i.test(x.endpoint||''))throw Error('Enter a valid HTTPS Worker URL');if(!x.key||x.key.length<32)throw Error('Enter the 32+ character private sync key');return x}
+async function call(method,body,rev){const c=config();const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),15000);try{const r=await fetch(c.endpoint.replace(/\/+$/,'')+'/v1/config',{method,headers:{Authorization:'Bearer '+c.key,...(body?{'Content-Type':'application/json'}:{}),...(rev!==undefined?{'If-Match':String(rev)}:{})},body:body?JSON.stringify(body):undefined,signal:ctrl.signal,cache:'no-store'});let j={};try{j=await r.json()}catch{}if(!r.ok)throw Error(j.error||'Cloud error HTTP '+r.status);return j}finally{clearTimeout(t)}}
+function renderRemote(){const el=$('apCloudRemote');if(!el)return;el.textContent=remoteCache?`Cloud: ${remoteCache.feeds.length} calendar(s) · revision ${revision} · saved ${remoteCache.updatedAt?new Date(remoteCache.updatedAt).toLocaleString():'not yet'}`:'Cloud configuration not loaded';$('apCloudLocal').textContent=`This browser: ${localFeeds().length} calendar(s)${localDirty?' · unsent changes':''}`}
+async function run(fn){if(busy)return;busy=true;for(const b of document.querySelectorAll('#apCloudPanel button'))b.disabled=true;try{await fn()}catch(e){status('Sync error: '+e.message,true)}finally{busy=false;for(const b of document.querySelectorAll('#apCloudPanel button'))b.disabled=false;renderRemote()}}
+async function check(){const r=await call('GET');remoteCache=r;revision=r.revision;status(`Connected. Cloud has ${r.feeds.length} feed(s). Nothing on this device has been overwritten.`);renderRemote()}
+async function upload(){const feeds=safeFeeds(localFeeds());if(!feeds.length){status('No local feeds to upload. Add calendars first, or choose Download from cloud.',true);return}const r=await call('GET');remoteCache=r;revision=r.revision;if(r.feeds.length&&!confirm(`Cloud already has ${r.feeds.length} calendar(s). Replace cloud settings with this browser's ${feeds.length} calendar(s)? Other devices will need to download the new version.`))return;const saved=await call('PUT',{feeds},revision);remoteCache=saved;revision=saved.revision;localDirty=false;status(`Uploaded ${feeds.length} calendar(s) to cloud. Other devices can now download them.`)}
+async function download(){const r=await call('GET');remoteCache=r;revision=r.revision;const incoming=safeFeeds(r.feeds),existing=localFeeds();if(!incoming.length){status('Cloud is empty. Nothing downloaded. Upload from the browser with your saved feeds first.',true);return}if(existing.length&&!confirm(`Replace this browser's ${existing.length} saved calendar(s) with ${incoming.length} from cloud? A local backup will be saved first.`))return;localStorage.setItem('autopilot.calendarBackup.'+Date.now(),JSON.stringify(existing));if(typeof saveCalendarLinks==='function')saveCalendarLinks(incoming);else localStorage.setItem(LINKS,JSON.stringify(incoming));localDirty=false;status(`Downloaded ${incoming.length} feed(s). Local backup saved. Now tap Refresh calendar events in AutoPilot.`);renderRemote()}
+function mount(){if($('apCloudPanel'))return;const h=document.createElement('section');h.id='apCloudPanel';h.innerHTML=`<h2>☁ Calendar Sync — iPhone & Laptop</h2><small>Shared calendar settings only. Weekly plans and manual driver assignments remain local and are never replaced by cloud sync.</small><div class="ap-cloud-status" id="apCloudStatus" role="status" aria-live="polite">Not connected. Configure once on each device.</div><div id="apCloudLocal"></div><div id="apCloudRemote"></div><div class="ap-cloud-actions"><button type="button" id="apCloudCheck">Check cloud connection</button><button type="button" id="apCloudUpload">Upload this browser's calendars</button><button type="button" id="apCloudDownload">Download calendars from cloud</button></div><details id="apCloudSetup"><summary>Secure connection setup</summary><label>Dedicated Cloudflare Worker URL<input id="apCloudEndpoint" type="url" autocomplete="url" placeholder="https://autopilot-calendar-sync.YOURNAME.workers.dev"></label><label>Private sync key (same key on both devices)<input id="apCloudKey" type="password" autocomplete="off" placeholder="Paste the key from Cloudflare secret"></label><button type="button" id="apCloudSave">Save connection on this device</button><small>Keep the key private. Never paste it into GitHub or share a screenshot showing it. This setting is saved in this browser only.</small></details>`;
+const anchor=$('calendarSyncSummary')||$('apBackground')||document.querySelector('main');if(anchor)anchor.insertAdjacentElement('afterend',h);else document.body.prepend(h);
+const c=settings();$('apCloudEndpoint').value=c.endpoint||'';$('apCloudKey').value=c.key||'';
+$('apCloudSave').onclick=()=>{const endpoint=$('apCloudEndpoint').value.trim().replace(/\/+$/,''),key=$('apCloudKey').value.trim();if(!/^https:\/\//.test(endpoint)||key.length<32){status('HTTPS Worker URL and 32+ character private key required.',true);return}setSettings({endpoint,key});status('Connection settings saved on this browser. Tap Check cloud connection.');$('apCloudSetup').open=false};
+$('apCloudCheck').onclick=()=>run(check);$('apCloudUpload').onclick=()=>run(upload);$('apCloudDownload').onclick=()=>run(download);renderRemote();
+if(c.endpoint&&c.key)run(check);
+}
+function start(){mount();const original=window.saveCalendarLinks;if(typeof original==='function'){window.saveCalendarLinks=function(...args){const result=original.apply(this,args);localDirty=true;renderRemote();status('Calendar settings changed locally. Tap Upload to share them with your other device.');return result}}window.addEventListener('storage',e=>{if(e.key===LINKS){localDirty=true;renderRemote()}})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
