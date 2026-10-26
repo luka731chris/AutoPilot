@@ -1258,7 +1258,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </style><meta name="autopilot-build" content="v57.9.1-DEPLOY-IDENTITY-20261026">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v57.9.1',build:'DEPLOY-IDENTITY-20261026',label:'AutoPilot v57.9.1'});
+const release=Object.freeze({version:'v57.9.1',build:'DEPLOY-IDENTITY-20261026',label:'AutoPilot v57.10'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -6355,7 +6355,7 @@ document.addEventListener('click',function(e){
  if(!binding){apDayStatus(wrap,'This editor was refreshed. Open the day again; your prior saves remain intact.','error');return}
  const {p,a}=binding,date=wrap.dataset.apDate,key=wrap.dataset.apKey,act=btn.dataset.apDayAction,ev=apDayEvent(p,a);
  const oldPending=pending(),oldGoing=apNotGoingStore(),oldVisibility=publishedRules();
- wrap.dataset.busy='true';wrap.querySelectorAll('button').forEach(x=>x.disabled=true);
+ wrap.dataset.busy='true';wrap.setAttribute('aria-busy','true');wrap.querySelectorAll('button').forEach(x=>x.disabled=true);
  apDayStatus(wrap,'Saving '+(act==='drop'?'drop-off':act==='pickup'?'pickup':act==='notgoing'?'attendance':'wall visibility')+'…','saving');
  try{
   let selected=false;
@@ -6383,11 +6383,11 @@ document.addEventListener('click',function(e){
   console.error('Edit Day save failed',err);
   try{savePending(oldPending);localStorage.setItem(AP_NOT_GOING_KEY,JSON.stringify(oldGoing));localStorage.setItem(AP_PUBLISHED_VIS_KEY,JSON.stringify(oldVisibility))}catch(rollbackErr){console.error('Rollback failed',rollbackErr)}
   apPaintDecision(wrap,p,a);apDayStatus(wrap,'Not saved: '+(err.message||'Unknown error')+'. Retry this button.','error');
- }finally{wrap.dataset.busy='false';wrap.querySelectorAll('button').forEach(x=>x.disabled=false)}
+ }finally{wrap.dataset.busy='false';wrap.removeAttribute('aria-busy');wrap.querySelectorAll('button').forEach(x=>x.disabled=false)}
 });
 function renderDay(){apDayBindings.clear();let ps=workPlans();if(!ps.length){$('v500ReviewBody').innerHTML='<div class="v500-status warn">No plan is loaded yet.</div>';return}dayIndex=Math.max(0,Math.min(dayIndex,ps.length-1));let p=ps[dayIndex],d=dkey(p),sl=siteList();if(!sl.includes(site(p)))sl.unshift(site(p));$('v500Count').textContent=`Day ${dayIndex+1} of ${ps.length}`;$('v500Prev').disabled=dayIndex===0;$('v500Next').disabled=dayIndex===ps.length-1;let g=groups(p);$('v500ReviewBody').innerHTML=`<div class="v500-day"><div class="v500-dayhead"><div class="v500-date">${esc(dateLabel(p,true))}</div><div class="v500-workgrid"><div class="v500-work"><b>Chris work schedule</b>${esc(chris(p))}<br><select class="v500-site" data-date="${esc(d)}">${sl.map(x=>`<option value="${esc(x)}" ${x===site(p)?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="v500-work"><b>Kira work schedule</b>${esc(kira(p))}</div></div>${v505TimeEditor(p)}</div>${g.length?g.map(([person,evs])=>`<div class="v500-person"><div class="v500-personhead">${esc(person)}</div>${evs.map(a=>`<div class="v500-event"><div class="v500-eventtop"><span class="v500-time">${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}</span><span class="v500-etitle">${esc(a.title)}${sportsVenueBadge(a)}</span>${a.location?`<span class="v500-loc">${esc(a.location)}</span>`:''}</div>${isContextEvent(a)?`<div class="ap-context-note">Calendar event · visible for family context · no transportation assumed</div>`:`<div class="v500-legs"><div><div class="v500-leglabel">Drop-off · ${esc(start(a))}</div>${ridePills(p,a,'Drop')}</div><div><div class="v500-leglabel">Pickup · ${esc(end(a))}</div>${ridePills(p,a,'Pickup')}</div></div>`}${apDayControls(p,a)}</div>`).join('')}</div>`).join(''):'<div class="v500-person"><div class="v500-event">No transportation events for this day.</div></div>'}<div class="v500-textbox" style="margin:10px"><label>Anything different about this day?</label><textarea class="v500-daily" data-date="${esc(d)}" placeholder="Example: Kira picks Whitney up from gymnastics. I need to stay at Wheeling until 6 PM.">${esc(daily()[d]||'')}</textarea><small>This note applies only to ${esc(dateLabel(p,true))}.</small><div class="v501-savehint">Your selections and notes are saved as you make them. “Save + next day” keeps this day and opens the next one.</div></div></div>`}
 function v500TimeInput(m){m=Number(m);if(!Number.isFinite(m))return'';m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0')}
-function v505TimeEditor(p){if(!p?.onsite)return'';let d=dkey(p),arr=manualArrivalOverrides?.[d]!=null?manualArrivalOverrides[d]:p.arrive,dep=manualDepartureOverrides?.[d]!=null?manualDepartureOverrides[d]:p.leaveWork;const field=(kind,label,val,manual)=>`<div class="v506-timefield ${manual?'manual':''}" data-kind="${kind}" data-date="${esc(d)}"><span class="v506-timelabel">${label}</span><button type="button" class="v506-time-nudge" data-kind="${kind}" data-date="${esc(d)}" data-delta="-15" aria-label="${label} 15 minutes earlier">−</button><input type="time" class="${kind==='arrival'?'v500-prelim-arrival':'v500-prelim-departure'}" data-date="${esc(d)}" value="${esc(v500TimeInput(val))}" aria-label="${label} for ${esc(dateLabel(p,true))}"><button type="button" class="v506-time-nudge" data-kind="${kind}" data-date="${esc(d)}" data-delta="15" aria-label="${label} 15 minutes later">+</button></div>`;return `<div class="v506-timebar"><span class="v506-timebar-title">Work times</span>${field('arrival','Arrive',arr,manualArrivalOverrides?.[d]!=null)}${field('departure','Leave',dep,manualDepartureOverrides?.[d]!=null)}<span class="v506-autosave">saved automatically</span></div>`}
+function v505TimeEditor(p){if(!p?.onsite)return'';let d=dkey(p),arr=manualArrivalOverrides?.[d]!=null?manualArrivalOverrides[d]:p.arrive,dep=manualDepartureOverrides?.[d]!=null?manualDepartureOverrides[d]:p.leaveWork;const field=(kind,label,val,manual)=>`<div class="v506-timefield ${manual?'manual':''}" data-kind="${kind}" data-date="${esc(d)}"><span class="v506-timelabel">${label}</span><input type="text" inputmode="text" autocomplete="off" class="${kind==='arrival'?'v500-prelim-arrival':'v500-prelim-departure'} ap-clock-direct" data-date="${esc(d)}" value="${esc(window.v576DisplayTime(val))}" placeholder="4:30 PM" aria-label="${label} for ${esc(dateLabel(p,true))}"><small class="ap-clock-hint">Type 4:30 PM, then press Enter or tap outside</small></div>`;return `<div class="v506-timebar"><span class="v506-timebar-title">Work times</span>${field('arrival','Arrive',arr,manualArrivalOverrides?.[d]!=null)}${field('departure','Leave',dep,manualDepartureOverrides?.[d]!=null)}<span class="v506-autosave">saved automatically</span></div>`}
 
 function v507CompactRide(p,a,k){let d=dkey(p),key=ak(a),val=v507RideValue(p,a,k);return `<label class="v507-mini"><span>${k}</span><input class="v507-edit v507-ride" data-field="ride" data-kind="${k}" data-date="${esc(d)}" data-ak="${esc(key)}" value="${esc(val)}" placeholder="Auto / name"></label>`}
 function tile(p,editable=false){v507ApplyOne(p);let d=dkey(p),sl=siteList();if(!sl.includes(site(p)))sl.unshift(site(p));let arr=manualArrivalOverrides?.[d]!=null?manualArrivalOverrides[d]:p.arrive,dep=manualDepartureOverrides?.[d]!=null?manualDepartureOverrides[d]:p.leaveWork;let body='';
@@ -6788,7 +6788,7 @@ function ap57Commit(date,field,value){
 window.AutoPilotPlanCommands=Object.freeze({
  commit:ap57Commit,
  async idle(){await ap57Queue},
- async finalize(){await ap57Queue;if(ap57Pending)throw new Error('Edits still saving');if(ap57LastError)throw new Error('Resolve the failed edit before finalizing: '+ap57LastError);return v504Finalize()},
+ async finalize(){await ap57Queue;if(ap57Pending)throw new Error('An edit is still saving. Please retry in a moment.');if(ap57LastError)throw new Error('An earlier edit failed: '+ap57LastError+'. Reopen that day, correct the field, then retry Finalize; the other edits are retained.');return v504Finalize()},
  getState(){return {pending:ap57Pending,lastError:ap57LastError,dayOverrides:v507Edits(),final:phase===5}}
 });
 // v57.9: reflect work-location selection synchronously, then let the command service persist it.
@@ -8313,7 +8313,7 @@ const cards=()=>Array.from(document.querySelectorAll('#v500ReviewBody .v507-tile
 function status(message,kind='neutral'){
  const el=$('ap57Status');if(el){el.textContent=message;el.dataset.state=kind}
  const b=$('ap57Finalize'),state=window.AutoPilotPlanCommands?.getState();
- if(b){b.disabled=finalizing||(state?.pending||0)>0||!!state?.lastError;b.textContent=finalizing?'Finalizing…':'Finalize plan'}
+ if(b){b.disabled=finalizing;b.textContent=finalizing?'Finalizing…':(state?.pending>0?'Finalize after saving…':'Finalize plan');b.setAttribute('aria-disabled',String(!!finalizing));b.title=state?.lastError?'Previous edit failed: '+state.lastError+'; click for recovery instructions':state?.pending?'AutoPilot will wait for your changes to save':'Verify and finalize your plan'}
 }
 function refresh(){const list=cards();let attention=0,manual=0;const overrides=window.AutoPilotPlanCommands?.getState().dayOverrides||{};
  for(const card of list){const d=card.dataset.date,isManual=!!overrides[d]?.workSite,needs=!!card.querySelector('.v509-rec.exception,.override-active,.ap-conflict,.verify-child');
@@ -8323,10 +8323,10 @@ function refresh(){const list=cards();let attention=0,manual=0;const overrides=w
  if($('ap57ReviewLabel'))$('ap57ReviewLabel').textContent=filter==='attention'?(attention?'Days needing review':'No flagged days — view All days to inspect'):'Select a location or time to edit';
 }
 function init(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||$('ap57Review'))return;
- const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.9</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
- const foot=document.createElement('div');foot.id='ap57Footer';foot.className='ap57-footer';foot.innerHTML='<div><strong>Finalize your plan</strong><small>Changes must finish saving first</small></div><button type="button" id="ap57Finalize">Finalize plan</button>';card.append(foot);
+ const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.10</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
+ const foot=document.createElement('div');foot.id='ap57Footer';foot.className='ap57-footer';foot.innerHTML='<div><strong>Finalize your plan</strong><small id="apFinalHint">Every edit is preserved in your draft. Finalize will verify all changes.</small></div><button type="button" id="ap57Finalize">Finalize plan</button>';card.append(foot);
  head.addEventListener('click',e=>{const b=e.target.closest('[data-ap57-filter]');if(!b)return;filter=b.dataset.ap57Filter;head.querySelectorAll('[data-ap57-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()});
- $('ap57Finalize').onclick=async()=>{if(finalizing)return;error='';finalizing=true;status('Verifying edits and creating final snapshot…','busy');try{await window.AutoPilotPlanCommands.finalize();status('Final snapshot verified.','saved')}catch(err){error=err.message;status('Finalization failed: '+error,'error')}finally{finalizing=false;status(error?'Finalization failed: '+error:'Final snapshot verified.',error?'error':'saved')}};
+ $('ap57Finalize').onclick=async()=>{if(finalizing)return;error='';finalizing=true;status('Verifying edits and creating final snapshot…','busy');try{await window.AutoPilotPlanCommands.finalize();status('Final snapshot verified.','saved')}catch(err){error=err?.message||'Unknown finalization error';status('Finalization failed: '+error,'error');const banner=$('ap57Status');banner?.scrollIntoView?.({behavior:'smooth',block:'center'});window.dispatchEvent(new CustomEvent('ap:finalize-error',{detail:{message:error}}))}finally{finalizing=false;status(error?'Finalization failed: '+error:'Final snapshot verified.',error?'error':'saved')}};
  window.addEventListener('ap57:plan',e=>{const d=e.detail;if(d.type==='saving')status('Saving '+d.field+' for '+d.date+'…','busy');
  if(d.type==='saved'){error='';status('Saved '+d.date,'saved');refresh()}
  if(d.type==='error'){error=d.message||'Edit failed';status('Save failed: '+error+' — change reverted','error')}
@@ -8335,7 +8335,7 @@ function init(){const stage=$('v500StageReview'),card=stage?.querySelector('.v50
  let scheduled=false;const scheduleRefresh=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;refresh()})};
  const body=$('v500ReviewBody');if(body)new MutationObserver(scheduleRefresh).observe(body,{childList:true,subtree:false});
  new MutationObserver(()=>{if(stage.classList.contains('on'))refresh()}).observe(stage,{attributes:true,attributeFilter:['class']});refresh();
- window.AutoPilotV57={version:'57.9.1',refresh};
+ window.AutoPilotV57={version:'57.10',refresh};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
@@ -8391,5 +8391,22 @@ function render(){const host=document.getElementById('ap57Review');if(!host||doc
  bar.querySelectorAll('button').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.ap575Days);const legacy=document.querySelector('.v510-cycle[data-days="'+n+'"]');if(legacy)legacy.click();else{window.__apCycleDays=n;localStorage.setItem('autopilot.cycleDays',String(n))}sync();const msg=document.getElementById('ap57Status');if(msg){msg.textContent=n+'-workday option selected for your next build. Your open plan and edits were not changed.';msg.dataset.state='saved'}});sync();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(render,100));else setTimeout(render,100);
  window.addEventListener('suite-plan-finalized',()=>{try{scheduleNonzeroAgendaPublish()}catch{}});
+})();
+</script>
+<style id="ap5710-styles">
+.ap-clock-direct{min-width:135px!important;max-width:185px!important;font-size:16px!important;min-height:44px!important;touch-action:manipulation}
+.ap-clock-hint{display:block;max-width:190px;font-size:10px;color:#64748b;padding-top:4px}
+.ap-editday-actions button{touch-action:manipulation;min-height:42px!important}
+.ap-editday-actions[aria-busy="true"]{outline:2px solid #d6a800;outline-offset:2px}
+#ap57Status[data-state="error"]{padding:12px!important;border:2px solid #bd3030!important;color:#7a1b16!important;background:#fff3f0!important}
+#ap57Finalize{min-height:48px!important}
+</style>
+<script id="ap5710-reliability">
+(function(){'use strict';
+const mark=()=>{const head=document.querySelector('#ap57Review .ap57-stat');if(head)head.textContent='v57.10';const h=document.querySelector('#apFinalHint');if(h)h.textContent='Tap Finalize once; any save problem will appear above with recovery instructions.'};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mark);else mark();
+window.addEventListener('ap:finalize-error',e=>{const m=e.detail?.message||'';const status=document.getElementById('v500ReviewStatus');if(status){status.className='v500-status warn';status.textContent='Finalization did not complete: '+m+' Your edits remain in the draft. Review the highlighted error and retry.'}});
+// A one-time keydown commit makes desktop time editing work without requiring two clicks elsewhere.
+document.addEventListener('keydown',e=>{const el=e.target;if(e.key==='Enter'&&el?.matches?.('.ap-clock-direct')){e.preventDefault();el.blur();}},true);
 })();
 </script>
