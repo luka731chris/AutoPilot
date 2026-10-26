@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v57.6</title>
+<title>AutoPilot — Family Logistics Planner v57.7</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1255,10 +1255,10 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 #v500App .v507-event .ap-editday-actions button{display:inline-flex!important;visibility:visible!important;opacity:1!important;padding:8px 10px;min-height:34px;font:700 10px/1.25 system-ui,sans-serif;background:#f2f6f9;border:1px solid #b9cbd8;border-radius:7px;color:#1c354a;cursor:pointer}
 #v500App .v507-event .ap-editday-actions button.active{background:#deeee6;border-color:#77aa92;color:#154c36}
 #v500App .v507-event{overflow:visible!important}
-</style><meta name="autopilot-build" content="v57.6-IDENTITY-FIX">
+</style><meta name="autopilot-build" content="v57.7-IDENTITY-FIX">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v57.6',build:'RECOVERY-IDENTITY-FIX',label:'AutoPilot v57.6'});
+const release=Object.freeze({version:'v57.7',build:'RECOVERY-IDENTITY-FIX',label:'AutoPilot v57.7'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -1337,6 +1337,18 @@ body.ap-focus.ap-focus-calendar #apFocusHeading{display:flex!important}
 @media print{body.ap-focus #apLongExport{display:none!important}body.ap-focus #apCoreNavigation{display:none!important}}
 </style>
 <style id="mobileCalendarHealthStyles">#mobileCalendarHealth{position:relative;background:#f7fafc;color:#172334;border:1px solid #b9c9d6;border-radius:14px;padding:15px;margin:12px 0;font:inherit}#mobileCalendarHealth .healthButtons{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0}#mobileCalendarHealth button{min-height:44px;padding:9px 14px;border-radius:9px;background:#174c70;color:white;border:0}#mobileCalendarHealth [role=status]{font-weight:700}#mobileCalendarHealth small{display:block;line-height:1.5;color:#44566a}#mobileCalendarHealth .healthWarn{color:#985700}#mobileCalendarHealth .healthError{color:#a12424}#mobileCalendarHealth .healthOk{color:#17633c}@media(max-width:600px){#mobileCalendarHealth .healthButtons button{flex:1 1 100%}}</style><style id="v576-time-ux">#v500App .v508-chris .v576-clock{font-size:14px!important;font-weight:700;min-height:40px!important;background:#fff!important}#v500App .v508-chris .v576-commute{min-width:0}#v500App .v508-chris .v576-no-commute{grid-column:span 2;color:#5f6b61}#v500App .v508-chris .v576-clock:focus{outline:2px solid #c79d28;outline-offset:1px}@media(max-width:650px){#v500App .v508-chris{grid-template-columns:1fr 1fr!important}#v500App .v508-chris>label.wide{grid-column:1/-1!important}}</style>
+<style id="ap577-event-feedback">
+#v500ReviewBody .ap-editday-actions{align-items:center!important;gap:8px!important}
+#v500ReviewBody .ap-editday-actions button{min-height:42px!important;font-size:12px!important;border-radius:9px!important;transition:background-color .12s,border-color .12s!important}
+#v500ReviewBody .ap-editday-actions button.active{background:#cceadd!important;border:2px solid #257552!important;color:#124a36!important;font-weight:850!important}
+#v500ReviewBody .ap-editday-actions button:disabled{opacity:.65!important;cursor:progress!important}
+#v500ReviewBody .ap-decision-saved{display:block!important;flex:1 0 100%;font-size:12px!important;line-height:1.4!important;padding:6px 9px!important;background:#f2f5f8;color:#465666!important;border-radius:7px!important;min-height:29px}
+#v500ReviewBody .ap-decision-saved[data-state="saving"]{background:#fff2cb!important;color:#6b5100!important}
+#v500ReviewBody .ap-decision-saved[data-state="saved"]{background:#e2f3e9!important;color:#145734!important;font-weight:750!important}
+#v500ReviewBody .ap-decision-saved[data-state="error"]{background:#ffe6e3!important;color:#9e2521!important;font-weight:750!important}
+#v500ReviewBody .ap-event-hidden .v500-eventtop,#v500ReviewBody .ap-event-hidden .v507-sectionlabel{opacity:.52}
+#v500ReviewBody .ap-event-notgoing .v500-eventtop{text-decoration:line-through;opacity:.6}
+</style>
 </head>
 <body class="ap-simple">
 <nav id="apCoreNavigation" aria-label="AutoPilot main navigation" data-release="v56.24">
@@ -6313,32 +6325,61 @@ function apRideKey(date,key){return date+'|'+key}
 function apRideSelected(date,key){const flags=apRideFlags(),id=apRideKey(date,key);if(Object.prototype.hasOwnProperty.call(flags,id))return flags[id]===true;const x=pending();return ['Drop','Pickup'].every(k=>x.ride[id+'|'+k]==='__NONE__')}
 function apSaveRideFlag(date,key,selected){const flags=apRideFlags();flags[apRideKey(date,key)]=selected;localStorage.setItem(AP_DAY_RIDE_FLAGS,JSON.stringify(flags));}
 function apDayControls(p,a){
- const ev=apDayEvent(p,a),date=dkey(p),key=ak(a),notGoing=typeof apNotGoing==='function'&&apNotGoing(ev),hidden=typeof publishedHidden==='function'&&publishedHidden(ev),noRide=apRideSelected(date,key);
- return `<div class="ap-editday-actions" data-ap-date="${esc(date)}" data-ap-key="${esc(key)}" role="group" aria-label="Event decisions">
- <button type="button" data-ap-day-action="noride" aria-pressed="${noRide}" class="${noRide?'active':''}">No ride needed</button>
- <button type="button" data-ap-day-action="notgoing" aria-pressed="${notGoing}" class="${notGoing?'active':''}">Not going</button>
- <button type="button" data-ap-day-action="hidden" aria-pressed="${hidden}" class="${hidden?'active':''}">Hide from phone + wall</button><span class="ap-decision-saved" aria-live="polite"></span></div>`;
+ const ev=apDayEvent(p,a),date=dkey(p),key=ak(a),notGoing=!!apNotGoing(ev),hidden=!!publishedHidden(ev),noRide=apRideSelected(date,key);
+ return `<div class="ap-editday-actions" data-ap-date="${esc(date)}" data-ap-key="${esc(key)}" role="group" aria-label="Actions for ${esc(a.title||'event')}">
+ <button type="button" data-ap-day-action="noride" aria-pressed="${noRide}" class="${noRide?'active':''}">${noRide?'✓ No ride needed':'No ride needed'}</button>
+ <button type="button" data-ap-day-action="notgoing" aria-pressed="${notGoing}" class="${notGoing?'active':''}">${notGoing?'✓ Not going':'Not going'}</button>
+ <button type="button" data-ap-day-action="hidden" aria-pressed="${hidden}" class="${hidden?'active':''}">${hidden?'✓ Hidden from phone + wall':'Hide from phone + wall'}</button>
+ <span class="ap-decision-saved" role="status" aria-live="polite">${noRide||notGoing||hidden?'Current choices loaded':'Ready to edit'}</span></div>`;
 }
-function apPaintDecision(wrap,p,a){const date=wrap.dataset.apDate,key=wrap.dataset.apKey,ev=apDayEvent(p,a);const states={noride:apRideSelected(date,key),notgoing:!!apNotGoing(ev),hidden:!!publishedHidden(ev)};
- wrap.querySelectorAll('[data-ap-day-action]').forEach(btn=>{const on=states[btn.dataset.apDayAction];btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));btn.setAttribute('aria-label',(on?'Deselect ':'Select ')+btn.textContent.trim())});
+function apPaintDecision(wrap,p,a){
+ const date=wrap.dataset.apDate,key=wrap.dataset.apKey,ev=apDayEvent(p,a),states={noride:apRideSelected(date,key),notgoing:!!apNotGoing(ev),hidden:!!publishedHidden(ev)};
+ const titles={noride:'No ride needed',notgoing:'Not going',hidden:'Hidden from phone + wall'};
+ wrap.querySelectorAll('[data-ap-day-action]').forEach(btn=>{const on=states[btn.dataset.apDayAction];btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));btn.textContent=(on?'✓ ':'')+(on?titles[btn.dataset.apDayAction]:({noride:'No ride needed',notgoing:'Not going',hidden:'Hide from phone + wall'}[btn.dataset.apDayAction]));});
  const row=wrap.closest('.v500-event,.v507-event');if(row){row.classList.toggle('ap-event-notgoing',states.notgoing);row.classList.toggle('ap-event-noride',states.noride||states.notgoing);row.classList.toggle('ap-event-hidden',states.hidden);row.querySelectorAll('.v500-ride,.v507-ride').forEach(el=>{el.disabled=states.notgoing||states.noride;});}
 }
+function apDayStatus(wrap,message,type){
+ const s=wrap.querySelector('.ap-decision-saved');if(s){s.textContent=message;s.dataset.state=type; s.classList.add('show')}
+ const top=document.getElementById('v500ReviewStatus');if(top){top.className='v500-status '+(type==='error'?'warn':'good');top.textContent=message}
+}
+// Keep action feedback inside the event. No silent catches or false "Saved" messages.
 document.addEventListener('click',function(e){
  const b=e.target.closest('[data-ap-day-action]');if(!b||!b.closest('#v500ReviewBody'))return;
  e.preventDefault();e.stopPropagation();
- const wrap=b.closest('.ap-editday-actions'),p=workPlans().find(z=>dkey(z)===wrap.dataset.apDate),a=p&&acts(p).find(z=>ak(z)===wrap.dataset.apKey);if(!a)return;
- const ev=apDayEvent(p,a),act=b.dataset.apDayAction,base=apRideKey(wrap.dataset.apDate,wrap.dataset.apKey),status=wrap.querySelector('.ap-decision-saved');
+ const wrap=b.closest('.ap-editday-actions');if(!wrap||wrap.dataset.busy==='true')return;
+ const p=workPlans().find(z=>dkey(z)===wrap.dataset.apDate),a=p&&acts(p).find(z=>ak(z)===wrap.dataset.apKey);
+ if(!p||!a){apDayStatus(wrap,'Could not find this event. Reopen Edit Day and try again.','error');return}
+ const ev=apDayEvent(p,a),act=b.dataset.apDayAction,date=wrap.dataset.apDate,key=wrap.dataset.apKey,base=apRideKey(date,key);
+ const oldRide=apRideFlags(),oldPending=pending(),oldGoing=apNotGoingStore(),oldVisibility=publishedRules();
+ wrap.dataset.busy='true';wrap.querySelectorAll('button').forEach(x=>x.disabled=true);
+ apDayStatus(wrap,'Saving selection…','saving');
  try{
+  let selected=false;
   if(act==='noride'){
-   const selected=!apRideSelected(wrap.dataset.apDate,wrap.dataset.apKey);apSaveRideFlag(wrap.dataset.apDate,wrap.dataset.apKey,selected);
+   selected=!apRideSelected(date,key);
+   apSaveRideFlag(date,key,selected);
    const x=pending();for(const k of ['Drop','Pickup'])x.ride[base+'|'+k]=selected?'__NONE__':'__AUTO__';savePending(x);
-   try{if(typeof applyTransportOverridesToPlan==='function')applyTransportOverridesToPlan(p)}catch{}
-  }else if(act==='notgoing')apSetNotGoing(ev,!apNotGoing(ev));
-  else if(act==='hidden')setPublishedHidden(ev,'occurrence',!publishedHidden(ev));
-  try{if(typeof saveAllNow==='function')saveAllNow()}catch{}
+   if(apRideSelected(date,key)!==selected||['Drop','Pickup'].some(k=>pending().ride[base+'|'+k]!== (selected?'__NONE__':'__AUTO__')))throw new Error('Ride choice could not be verified');
+   if(typeof applyTransportOverridesToPlan==='function')applyTransportOverridesToPlan(p);
+  }else if(act==='notgoing'){
+   selected=!apNotGoing(ev);apSetNotGoing(ev,selected);
+   if(apNotGoing(ev)!==selected)throw new Error('Attendance selection could not be verified');
+  }else if(act==='hidden'){
+   // Not-going events are already hidden by attendance policy; preserve that decision.
+   if(apNotGoing(ev)){throw new Error('This event is already hidden because Not going is selected. Turn off Not going before changing wall visibility.')}
+   selected=!publishedHidden(ev);setPublishedHidden(ev,'occurrence',selected);
+   if(publishedHidden(ev)!==selected)throw new Error('Wall visibility choice could not be verified');
+  }else throw new Error('Unknown event action');
+  if(typeof saveAllNow==='function')saveAllNow();
   apPaintDecision(wrap,p,a);
-  if(status){status.textContent='Saved';status.classList.add('show')}
- }catch(err){console.error('Edit Day action failed',err);if(status)status.textContent='Could not save';}
+  const actionText={noride:selected?'No ride needed':'Ride recommendation restored',notgoing:selected?'Marked not going':'Attendance restored',hidden:selected?'Hidden from phone + wall':'Visible on phone + wall'}[act];
+  apDayStatus(wrap,'✓ '+actionText+' · Saved on this device'+(act==='hidden'?' · Wall sync may still be pending':''),'saved');
+ }catch(err){
+  console.error('Edit Day action failed',err);
+  try{localStorage.setItem(AP_DAY_RIDE_FLAGS,JSON.stringify(oldRide));savePending(oldPending);localStorage.setItem(AP_NOT_GOING_KEY,JSON.stringify(oldGoing));localStorage.setItem(AP_PUBLISHED_VIS_KEY,JSON.stringify(oldVisibility));}catch(rollbackError){console.error('Edit Day rollback failed',rollbackError)}
+  apPaintDecision(wrap,p,a);
+  apDayStatus(wrap,'Not saved: '+(err.message||'Unexpected error')+' Try again; if it persists, reload the plan.','error');
+ }finally{wrap.dataset.busy='false';wrap.querySelectorAll('button').forEach(x=>x.disabled=false)}
 });
 function renderDay(){let ps=workPlans();if(!ps.length){$('v500ReviewBody').innerHTML='<div class="v500-status warn">No plan is loaded yet.</div>';return}dayIndex=Math.max(0,Math.min(dayIndex,ps.length-1));let p=ps[dayIndex],d=dkey(p),sl=siteList();if(!sl.includes(site(p)))sl.unshift(site(p));$('v500Count').textContent=`Day ${dayIndex+1} of ${ps.length}`;$('v500Prev').disabled=dayIndex===0;$('v500Next').disabled=dayIndex===ps.length-1;let g=groups(p);$('v500ReviewBody').innerHTML=`<div class="v500-day"><div class="v500-dayhead"><div class="v500-date">${esc(dateLabel(p,true))}</div><div class="v500-workgrid"><div class="v500-work"><b>Chris work schedule</b>${esc(chris(p))}<br><select class="v500-site" data-date="${esc(d)}">${sl.map(x=>`<option value="${esc(x)}" ${x===site(p)?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="v500-work"><b>Kira work schedule</b>${esc(kira(p))}</div></div>${v505TimeEditor(p)}</div>${g.length?g.map(([person,evs])=>`<div class="v500-person"><div class="v500-personhead">${esc(person)}</div>${evs.map(a=>`<div class="v500-event"><div class="v500-eventtop"><span class="v500-time">${esc(start(a))}${end(a)&&end(a)!==start(a)?'–'+esc(end(a)):''}</span><span class="v500-etitle">${esc(a.title)}${sportsVenueBadge(a)}</span>${a.location?`<span class="v500-loc">${esc(a.location)}</span>`:''}</div>${isContextEvent(a)?`<div class="ap-context-note">Calendar event · visible for family context · no transportation assumed</div>`:`<div class="v500-legs"><div><div class="v500-leglabel">Drop-off · ${esc(start(a))}</div>${ridePills(p,a,'Drop')}</div><div><div class="v500-leglabel">Pickup · ${esc(end(a))}</div>${ridePills(p,a,'Pickup')}</div></div>`}${apDayControls(p,a)}</div>`).join('')}</div>`).join(''):'<div class="v500-person"><div class="v500-event">No transportation events for this day.</div></div>'}<div class="v500-textbox" style="margin:10px"><label>Anything different about this day?</label><textarea class="v500-daily" data-date="${esc(d)}" placeholder="Example: Kira picks Whitney up from gymnastics. I need to stay at Wheeling until 6 PM.">${esc(daily()[d]||'')}</textarea><small>This note applies only to ${esc(dateLabel(p,true))}.</small><div class="v501-savehint">Your selections and notes are saved as you make them. “Save + next day” keeps this day and opens the next one.</div></div></div>`}
 function v500TimeInput(m){m=Number(m);if(!Number.isFinite(m))return'';m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0')}
@@ -6746,7 +6787,7 @@ window.AutoPilotPlanCommands=Object.freeze({
  async finalize(){await ap57Queue;if(ap57Pending)throw new Error('Edits still saving');if(ap57LastError)throw new Error('Resolve the failed edit before finalizing: '+ap57LastError);return v504Finalize()},
  getState(){return {pending:ap57Pending,lastError:ap57LastError,dayOverrides:v507Edits(),final:phase===5}}
 });
-// v57.6: reflect work-location selection synchronously, then let the command service persist it.
+// v57.7: reflect work-location selection synchronously, then let the command service persist it.
 document.addEventListener('change',e=>{const select=e.target.closest('.v508-site');if(!select)return;const row=select.closest('.v508-chris');if(!row)return;row.querySelectorAll('.v576-commute,.v576-no-commute').forEach(n=>n.remove());const date=select.dataset.date,onsite=!['Remote','Off'].includes(select.value);if(!onsite){row.insertAdjacentHTML('beforeend','<div class="v508-summaryline v576-no-commute">No commute times for Remote / Off</div>');return;}const p=workPlans().find(z=>dkey(z)===date);const inputs=[['arrival','Arrive',manualArrivalOverrides?.[date]??p?.arrive],['departure','Leave work',manualDepartureOverrides?.[date]??p?.leaveWork]];const tmp=document.createElement('div');for(const [field,label,min] of inputs){const wrap=document.createElement('label');wrap.className='v507-mini v576-commute';const span=document.createElement('span');span.textContent=label;const input=document.createElement('input');input.type='text';input.inputMode='text';input.autocomplete='off';input.className='v507-edit v576-clock';input.dataset.field=field;input.dataset.date=date;input.value=window.v576DisplayTime(min);input.placeholder='8:30 AM';wrap.append(span,input);row.append(wrap)}},true);
 document.addEventListener('change',async e=>{const el=e.target.closest('.v507-edit');if(!el)return;const date=el.dataset.date,field=el.dataset.field,p=workPlans().find(z=>dkey(z)===date);if(!p)return;const key=el.dataset.ak||'',val=el.value;const card=el.closest('.v507-tile'),saved=card?.querySelector('.v507-saved');if(['workSite','arrival','departure'].includes(field)){try{await ap57Commit(date,field,val)}catch(err){console.error(err)}return;}el.classList.add('saving');try{
   if(field==='kiraLocation'){v507Set(date,['kiraLocation'],val);p.kiraLocation=val;p.kiraSite=val;p.kiraOff=/^off$/i.test(val.trim())}
@@ -8179,7 +8220,7 @@ function show(page,focusId){if(!titles[page])return;current=page;document.body.d
 function placeRecipes(){if(!ready)return;move('apFavoritesHQ','apRecipesContent');move('apDiscovery','apRecipesContent')}
 function placeMeals(){if(!ready)return;move('v524MealHQ','apMealsContent');const grocery=move('v524GroceryWrap','apGroceryContent');if(grocery){grocery.style.display='block';const text=$('v524GroceryText');if(text)text.textContent=window.__suiteMeals?.groceryText?.()||'';}move('v524TastePanel','apMealPreferences');if($('apMealPreferences')?.open)window.__suiteMeals?.renderPreferences?.();$('apMealsEmpty').hidden=Boolean($('v524MealHQ'));$('apGroceryEmpty').hidden=Boolean(grocery);placeRecipes();}
 function init(){if(ready)return;const oldNav=$('apCoreNavigation');if(!oldNav){setTimeout(init,20);return}document.body.classList.remove('ap-focus','ap-focus-plan','apw-logistics');document.body.classList.add('ap-simple');
-const root=document.createElement('div');root.id='apSimpleApp';root.innerHTML=`<header id="apAppHeader"><div class="ap-app-brand">AutoPilot <small>v57.6</small></div><nav id="apNavigation" aria-label="Main navigation">${Object.keys(titles).map(p=>`<button type="button" data-page="${p}" aria-current="${p==='plan'?'page':'false'}">${titles[p][0]}</button>`).join('')}</nav></header><div id="apRouteStatus" role="status" aria-live="polite"></div><main id="apPages">${Object.entries(titles).map(([p,t])=>`<section class="ap-page" id="apPage-${p}" data-app-page="${p}" ${p==='plan'?'':'hidden'}><div class="ap-page-heading"><h1>${t[0]}</h1><p>${t[1]}</p></div>${p==='meals'?'<div id="apMealsEmpty">Meals will appear here when the meal planner is ready.</div><div id="apMealsContent"></div><details class="ap-settings-group" id="apRecipeLibrary"><summary>Recipes &amp; family favorites</summary><div id="apRecipesContent"></div></details>':p==='groceries'?'<div id="apGroceryEmpty">Choose dinners in Meals to build your shopping list.</div><div id="apGroceryContent"></div>':p==='share'?'<p id="apShareEmpty" class="ap-notice">Build or open a saved plan before downloading its outputs. Long-range calendar export is available below.</p><section class="ap-share-card"><h2>Current plan</h2><div id="apPlanDownloads" class="ap-action-row"></div><div id="apShareMessage"></div><div id="apShareWall"></div></section><details id="apShareCalendar" class="ap-settings-group"><summary>Calendar export · choose any date range</summary></details><details id="apSharePhone" class="ap-settings-group"><summary>Preview phone agenda</summary></details>':p==='settings'?'<div id="apSettingsContent"></div>':''}</section>`).join('')}</main>`;
+const root=document.createElement('div');root.id='apSimpleApp';root.innerHTML=`<header id="apAppHeader"><div class="ap-app-brand">AutoPilot <small>v57.7</small></div><nav id="apNavigation" aria-label="Main navigation">${Object.keys(titles).map(p=>`<button type="button" data-page="${p}" aria-current="${p==='plan'?'page':'false'}">${titles[p][0]}</button>`).join('')}</nav></header><div id="apRouteStatus" role="status" aria-live="polite"></div><main id="apPages">${Object.entries(titles).map(([p,t])=>`<section class="ap-page" id="apPage-${p}" data-app-page="${p}" ${p==='plan'?'':'hidden'}><div class="ap-page-heading"><h1>${t[0]}</h1><p>${t[1]}</p></div>${p==='meals'?'<div id="apMealsEmpty">Meals will appear here when the meal planner is ready.</div><div id="apMealsContent"></div><details class="ap-settings-group" id="apRecipeLibrary"><summary>Recipes &amp; family favorites</summary><div id="apRecipesContent"></div></details>':p==='groceries'?'<div id="apGroceryEmpty">Choose dinners in Meals to build your shopping list.</div><div id="apGroceryContent"></div>':p==='share'?'<p id="apShareEmpty" class="ap-notice">Build or open a saved plan before downloading its outputs. Long-range calendar export is available below.</p><section class="ap-share-card"><h2>Current plan</h2><div id="apPlanDownloads" class="ap-action-row"></div><div id="apShareMessage"></div><div id="apShareWall"></div></section><details id="apShareCalendar" class="ap-settings-group"><summary>Calendar export · choose any date range</summary></details><details id="apSharePhone" class="ap-settings-group"><summary>Preview phone agenda</summary></details>':p==='settings'?'<div id="apSettingsContent"></div>':''}</section>`).join('')}</main>`;
 document.body.insertBefore(root,document.body.firstChild);oldNav.remove();$('apCoreNavMessage')?.remove();$('apFocusHeading')?.remove();$('apWorkflow')?.remove();$('apModuleStage')?.remove();
 move('v500App','apPage-plan');const vault=document.createElement('div');vault.id='apEngineControls';vault.hidden=true;document.body.append(vault);move('v502CycleBar','apEngineControls');
 // The old global toolbar and duplicate current-plan entry points are retired.
@@ -8205,7 +8246,7 @@ const builder=$('v500StageStart');if(builder){const h=builder.querySelector('h1'
 $('suitePlannerToday')?.remove();
 $('apNavigation').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)show(b.dataset.page)});
 meal.addEventListener('toggle',()=>{if(meal.open)window.__suiteMeals?.renderPreferences?.()});
-ready=true;window.AutoPilotNavigation={open:show,version:'v57.6'};window.__apSimpleUI={show,version:'57.6'};window.addEventListener('ap-meals-rendered',placeMeals);window.addEventListener('ap-recipes-rendered',placeRecipes);document.addEventListener('click',e=>{if(e.target.closest('#apfAddDetail,#apfAddBulk'))setTimeout(()=>window.__suiteMeals?.reload?.(),80)});window.__suiteMeals?.reload?.();placeMeals();show('plan');
+ready=true;window.AutoPilotNavigation={open:show,version:'v57.7'};window.__apSimpleUI={show,version:'57.6'};window.addEventListener('ap-meals-rendered',placeMeals);window.addEventListener('ap-recipes-rendered',placeRecipes);document.addEventListener('click',e=>{if(e.target.closest('#apfAddDetail,#apfAddBulk'))setTimeout(()=>window.__suiteMeals?.reload?.(),80)});window.__suiteMeals?.reload?.();placeMeals();show('plan');
 // Preserve source-independent warnings without adding another action on Plan.
 function syncPlan(){let has=false;for(const key of ['autopilot.v532.livePlan.v1','autopilot.v532.futurePlan.v1']){try{if(JSON.parse(localStorage.getItem(key)||'null')?.plans?.length)has=true}catch{}}const home=$('v532PlanHome');if(home)home.hidden=!has;const cc=$('apCommandCenter');if(cc)cc.hidden=!has;}
 const observer=new MutationObserver(syncPlan);observer.observe($('apPage-plan'),{childList:true,subtree:true});syncPlan();
@@ -8278,7 +8319,7 @@ function refresh(){const list=cards();let attention=0,manual=0;const overrides=w
  if($('ap57ReviewLabel'))$('ap57ReviewLabel').textContent=filter==='attention'?(attention?'Days needing review':'No flagged days — view All days to inspect'):'Select a location or time to edit';
 }
 function init(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||$('ap57Review'))return;
- const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.6</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
+ const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.7</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
  const foot=document.createElement('div');foot.id='ap57Footer';foot.className='ap57-footer';foot.innerHTML='<div><strong>Finalize your plan</strong><small>Changes must finish saving first</small></div><button type="button" id="ap57Finalize">Finalize plan</button>';card.append(foot);
  head.addEventListener('click',e=>{const b=e.target.closest('[data-ap57-filter]');if(!b)return;filter=b.dataset.ap57Filter;head.querySelectorAll('[data-ap57-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()});
  $('ap57Finalize').onclick=async()=>{if(finalizing)return;error='';finalizing=true;status('Verifying edits and creating final snapshot…','busy');try{await window.AutoPilotPlanCommands.finalize();status('Final snapshot verified.','saved')}catch(err){error=err.message;status('Finalization failed: '+error,'error')}finally{finalizing=false;status(error?'Finalization failed: '+error:'Final snapshot verified.',error?'error':'saved')}};
