@@ -1258,7 +1258,7 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 </style><meta name="autopilot-build" content="v57.9.1-DEPLOY-IDENTITY-20261026">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v57.9.1',build:'DEPLOY-IDENTITY-20261026',label:'AutoPilot v57.10'});
+const release=Object.freeze({version:'v57.11',build:'NONZERO-DELIVERY-20261027',label:'AutoPilot v57.11'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -5126,28 +5126,48 @@ async function testNonzeroIntegration(){
     return true;
   }catch(e){nonzeroStatus(`<strong>Connection failed:</strong> ${esc(e.message)}`,'warn');return false}
 }
+// v57.11: A successful PUT is not proof that a wall rendered the schedule.
+// Always send the current agenda on a deliberate publish; retry after transient errors.
+let __nonzeroDeliveryLog={phase:'idle',time:null,message:'Not yet published in this session'};
+function nonzeroDeliveryState(phase,message){
+  __nonzeroDeliveryLog={phase,time:new Date().toISOString(),message};
+  const el=$('v502PublishStatus');
+  if(el){el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.className='v502-publishstatus '+(phase==='error'?'warn':phase==='sent'?'good':'');el.textContent=message}
+  if(phase==='error')console.warn('AutoPilot NONZERO delivery:',message);
+}
 async function publishNonzeroAgenda({silent=false}={}){
-  if(__nonzeroPublishing){__nonzeroPublishQueued=true;return false}
+  if(__nonzeroPublishing){__nonzeroPublishQueued=true;nonzeroDeliveryState('pending','Another NONZERO upload is underway. Your changes are queued to send next.');return false}
   const cfg=nonzeroIntegrationConfig();
-  if(!/^https:\/\//i.test(cfg.endpoint)||cfg.key.length<16){if(!silent)nonzeroStatus('<strong>Not configured.</strong> Add the NONZERO Worker URL and private sync key first.','warn');return false}
+  if(!/^https:\/\//i.test(cfg.endpoint)||cfg.key.length<16){
+    const msg='NONZERO cannot publish: check the Worker HTTPS URL and private sync key in Settings → NONZERO wall & phone. Then select Publish agenda to NONZERO again.';
+    nonzeroDeliveryState('error',msg);if(!silent)nonzeroStatus(msg,'warn');return false;
+  }
   __nonzeroPublishing=true;
   try{
     const agenda=buildNonzeroAgenda();
-    const fingerprint=nonzeroAgendaFingerprint(agenda);
-    if(fingerprint===__nonzeroLastAgendaFingerprint){if(!silent)nonzeroStatus('<strong>Current.</strong> The NONZERO agenda already matches this plan; no cloud write was needed.','good');return true}
+    const total=(agenda.days||[]).reduce((n,d)=>n+(d.items||[]).filter(x=>x.showOnWall!==false).length,0);
+    if(!agenda.days?.length||!total){throw new Error('No visible calendar events were found to publish. Refresh calendar feeds and check Hide from Wall decisions; your work plan was not changed.')}
+    nonzeroDeliveryState('sending',`Sending ${total} visible events across ${agenda.days.length} days to NONZERO…`);
     const written=await nonzeroCloudRequest('/suite/agenda',{method:'PUT',body:JSON.stringify({agenda})});
-    __nonzeroLastAgendaFingerprint=fingerprint;
-    if(!silent)nonzeroStatus(`<strong>Published.</strong> ${agenda.date} · ${agenda.items.length} agenda items · workouts preserved.`,'good');
-    localStorage.removeItem('autopilot.suite.agendaPending');return true;
-  }catch(e){localStorage.setItem('autopilot.suite.agendaPending','1');if(!silent)nonzeroStatus(`<strong>Publish failed:</strong> ${esc(e.message)}. Existing NONZERO state was left intact.`,'warn');return false}
-  finally{
+    __nonzeroLastAgendaFingerprint=nonzeroAgendaFingerprint(agenda);
+    localStorage.removeItem('autopilot.suite.agendaPending');
+    const msg=`Upload accepted by NONZERO: ${total} visible events across ${agenda.days.length} dates. This confirms the Worker accepted the request, not that the Wall has refreshed.`;
+    nonzeroDeliveryState('sent',msg);if(!silent)nonzeroStatus('<strong>'+esc(msg)+'</strong>','good');
+    return true;
+  }catch(e){
+    try{localStorage.setItem('autopilot.suite.agendaPending','1')}catch{}
+    const msg=`NONZERO publish failed: ${e.message}. Your AutoPilot edits remain intact. Check Settings → NONZERO connection, test it, then retry Publish agenda to NONZERO.`;
+    nonzeroDeliveryState('error',msg);if(!silent)nonzeroStatus(esc(msg),'warn');
+    return false;
+  }finally{
     __nonzeroPublishing=false;
-    if(__nonzeroPublishQueued){__nonzeroPublishQueued=false;scheduleNonzeroAgendaPublish()}
+    if(__nonzeroPublishQueued){__nonzeroPublishQueued=false;scheduleNonzeroAgendaPublish(true)}
   }
 }
-function scheduleNonzeroAgendaPublish(){
-  const cfg=nonzeroIntegrationConfig(); if(!cfg.auto||!plans.length)return;
-  clearTimeout(__nonzeroPublishTimer);__nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),NONZERO_PUBLISH_DEBOUNCE_MS);
+function scheduleNonzeroAgendaPublish(force=false){
+  const cfg=nonzeroIntegrationConfig();if(!force&&!cfg.auto)return;
+  clearTimeout(__nonzeroPublishTimer);
+  __nonzeroPublishTimer=setTimeout(()=>publishNonzeroAgenda({silent:true}),NONZERO_PUBLISH_DEBOUNCE_MS);
 }
 $('generateBtn').onclick=async()=>{quickReviewFilter='all';await generate();saveAllNow();scheduleNonzeroAgendaPublish();const b=document.querySelector('[data-tab="review"]');if(b)b.click();};
 $('newCycleBtn').onclick=startNewCycle;
@@ -6437,7 +6457,7 @@ async function publishNonzeroFromFinal(testOnly=false){
     if(testOnly){set('<b>Testing NONZERO connection…</b>');const ok=await testNonzeroIntegration();set(ok?'<b>NONZERO connected.</b> Canonical state is reachable and safe to publish.':'<b>Connection test failed.</b> Check the Worker URL/private key in Settings.',ok?'good':'warn');return ok}
     set('<b>Publishing the current AutoPilot agenda to NONZERO…</b>');
     const ok=await publishNonzeroAgenda({silent:true});
-    if(ok){const a=buildNonzeroAgenda();set(`<b>Published.</b> ${a.date} · ${a.items.length} agenda item${a.items.length===1?'':'s'} · workouts and activity history preserved.`,'good')}
+    if(ok){const a=buildNonzeroAgenda();set(`<b>NONZERO accepted upload.</b> ${(a.days||[]).length} schedule dates sent. Confirm the Wall refreshes; this is not a Wall-display acknowledgement.`,'good')}
     else set('<b>Publish did not complete.</b> Existing NONZERO state was left intact. Check the integration settings and test the connection.','warn');
     return ok;
   }catch(e){console.error(e);set(`<b>Publish failed.</b> ${esc(e.message)} Existing NONZERO state was left intact.`,'warn');return false}
@@ -8220,7 +8240,7 @@ const titles={plan:['Plan','Your current schedule and the next planning period.'
 function move(id,dest){const el=$(id),to=$(dest);if(el&&to&&el.parentElement!==to)to.appendChild(el);return el}
 function group(id,title,open=false){const d=document.createElement('details');d.id=id;d.className='ap-settings-group';d.open=open;const s=document.createElement('summary');s.textContent=title;d.append(s);return d}
 function message(text){$('apRouteStatus').textContent=text}
-function show(page,focusId){if(!titles[page])return;current=page;document.body.dataset.page=page;document.querySelectorAll('[data-app-page]').forEach(p=>p.hidden=p.dataset.appPage!==page);document.querySelectorAll('#apNavigation [data-page]').forEach(b=>b.setAttribute('aria-current',b.dataset.page===page?'page':'false'));if(page==='meals'||page==='groceries'){window.__suiteMeals?.reload?.();placeMeals()}if(page==='share'){const has=Boolean((typeof plans!=='undefined'&&plans?.length)||$('v500Fridge')?.children.length);$('apShareEmpty').hidden=has;for(const id of ['v500PrintFridge','v500DownloadIcs','v500DownloadPhone','v502PublishNonzero'])if($(id))$(id).disabled=!has;}if(page==='settings'&&focusId){const el=$(focusId);for(let p=el?.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;setTimeout(()=>el?.scrollIntoView({block:'start',behavior:'smooth'}),0)}else window.scrollTo({top:0,behavior:'instant'});message('');}
+function show(page,focusId){if(!titles[page])return;current=page;document.body.dataset.page=page;document.querySelectorAll('[data-app-page]').forEach(p=>p.hidden=p.dataset.appPage!==page);document.querySelectorAll('#apNavigation [data-page]').forEach(b=>b.setAttribute('aria-current',b.dataset.page===page?'page':'false'));if(page==='meals'||page==='groceries'){window.__suiteMeals?.reload?.();placeMeals()}if(page==='share'){const has=Boolean((typeof plans!=='undefined'&&plans?.length)||$('v500Fridge')?.children.length);$('apShareEmpty').hidden=has;for(const id of ['v500PrintFridge','v500DownloadIcs','v500DownloadPhone'])if($(id))$(id).disabled=!has;}if(page==='settings'&&focusId){const el=$(focusId);for(let p=el?.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;setTimeout(()=>el?.scrollIntoView({block:'start',behavior:'smooth'}),0)}else window.scrollTo({top:0,behavior:'instant'});message('');}
 function placeRecipes(){if(!ready)return;move('apFavoritesHQ','apRecipesContent');move('apDiscovery','apRecipesContent')}
 function placeMeals(){if(!ready)return;move('v524MealHQ','apMealsContent');const grocery=move('v524GroceryWrap','apGroceryContent');if(grocery){grocery.style.display='block';const text=$('v524GroceryText');if(text)text.textContent=window.__suiteMeals?.groceryText?.()||'';}move('v524TastePanel','apMealPreferences');if($('apMealPreferences')?.open)window.__suiteMeals?.renderPreferences?.();$('apMealsEmpty').hidden=Boolean($('v524MealHQ'));$('apGroceryEmpty').hidden=Boolean(grocery);placeRecipes();}
 function init(){if(ready)return;const oldNav=$('apCoreNavigation');if(!oldNav){setTimeout(init,20);return}document.body.classList.remove('ap-focus','ap-focus-plan','apw-logistics');document.body.classList.add('ap-simple');
@@ -8323,7 +8343,7 @@ function refresh(){const list=cards();let attention=0,manual=0;const overrides=w
  if($('ap57ReviewLabel'))$('ap57ReviewLabel').textContent=filter==='attention'?(attention?'Days needing review':'No flagged days — view All days to inspect'):'Select a location or time to edit';
 }
 function init(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||$('ap57Review'))return;
- const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.10</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
+ const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.11</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
  const foot=document.createElement('div');foot.id='ap57Footer';foot.className='ap57-footer';foot.innerHTML='<div><strong>Finalize your plan</strong><small id="apFinalHint">Every edit is preserved in your draft. Finalize will verify all changes.</small></div><button type="button" id="ap57Finalize">Finalize plan</button>';card.append(foot);
  head.addEventListener('click',e=>{const b=e.target.closest('[data-ap57-filter]');if(!b)return;filter=b.dataset.ap57Filter;head.querySelectorAll('[data-ap57-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()});
  $('ap57Finalize').onclick=async()=>{if(finalizing)return;error='';finalizing=true;status('Verifying edits and creating final snapshot…','busy');try{await window.AutoPilotPlanCommands.finalize();status('Final snapshot verified.','saved')}catch(err){error=err?.message||'Unknown finalization error';status('Finalization failed: '+error,'error');const banner=$('ap57Status');banner?.scrollIntoView?.({behavior:'smooth',block:'center'});window.dispatchEvent(new CustomEvent('ap:finalize-error',{detail:{message:error}}))}finally{finalizing=false;status(error?'Finalization failed: '+error:'Final snapshot verified.',error?'error':'saved')}};
@@ -8403,7 +8423,7 @@ function render(){const host=document.getElementById('ap57Review');if(!host||doc
 </style>
 <script id="ap5710-reliability">
 (function(){'use strict';
-const mark=()=>{const head=document.querySelector('#ap57Review .ap57-stat');if(head)head.textContent='v57.10';const h=document.querySelector('#apFinalHint');if(h)h.textContent='Tap Finalize once; any save problem will appear above with recovery instructions.'};
+const mark=()=>{const head=document.querySelector('#ap57Review .ap57-stat');if(head)head.textContent='v57.11';const h=document.querySelector('#apFinalHint');if(h)h.textContent='Tap Finalize once; any save problem will appear above with recovery instructions.'};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mark);else mark();
 window.addEventListener('ap:finalize-error',e=>{const m=e.detail?.message||'';const status=document.getElementById('v500ReviewStatus');if(status){status.className='v500-status warn';status.textContent='Finalization did not complete: '+m+' Your edits remain in the draft. Review the highlighted error and retry.'}});
 // A one-time keydown commit makes desktop time editing work without requiring two clicks elsewhere.
