@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <!-- AutoPilot v47.21: durable learned event rules + stable UID overrides + whole-day ride feasibility + immutable final snapshots -->
-<title>AutoPilot — Family Logistics Planner v57.15</title>
+<title>AutoPilot — Family Logistics Planner v57.20-RC</title>
 <style>
 :root{
   --bg:#f5f7fa;--card:#fff;--text:#18212b;--muted:#6b7280;--line:#d8dee8;
@@ -1255,10 +1255,10 @@ body>.app-shell,body>.brand-watermark{display:none!important}
 #v500App .v507-event .ap-editday-actions button{display:inline-flex!important;visibility:visible!important;opacity:1!important;padding:8px 10px;min-height:34px;font:700 10px/1.25 system-ui,sans-serif;background:#f2f6f9;border:1px solid #b9cbd8;border-radius:7px;color:#1c354a;cursor:pointer}
 #v500App .v507-event .ap-editday-actions button.active{background:#deeee6;border-color:#77aa92;color:#154c36}
 #v500App .v507-event{overflow:visible!important}
-</style><meta name="autopilot-build" content="v57.15-DEPLOY-IDENTITY-20261026">
+</style><meta name="autopilot-build" content="v57.17-DEPLOY-IDENTITY-20261026">
 <script data-module="00_release_identity.js">
 (()=>{'use strict';
-const release=Object.freeze({version:'v57.15',build:'FIVE-MINUTE-DEPARTURES-20261028',label:'AutoPilot v57.15'});
+const release=Object.freeze({version:'v57.17',build:'FIVE-MINUTE-DEPARTURES-20261028',label:'AutoPilot v57.17'});
 function apply(){document.title='AutoPilot — Family Logistics Planner '+release.version;
  document.querySelectorAll('.v510-wordmark small').forEach(e=>{const v='Family Logistics Planner · '+release.version;if(e.textContent!==v)e.textContent=v});
  document.querySelectorAll('.v500-brand span').forEach(e=>{if(/^v\d/.test(e.textContent||''))e.textContent=release.version});
@@ -4176,7 +4176,7 @@ let manualTransportOverrides={};
 let manualLegOverrides={};
 let manualArrivalOverrides={};
 let manualDepartureOverrides={};
-/* v57.15: single, exact work-time model. Stored values are minute-of-day integers.
+/* v57.17: single, exact work-time model. Stored values are minute-of-day integers.
  * An explicit override survives recalculation; departures floor to five-minute marks after user entry.
  * Never infer PM from an unqualified hour. */
 const AutoPilotWorkTime=Object.freeze({
@@ -5160,7 +5160,7 @@ async function testNonzeroIntegration(){
     return true;
   }catch(e){nonzeroStatus(`<strong>Connection failed:</strong> ${esc(e.message)}`,'warn');return false}
 }
-// v57.15: A successful PUT is not proof that a wall rendered the schedule.
+// v57.17: A successful PUT is not proof that a wall rendered the schedule.
 // Always send the current agenda on a deliberate publish; retry after transient errors.
 let __nonzeroDeliveryLog={phase:'idle',time:null,message:'Not yet published in this session'};
 function nonzeroDeliveryState(phase,message){
@@ -5182,10 +5182,37 @@ async function publishNonzeroAgenda({silent=false}={}){
     const total=(agenda.days||[]).reduce((n,d)=>n+(d.items||[]).filter(x=>x.showOnWall!==false).length,0);
     if(!agenda.days?.length||!total){throw new Error('No visible calendar events were found to publish. Refresh calendar feeds and check Hide from Wall decisions; your work plan was not changed.')}
     nonzeroDeliveryState('sending',`Sending ${total} visible events across ${agenda.days.length} days to NONZERO…`);
-    const written=await nonzeroCloudRequest('/suite/agenda',{method:'PUT',body:JSON.stringify({agenda})});
-    __nonzeroLastAgendaFingerprint=nonzeroAgendaFingerprint(agenda);
+    const publishId='ap-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+    const written=await nonzeroCloudRequest('/suite/agenda',{method:'PUT',body:JSON.stringify({agenda,publishId})});
+    if(!written?.ok)throw new Error('Worker did not accept the agenda');
+    // Verify the dedicated suite record AND the canonical state consumed by NONZERO/Wall.
+    // A 200 response alone is not a user-visible publication receipt.
+    const wanted=nonzeroAgendaFingerprint(agenda);
+    let suiteVerified=false,canonicalVerified=false,receipt=null;
+    for(let attempt=0;attempt<4;attempt++){
+      try{
+        const suite=await nonzeroCloudRequest('/suite/agenda');
+        suiteVerified=Boolean(suite?.agenda&&nonzeroAgendaFingerprint(suite.agenda)===wanted);
+        if(suiteVerified)receipt=suite;
+      }catch(e){if(attempt===3)console.warn('AutoPilot suite read-back failed:',e.message)}
+      if(suiteVerified){
+        try{
+          const x=await nonzeroCloudRequest('/state');
+          canonicalVerified=Boolean(x?.state?.autopilotAgenda&&nonzeroAgendaFingerprint(x.state.autopilotAgenda)===wanted);
+        }catch(e){if(attempt===3)console.warn('AutoPilot canonical read-back failed:',e.message)}
+      }
+      if(suiteVerified&&canonicalVerified)break;
+      await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));
+    }
+    if(!suiteVerified||!canonicalVerified){
+      // Preserve the original planned agenda and pending state for safe retry.
+      throw new Error('Worker accepted upload but NONZERO read-back did not confirm the same agenda. Check the NONZERO Sync Worker /suite/agenda contract and account key. Saved family plans remain intact.');
+    }
+    __nonzeroLastAgendaFingerprint=wanted;
     localStorage.removeItem('autopilot.suite.agendaPending');
-    const msg=`Upload accepted by NONZERO: ${total} visible events across ${agenda.days.length} dates. This confirms the Worker accepted the request, not that the Wall has refreshed.`;
+    let wallNote='Wall display not yet verified';
+    try{const status=await nonzeroCloudRequest('/suite/status');const seen=Number(status?.wall?.lastHeartbeatAt||status?.wall?.lastStateAt||0);if(seen&&Date.now()-seen<180000)wallNote='Wall recently connected; render not verified';}catch{}
+    const msg=`Verified in NONZERO cloud: ${total} visible events across ${agenda.days.length} dates. ${wallNote}.`;
     nonzeroDeliveryState('sent',msg);if(!silent)nonzeroStatus('<strong>'+esc(msg)+'</strong>','good');
     return true;
   }catch(e){
@@ -6361,6 +6388,7 @@ function v507DayEdit(date){let all=v507Edits();return all[date]||{}}
 function v507Set(date,path,value){let all=v507Edits(),d=all[date]||{};if(path.length===1)d[path[0]]=value;else{let cur=d;for(let i=0;i<path.length-1;i++)cur=cur[path[i]]||(cur[path[i]]={});cur[path[path.length-1]]=value}all[date]=d;v507SaveEdits(all)}
 function v507ApplyOne(p){if(!p)return p;const date=dkey(p),d=v507DayEdit(date);
   if(d.workSite!=null){const v=d.workSite;p.onsite=!(v==='Remote'||v==='Off');p.site=p.onsite?v:'';p.holiday=v==='Off';p.manualOverride=true;if(!p.onsite){p.departHome=null;p.arrive=null;p.leaveWork=null;p.chrisWorkAddress='';p.status='remote'}}
+  if(d.travelMinutes!=null){const n=Number(d.travelMinutes);if(Number.isInteger(n)&&n>=1&&n<=240){p.chrisCommuteMinutes=n;p.commute=n}}
   if(d.kiraLocation!=null){p.kiraLocation=d.kiraLocation;p.kiraSite=d.kiraLocation}
   if(d.kiraStart!=null&&d.kiraStart!=='')p.kiraStart=Number(d.kiraStart);if(d.kiraEnd!=null&&d.kiraEnd!=='')p.kiraEnd=Number(d.kiraEnd);
   const ev=d.events||{};(p.activities||[]).forEach(a=>{const key=a.__v507Key||ak(a);a.__v507Key=key;const e=ev[key];if(!e)return;if(e.owner!=null)a.__v507Owner=e.owner;if(e.title!=null)a.title=e.title;if(e.start!=null)a.start=e.start;if(e.end!=null)a.end=e.end;if(e.location!=null)a.location=e.location});
@@ -6491,8 +6519,13 @@ async function publishNonzeroFromFinal(testOnly=false){
     if(testOnly){set('<b>Testing NONZERO connection…</b>');const ok=await testNonzeroIntegration();set(ok?'<b>NONZERO connected.</b> Canonical state is reachable and safe to publish.':'<b>Connection test failed.</b> Check the Worker URL/private key in Settings.',ok?'good':'warn');return ok}
     set('<b>Publishing the current AutoPilot agenda to NONZERO…</b>');
     const ok=await publishNonzeroAgenda({silent:true});
-    if(ok){const a=buildNonzeroAgenda();set(`<b>NONZERO accepted upload.</b> ${(a.days||[]).length} schedule dates sent. Confirm the Wall refreshes; this is not a Wall-display acknowledgement.`,'good')}
-    else set('<b>Publish did not complete.</b> Existing NONZERO state was left intact. Check the integration settings and test the connection.','warn');
+    // The core publisher verifies both /suite/agenda and /state using the same
+    // credentials as its PUT. Surface that exact receipt; never overwrite it
+    // with a generic HTTP-accepted banner or rebuild the agenda for reporting.
+    const delivery=__nonzeroDeliveryLog;
+    const verified=ok&&delivery.phase==='sent';
+    if(verified)set('<b>'+esc(delivery.message)+'</b>','good');
+    else set('<b>'+esc(delivery.message||'NONZERO publication could not be verified.')+'</b>','warn');
     return ok;
   }catch(e){console.error(e);set(`<b>Publish failed.</b> ${esc(e.message)} Existing NONZERO state was left intact.`,'warn');return false}
 }
@@ -6753,7 +6786,7 @@ async function v504Finalize(){
   if(v504Busy)throw new Error('AutoPilot is already processing a plan. Finish that operation and try Finalize again.');
   if(!v504HasPlan())throw new Error('The draft is empty or has invalid/duplicate dates. Open Current Plan or Upcoming Plan again and retry. Your saved choices have not been cleared.');
   v504Busy=true;v504SetToolbarState('<b>Applying the latest edits and finalizing…</b>');
-  try{const unresolved=await v504ApplyEdits();if(!v504HasPlan())throw new Error('The plan no longer has valid distinct dates after applying changes. Reopen the saved plan, review the dates, and retry.');finalize();if(phase!==5||!finalData)throw new Error('Final snapshot was not activated');window.dispatchEvent(new CustomEvent('ap57:plan',{detail:{type:'finalized',notes:unresolved.length}}));v504SetToolbarState(unresolved.length?`<b>Finalized with ${unresolved.length} note${unresolved.length===1?'':'s'} needing manual review.</b> Everything else is locked into the current final plan.`:'<b>Final plan ready.</b> Print the fridge copy or open the mobile view below.','good');return true}
+  try{const unresolved=await v504ApplyEdits();if(!v504HasPlan())throw new Error('The plan no longer has valid distinct dates after applying changes. Reopen the saved plan, review the dates, and retry.');AutoPilotWorkTime.normalize(workPlans());for(const day of workPlans()){if(!day.onsite||day.holiday||day.weekend)continue;const a=AutoPilotWorkTime.parse(day.arrive),d=AutoPilotWorkTime.parse(day.leaveWork),h=AutoPilotWorkTime.parse(day.departHome);if(a===null||d===null||h===null)throw new Error('Incomplete work times on '+day.dateStr+'. Open that day, set your arrival target and home-by time, then apply.');if(d<=a)throw new Error('Depart-work time precedes work arrival on '+day.dateStr+'. Correct the home-by target and apply the day before finalizing.');if(h>a)throw new Error('Leave-home time is after work arrival on '+day.dateStr+'. Review the travel estimate and arrival target.')}finalize();if(phase!==5||!finalData)throw new Error('Final snapshot was not activated');window.dispatchEvent(new CustomEvent('ap57:plan',{detail:{type:'finalized',notes:unresolved.length}}));v504SetToolbarState(unresolved.length?`<b>Finalized with ${unresolved.length} note${unresolved.length===1?'':'s'} needing manual review.</b> Everything else is locked into the current final plan.`:'<b>Final plan ready.</b> Print the fridge copy or open the mobile view below.','good');return true}
   catch(e){console.error(e);window.dispatchEvent(new CustomEvent('ap57:plan',{detail:{type:'error',message:e.message}}));v504SetToolbarState(`<b>Could not finalize.</b> ${esc(e.message)}`,'warn');throw e}
   finally{v504Busy=false;v504SetToolbarState()}
 }
@@ -6793,7 +6826,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('.v506-time
 let ap57Queue=Promise.resolve(),ap57Pending=0,ap57LastError=null;
 function ap57Emit(type,detail={}){window.dispatchEvent(new CustomEvent('ap57:plan',{detail:{type,...detail}}))}
 function ap57Commit(date,field,value){
-  if(!['workSite','arrival','departure'].includes(field))return Promise.reject(new Error('Unsupported planning command'));
+  if(!['workSite','arrival','departure','travelMinutes'].includes(field))return Promise.reject(new Error('Unsupported planning command'));
   ap57Pending++;ap57Emit('saving',{date,field,pending:ap57Pending});
   const job=ap57Queue.then(async()=>{
     const p=workPlans().find(z=>dkey(z)===date);if(!p)throw new Error('Plan day is no longer available');
@@ -6805,6 +6838,12 @@ function ap57Commit(date,field,value){
         v507Set(date,['workSite'],value);
         const x=pending();x.work[date]=value;savePending(x);
         v507ApplyOne(p);
+      }else if(field==='travelMinutes'){
+        if(!p.onsite)throw new Error('Select an onsite work location first');
+        const duration=Number(value);
+        if(!Number.isInteger(duration)||duration<1||duration>240)throw new Error('Travel duration must be between 1 and 240 minutes');
+        v507Set(date,['travelMinutes'],duration);
+        p.chrisCommuteMinutes=duration;
       }else{
         if(!p.onsite)throw new Error('Set an onsite location before editing work times');
         const minutes=v507ToMin(value);if(minutes===null||minutes<0||minutes>=1440)throw new Error('Choose a valid time');
@@ -6820,6 +6859,8 @@ function ap57Commit(date,field,value){
         if(v507DayEdit(date).workSite!==value||pending().work[date]!==value)throw new Error('Work override was not stored');
         if(active.onsite===(value==='Remote'||value==='Off'))throw new Error('Work override did not survive recalculation');
         if(active.onsite&&active.site!==value)throw new Error('Incorrect onsite location was applied');
+      }else if(field==='travelMinutes'){
+        if(Number(v507DayEdit(date).travelMinutes)!==Number(value)||Number(active.chrisCommuteMinutes)!==Number(value))throw new Error('Travel duration was not retained');
       }else{
         const raw=v507ToMin(value),minutes=field==='arrival'?raw:AutoPilotWorkTime.roundDeparture(raw),actual=field==='arrival'?manualArrivalOverrides[date]:manualDepartureOverrides[date];
         if(Number(actual)!==minutes)throw new Error('Manual time was not retained');AutoPilotWorkTime.apply(active);if(Number(active[field==='arrival'?'arrive':'leaveWork'])!==minutes)throw new Error('Saved time was replaced during recalculation');
@@ -7920,14 +7961,14 @@ async function makeDocx(records,start,end,failures){
  const section=(title)=>para(run(title,24,true,'163B56'),145,240);
  const monthName=m=>new Date(m+'-15T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
  const week=['SUN','MON','TUE','WED','THU','FRI','SAT'];
- const grid=(cells,colW,head=false)=>'<w:tbl><w:tblPr><w:tblW w:w="'+(colW*7)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="85" w:type="dxa"/><w:left w:w="95" w:type="dxa"/><w:bottom w:w="85" w:type="dxa"/><w:right w:w="95" w:type="dxa"/></w:tblCellMar><w:tblBorders><w:bottom w:val="single" w:sz="4" w:color="D7E0E8"/><w:insideH w:val="single" w:sz="4" w:color="D7E0E8"/><w:insideV w:val="single" w:sz="4" w:color="D7E0E8"/></w:tblBorders></w:tblPr><w:tblGrid>'+week.map(()=>'<w:gridCol w:w="'+colW+'"/>').join('')+'</w:tblGrid>'+cells.map((r,ri)=>'<w:tr><w:trPr>'+(ri?'<w:trHeight w:val="1370" w:hRule="atLeast"/>':'<w:trHeight w:val="310" w:hRule="atLeast"/>')+'</w:trPr>'+r.map((c,ci)=>'<w:tc><w:tcPr><w:tcW w:w="'+colW+'" w:type="dxa"/>'+shade(ri===0?'173A56':c.active?'FFFFFF':'F1F4F7')+'<w:vAlign w:val="top"/></w:tcPr>'+(ri===0?para(run(c,14,true,'FFFFFF')):c.day?para(run(String(c.day),20,true,'173A56'),100)+c.events.slice(0,4).map(e=>para(run(time12(e.start)+'  ',13,true,'27617F')+run(e.title,13,false,'243D50'),70)).join('')+(c.events.length>4?para(run('+'+(c.events.length-4)+' more in agenda',13,true,'5C7285')):''):para(run(' ',13)))+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';
+ const grid=(cells,colW,head=false)=>'<w:tbl><w:tblPr><w:tblW w:w="'+(colW*7)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="85" w:type="dxa"/><w:left w:w="95" w:type="dxa"/><w:bottom w:w="85" w:type="dxa"/><w:right w:w="95" w:type="dxa"/></w:tblCellMar><w:tblBorders><w:bottom w:val="single" w:sz="4" w:color="D7E0E8"/><w:insideH w:val="single" w:sz="4" w:color="D7E0E8"/><w:insideV w:val="single" w:sz="4" w:color="D7E0E8"/></w:tblBorders></w:tblPr><w:tblGrid>'+week.map(()=>'<w:gridCol w:w="'+colW+'"/>').join('')+'</w:tblGrid>'+cells.map((r,ri)=>'<w:tr><w:trPr>'+(ri?'<w:trHeight w:val="720" w:hRule="atLeast"/>':'<w:trHeight w:val="310" w:hRule="atLeast"/>')+'</w:trPr>'+r.map((c,ci)=>'<w:tc><w:tcPr><w:tcW w:w="'+colW+'" w:type="dxa"/>'+shade(ri===0?'173A56':c.active?'FFFFFF':'F1F4F7')+'<w:vAlign w:val="top"/></w:tcPr>'+(ri===0?para(run(c,14,true,'FFFFFF')):c.day?para(run(String(c.day),20,true,'173A56'),100)+c.events.map(e=>para(run(time12(e.start)+'  ',13,true,'27617F')+run(e.title,13,false,'243D50'),70)).join(''):para(run(' ',13)))+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';
  const agtable=(arr)=>{const cols=[1290,5620,2910];const rows=[['TIME','COMMITMENT / SOURCE','COVERAGE / NOTES'],...arr];return '<w:tbl><w:tblPr><w:tblW w:w="9820" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="105" w:type="dxa"/><w:bottom w:w="105" w:type="dxa"/><w:left w:w="125" w:type="dxa"/><w:right w:w="125" w:type="dxa"/></w:tblCellMar><w:tblBorders><w:bottom w:val="single" w:color="DDE4E9" w:sz="4"/><w:insideH w:val="single" w:color="E3EAF0" w:sz="4"/></w:tblBorders></w:tblPr><w:tblGrid>'+cols.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.map((r,i)=>'<w:tr>'+r.map((c,j)=>'<w:tc><w:tcPr><w:tcW w:w="'+cols[j]+'" w:type="dxa"/>'+shade(i===0?'173A56':i%2?'FFFFFF':'F5F8FA')+'</w:tcPr>'+ (i===0?para(run(c,14,true,'FFFFFF')):j===1?para(run(c[0],16,true,'213A4B')+run(c[1],14,false,'63788B')):para(run(c,14,j===0,'324E63')))+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>'};
  let content=header('Family commitments & coverage','AUTOPILOT  /  LONG-RANGE FAMILY PLANNING');
  content+=para(run(fmt(start)+' – '+fmt(end),19,true,'254E6D')+run('    |    '+records.length+' commitments',17,false,'61778B'),190);
  content+=para(run('DATA COVERAGE  ',14,true,'456B85')+run(failures.length?'Feed issues: '+failures.join('; '):'Available connected feeds retrieved; calendars not connected may be missing.',14),100);
  content+=para(run('Assignments and parental coverage are planning fields, not confirmed commitments.',14,false,'6B7885'),180);
  const months=[...new Set(Array.from({length:Math.round((new Date(end+'T12:00:00')-new Date(start+'T12:00:00'))/86400000)+1},(_,i)=>dateAdd(start,i).slice(0,7)))];
- for(const m of months){content+=section(monthName(m));const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1).getDay(),n=new Date(y,mo,0).getDate(),slots=[];for(let i=0;i<first;i++)slots.push({});for(let d=1;d<=n;d++){const iso=m+'-'+String(d).padStart(2,'0'),active=iso>=start&&iso<=end;slots.push({day:d,events:active?(by.get(iso)||[]):[],active})}while(slots.length%7)slots.push({});const rows=[week];for(let i=0;i<slots.length;i+=7)rows.push(slots.slice(i,i+7));content+=grid(rows,1410);content+=para(run('Activities show up to four per day; the detailed agenda includes all retrieved commitments.',13,false,'728394'),130);}
+ for(const m of months){content+=section(monthName(m));const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1).getDay(),n=new Date(y,mo,0).getDate(),slots=[];for(let i=0;i<first;i++)slots.push({});for(let d=1;d<=n;d++){const iso=m+'-'+String(d).padStart(2,'0'),active=iso>=start&&iso<=end;slots.push({day:d,events:active?(by.get(iso)||[]):[],active})}while(slots.length%7)slots.push({});const rows=[week];for(let i=0;i<slots.length;i+=7)rows.push(slots.slice(i,i+7));content+=grid(rows,1410);content+=para(run('Every retrieved appointment is listed in its calendar day. Busy weeks may continue onto additional Word pages; see the detailed agenda for full locations and sources.',13,false,'728394'),130);}
  content+=section('Detailed agenda  /  transportation review');
  for(let d=start;d<=end;d=dateAdd(d,1)){const list=by.get(d)||[];content+=para(run(fmt(d),18,true,'1A3C54')+run('   '+list.length+' commitment'+(list.length===1?'':'s'),14,false,'74869A'),70,155);const arr=list.length?list.map(r=>[[time12(r.start)+(r.end?' – '+time12(r.end):'')],[r.title,'  •  '+r.source+(r.location?'  •  '+r.location:'')],['Drop: ________   Pick: ________  Backup: ________']]):[[['—'],['No events returned','  •  Confirm source coverage'],['Notes: ____________________']]];content+=agtable(arr);content+=para(run('PARENT SUPPORT  ____________________     PT / RIDES  ____________________     CHANGES  ____________________',13,false,'6B7F91'),70);}
  const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+content+'<w:sectPr><w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/><w:pgMar w:top="640" w:bottom="640" w:left="720" w:right="720"/></w:sectPr></w:body></w:document>';
@@ -7940,7 +7981,7 @@ async function makeXlsx(records,start,end,failures){
  const zip=new JSZip();zip.file('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');zip.file('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');zip.file('xl/workbook.xml','<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Family Commitments" sheetId="1" r:id="rId1"/></sheets></workbook>');zip.file('xl/_rels/workbook.xml.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');zip.file('xl/styles.xml','<?xml version="1.0"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Aptos"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF173E63"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0"/></cellXfs></styleSheet>');zip.file('xl/worksheets/sheet1.xml',sheet);return zip.generateAsync({type:'blob',compression:'DEFLATE'});
 }
 
-function init(){if(document.getElementById('apLongExport'))return;const host=document.createElement('section');host.id='apLongExport';host.innerHTML='<div class="apex-head"><div><h2>Family calendar · long-range export</h2><p>Pull actual events directly from saved ICS feeds for any date range, independently of the 5/10-day plan. Downloads a polished Word (.docx) calendar and agenda and an editable Excel (.xlsx) schedule.</p></div></div><div class="apex-controls"><label>Start date<input id="apexStart" type="date" value="2026-11-20"></label><label>End date<input id="apexEnd" type="date" value="2026-12-31"></label><button type="button" id="apexGo">Refresh & export calendar</button></div><div role="status" aria-live="polite" class="apex-status" id="apexStatus">Ready · saved calendar feeds are read when you export; no current-plan edits are made.</div>';const root=document.querySelector('#v500App')||document.body;root.parentNode.insertBefore(host,root.nextSibling);document.getElementById('apexGo').onclick=run}
+function init(){if(document.getElementById('apLongExport'))return;const host=document.createElement('section');host.id='apLongExport';host.innerHTML='<div class="apex-head"><div><h2>Family calendar · long-range export</h2><p>All appointments are shown in each day of the Word calendar; busy weeks can expand onto multiple pages. Pull actual events directly from saved ICS feeds for any date range, independently of the 5/10-day plan. Downloads a polished Word (.docx) calendar and agenda and an editable Excel (.xlsx) schedule.</p></div></div><div class="apex-controls"><label>Start date<input id="apexStart" type="date" value="2026-11-20"></label><label>End date<input id="apexEnd" type="date" value="2026-12-31"></label><button type="button" id="apexGo">Refresh & export calendar</button></div><div role="status" aria-live="polite" class="apex-status" id="apexStatus">Ready · saved calendar feeds are read when you export; no current-plan edits are made.</div>';const root=document.querySelector('#v500App')||document.body;root.parentNode.insertBefore(host,root.nextSibling);document.getElementById('apexGo').onclick=run}
 async function run(){const b=document.getElementById('apexGo'),st=document.getElementById('apexStatus');const start=document.getElementById('apexStart').value,end=document.getElementById('apexEnd').value;if(!start||!end||end<start){st.textContent='Choose a valid start and end date.';return}const span=(new Date(end+'T12:00:00')-new Date(start+'T12:00:00'))/86400000+1;if(span>366){st.textContent='Choose a range of 366 days or less.';return}const links=getSavedCalendarLinks().filter(x=>x.url);if(!links.length){st.textContent='No saved calendar feeds. Open Settings → Calendar connections and connect your family calendar feeds first.';return}b.disabled=true;const failures=[],all=[];window.__apExportWindow={start,endExclusive:dateAdd(end,1)};try{for(let i=0;i<links.length;i++){const l=links[i];st.textContent=`Fetching ${i+1}/${links.length}: ${l.label||'Calendar'}…`;try{const result=await fetchCalendarWithFallbacks(l.url);const rows=parseICS(result.text,(l.source||'Calendar')+': '+(l.label||'Shared calendar'));rows.forEach(r=>all.push({...r,calendarId:l.id,source:r.source||l.label,child:r.child||'',transportStatus:'Not assigned'}));}catch(e){failures.push((l.label||'Calendar')+': '+(e.message||String(e)))}}}finally{delete window.__apExportWindow;b.disabled=false}
  if(!all.length){st.textContent='No events retrieved. '+(failures.length?'Sources failed: '+failures.join(' | '):'Connected feeds returned no events in this window.')+' No empty calendar export was produced.';return}
  const dedup=new Map();for(const r of all){const k=[r.date,r.start,r.end,String(r.title).trim().toLowerCase(),String(r.location).trim().toLowerCase()].join('|');if(!dedup.has(k))dedup.set(k,r)}const records=[...dedup.values()].sort((a,b)=>a.date.localeCompare(b.date)||String(a.start).localeCompare(String(b.start))||a.title.localeCompare(b.title));const stamp=start+'_to_'+end;
@@ -8131,7 +8172,7 @@ window.addEventListener('suite-meals-change',()=>{try{if(typeof finalData!=='und
 #apDinnerDialog::backdrop{background:#0b203b86}#apDinnerDialog .apd-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #dde6ed;position:sticky;top:0;background:#fff;z-index:2}#apDinnerDialog h2{font-size:20px;margin:0}#apDinnerDialog .apd-sub{font-size:12px;color:#607488;margin:3px 0 0}#apDinnerDialog .apd-main{padding:12px 22px 22px;overflow:auto}#apDinnerDialog .apd-row{display:grid;grid-template-columns:minmax(110px,1fr) minmax(170px,2fr) minmax(170px,2fr) auto;gap:9px;align-items:center;border-bottom:1px solid #edf1f4;padding:10px 0}#apDinnerDialog .apd-row strong{font-size:12px}#apDinnerDialog select,#apDinnerDialog input{width:100%;box-sizing:border-box;padding:9px;border-radius:8px;border:1px solid #c5d3dc;background:#fff;min-width:0;min-height:40px}#apDinnerDialog button{cursor:pointer;border:1px solid #b8c9d6;background:#f5f8fa;padding:10px 12px;border-radius:8px;font-weight:700}#apDinnerDialog .apd-save{background:#193f59;color:#fff;border-color:#193f59}#apDinnerDialog .apd-close{font-size:16px;padding:6px 12px}#apDinnerDialog #apDinnerResult{padding:8px 0;color:#24705c;min-height:20px}#apDinnerDialog .apd-tip{color:#596e7e;font-size:12px;margin:10px 0}#apDinnerShortcut[disabled]{opacity:.6}@media(max-width:720px){#apDinnerDialog .apd-row{grid-template-columns:1fr 1fr}#apDinnerDialog .apd-row strong{grid-column:1/-1}#apDinnerDialog .apd-row button{grid-column:1/-1}#apDinnerDialog .apd-head{padding:13px}#apDinnerDialog .apd-main{padding:12px}}
 </style>
 
-<script id="ap571ReleaseIdentity">(function(){const V='v57.15';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
+<script id="ap571ReleaseIdentity">(function(){const V='v57.17';function fix(){document.title='AutoPilot '+V+' — Family Planning';const w=document.getElementById('apWorkspaceVersion');if(w)w.textContent=V;document.querySelectorAll('.v500-brand span').forEach(x=>{if(/^v\d+\.\d+/.test(x.textContent.trim()))x.textContent=V});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix,{once:true});else fix()})();</script>
 
 
 
@@ -8280,7 +8321,7 @@ function show(page,focusId){if(!titles[page])return;current=page;document.body.d
 function placeRecipes(){if(!ready)return;move('apFavoritesHQ','apRecipesContent');move('apDiscovery','apRecipesContent')}
 function placeMeals(){if(!ready)return;move('v524MealHQ','apMealsContent');const grocery=move('v524GroceryWrap','apGroceryContent');if(grocery){grocery.style.display='block';const text=$('v524GroceryText');if(text)text.textContent=window.__suiteMeals?.groceryText?.()||'';}move('v524TastePanel','apMealPreferences');if($('apMealPreferences')?.open)window.__suiteMeals?.renderPreferences?.();$('apMealsEmpty').hidden=Boolean($('v524MealHQ'));$('apGroceryEmpty').hidden=Boolean(grocery);placeRecipes();}
 function init(){if(ready)return;const oldNav=$('apCoreNavigation');if(!oldNav){setTimeout(init,20);return}document.body.classList.remove('ap-focus','ap-focus-plan','apw-logistics');document.body.classList.add('ap-simple');
-const root=document.createElement('div');root.id='apSimpleApp';root.innerHTML=`<header id="apAppHeader"><div class="ap-app-brand">AutoPilot <small>v57.15</small></div><nav id="apNavigation" aria-label="Main navigation">${Object.keys(titles).map(p=>`<button type="button" data-page="${p}" aria-current="${p==='plan'?'page':'false'}">${titles[p][0]}</button>`).join('')}</nav></header><div id="apRouteStatus" role="status" aria-live="polite"></div><main id="apPages">${Object.entries(titles).map(([p,t])=>`<section class="ap-page" id="apPage-${p}" data-app-page="${p}" ${p==='plan'?'':'hidden'}><div class="ap-page-heading"><h1>${t[0]}</h1><p>${t[1]}</p></div>${p==='meals'?'<div id="apMealsEmpty">Meals will appear here when the meal planner is ready.</div><div id="apMealsContent"></div><details class="ap-settings-group" id="apRecipeLibrary"><summary>Recipes &amp; family favorites</summary><div id="apRecipesContent"></div></details>':p==='groceries'?'<div id="apGroceryEmpty">Choose dinners in Meals to build your shopping list.</div><div id="apGroceryContent"></div>':p==='share'?'<p id="apShareEmpty" class="ap-notice">Build or open a saved plan before downloading its outputs. Long-range calendar export is available below.</p><section class="ap-share-card"><h2>Current plan</h2><div id="apPlanDownloads" class="ap-action-row"></div><div id="apShareMessage"></div><div id="apShareWall"></div></section><details id="apShareCalendar" class="ap-settings-group"><summary>Calendar export · choose any date range</summary></details><details id="apSharePhone" class="ap-settings-group"><summary>Preview phone agenda</summary></details>':p==='settings'?'<div id="apSettingsContent"></div>':''}</section>`).join('')}</main>`;
+const root=document.createElement('div');root.id='apSimpleApp';root.innerHTML=`<header id="apAppHeader"><div class="ap-app-brand">AutoPilot <small>v57.20-RC</small></div><nav id="apNavigation" aria-label="Main navigation">${Object.keys(titles).map(p=>`<button type="button" data-page="${p}" aria-current="${p==='plan'?'page':'false'}">${titles[p][0]}</button>`).join('')}</nav></header><div id="apRouteStatus" role="status" aria-live="polite"></div><main id="apPages">${Object.entries(titles).map(([p,t])=>`<section class="ap-page" id="apPage-${p}" data-app-page="${p}" ${p==='plan'?'':'hidden'}><div class="ap-page-heading"><h1>${t[0]}</h1><p>${t[1]}</p></div>${p==='meals'?'<div id="apMealsEmpty">Meals will appear here when the meal planner is ready.</div><div id="apMealsContent"></div><details class="ap-settings-group" id="apRecipeLibrary"><summary>Recipes &amp; family favorites</summary><div id="apRecipesContent"></div></details>':p==='groceries'?'<div id="apGroceryEmpty">Choose dinners in Meals to build your shopping list.</div><div id="apGroceryContent"></div>':p==='share'?'<p id="apShareEmpty" class="ap-notice">Build or open a saved plan before downloading its outputs. Long-range calendar export is available below.</p><section class="ap-share-card"><h2>Current plan</h2><div id="apPlanDownloads" class="ap-action-row"></div><div id="apShareMessage"></div><div id="apShareWall"></div></section><details id="apShareCalendar" class="ap-settings-group"><summary>Calendar export · choose any date range</summary></details><details id="apSharePhone" class="ap-settings-group"><summary>Preview phone agenda</summary></details>':p==='settings'?'<div id="apSettingsContent"></div>':''}</section>`).join('')}</main>`;
 document.body.insertBefore(root,document.body.firstChild);oldNav.remove();$('apCoreNavMessage')?.remove();$('apFocusHeading')?.remove();$('apWorkflow')?.remove();$('apModuleStage')?.remove();
 move('v500App','apPage-plan');const vault=document.createElement('div');vault.id='apEngineControls';vault.hidden=true;document.body.append(vault);move('v502CycleBar','apEngineControls');
 // The old global toolbar and duplicate current-plan entry points are retired.
@@ -8306,7 +8347,7 @@ const builder=$('v500StageStart');if(builder){const h=builder.querySelector('h1'
 $('suitePlannerToday')?.remove();
 $('apNavigation').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)show(b.dataset.page)});
 meal.addEventListener('toggle',()=>{if(meal.open)window.__suiteMeals?.renderPreferences?.()});
-ready=true;window.AutoPilotNavigation={open:show,version:'v57.15'};window.__apSimpleUI={show,version:'57.15'};window.addEventListener('ap-meals-rendered',placeMeals);window.addEventListener('ap-recipes-rendered',placeRecipes);document.addEventListener('click',e=>{if(e.target.closest('#apfAddDetail,#apfAddBulk'))setTimeout(()=>window.__suiteMeals?.reload?.(),80)});window.__suiteMeals?.reload?.();placeMeals();show('plan');
+ready=true;window.AutoPilotNavigation={open:show,version:'v57.17'};window.__apSimpleUI={show,version:'57.17'};window.addEventListener('ap-meals-rendered',placeMeals);window.addEventListener('ap-recipes-rendered',placeRecipes);document.addEventListener('click',e=>{if(e.target.closest('#apfAddDetail,#apfAddBulk'))setTimeout(()=>window.__suiteMeals?.reload?.(),80)});window.__suiteMeals?.reload?.();placeMeals();show('plan');
 // Preserve source-independent warnings without adding another action on Plan.
 function syncPlan(){let has=false;for(const key of ['autopilot.v532.livePlan.v1','autopilot.v532.futurePlan.v1']){try{if(JSON.parse(localStorage.getItem(key)||'null')?.plans?.length)has=true}catch{}}const home=$('v532PlanHome');if(home)home.hidden=!has;const cc=$('apCommandCenter');if(cc)cc.hidden=!has;}
 const observer=new MutationObserver(syncPlan);observer.observe($('apPage-plan'),{childList:true,subtree:true});syncPlan();
@@ -8379,7 +8420,7 @@ function refresh(){const list=cards();let attention=0,manual=0;const overrides=w
  if($('ap57ReviewLabel'))$('ap57ReviewLabel').textContent=filter==='attention'?(attention?'Days needing review':'No flagged days — view All days to inspect'):'Select a location or time to edit';
 }
 function init(){const stage=$('v500StageReview'),card=stage?.querySelector('.v500-card');if(!card||$('ap57Review'))return;
- const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.15</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
+ const head=document.createElement('section');head.id='ap57Review';head.innerHTML='<div class="ap57-header"><div><h2 class="ap57-title">Review your family plan</h2><p class="ap57-sub">Review exceptions, make corrections, then finalize once.</p></div><span class="ap57-stat">v57.17</span></div><div id="ap57Stats" class="ap57-stats"></div><div class="ap57-tabs"><button type="button" data-ap57-filter="all" aria-pressed="true">All days</button><button type="button" data-ap57-filter="attention" aria-pressed="false">Needs attention</button></div><div id="ap57Status" class="ap57-banner" role="status" aria-live="polite">Draft ready</div><div id="ap57ReviewLabel" class="ap57-sub"></div>';card.prepend(head);
  const foot=document.createElement('div');foot.id='ap57Footer';foot.className='ap57-footer';foot.innerHTML='<div><strong>Finalize your plan</strong><small id="apFinalHint">Every edit is preserved in your draft. Finalize will verify all changes.</small></div><button type="button" id="ap57Finalize">Finalize plan</button>';card.append(foot);
  head.addEventListener('click',e=>{const b=e.target.closest('[data-ap57-filter]');if(!b)return;filter=b.dataset.ap57Filter;head.querySelectorAll('[data-ap57-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh()});
  $('ap57Finalize').onclick=async()=>{if(finalizing)return;error='';finalizing=true;status('Verifying edits and creating final snapshot…','busy');try{await window.AutoPilotPlanCommands.finalize();status('Final snapshot verified.','saved')}catch(err){error=err?.message||'Unknown finalization error';status('Finalization failed: '+error,'error');const banner=$('ap57Status');banner?.scrollIntoView?.({behavior:'smooth',block:'center'});window.dispatchEvent(new CustomEvent('ap:finalize-error',{detail:{message:error}}))}finally{finalizing=false;status(error?'Finalization failed: '+error:'Final snapshot verified.',error?'error':'saved')}};
@@ -8391,7 +8432,7 @@ function init(){const stage=$('v500StageReview'),card=stage?.querySelector('.v50
  let scheduled=false;const scheduleRefresh=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;refresh()})};
  const body=$('v500ReviewBody');if(body)new MutationObserver(scheduleRefresh).observe(body,{childList:true,subtree:false});
  new MutationObserver(()=>{if(stage.classList.contains('on'))refresh()}).observe(stage,{attributes:true,attributeFilter:['class']});refresh();
- window.AutoPilotV57={version:'57.10',refresh};
+ window.AutoPilotV57={version:'57.17',refresh};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
@@ -8513,10 +8554,58 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 <script id="ap5710-reliability">
 (function(){'use strict';
-const mark=()=>{const head=document.querySelector('#ap57Review .ap57-stat');if(head)head.textContent='v57.15';const h=document.querySelector('#apFinalHint');if(h)h.textContent='Tap Finalize once; any save problem will appear above with recovery instructions.'};
+const mark=()=>{const head=document.querySelector('#ap57Review .ap57-stat');if(head)head.textContent='v57.17';const h=document.querySelector('#apFinalHint');if(h)h.textContent='Tap Finalize once; any save problem will appear above with recovery instructions.'};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mark);else mark();
 window.addEventListener('ap:finalize-error',e=>{const m=e.detail?.message||'';const status=document.getElementById('v500ReviewStatus');if(status){status.className='v500-status warn';status.textContent='Finalization did not complete: '+m+' Your edits remain in the draft. Review the highlighted error and retry.'}});
 // A one-time keydown commit makes desktop time editing work without requiring two clicks elsewhere.
 document.addEventListener('keydown',e=>{const el=e.target;if(e.key==='Enter'&&el?.matches?.('.ap-clock-direct')){e.preventDefault();el.blur();}},true);
 })();
 </script>
+
+<style id="apArrivalFirstStyle">#v500ReviewBody .af-panel{margin:12px 0;padding:13px;border:1px solid #d3bd74;border-radius:12px;background:#fffcf3}#v500ReviewBody .af-panel[hidden]{display:none!important}#v500ReviewBody .af-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}#v500ReviewBody .af-grid input{width:100%;min-height:43px;margin-top:4px;font-size:16px}#v500ReviewBody .af-results{font-size:14px;font-weight:750;padding:9px;background:#f2efe7;border-radius:8px}#v500ReviewBody .af-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#v500ReviewBody .af-status{font-size:12px;padding:7px;border-radius:7px;background:#eaf5e9}#v500ReviewBody .af-status[data-error=yes]{background:#fff0e8;color:#8b241d}#v500ReviewBody .af-panel button:disabled{opacity:.6} @media(max-width:560px){#v500ReviewBody .af-grid{grid-template-columns:1fr}} </style>
+<script id="apArrivalFirstV5717">(function(){'use strict';
+/* AutoPilot v57.17: arrival-first workday entry. One validated command path; no legacy click forwarding. */
+const $=id=>document.getElementById(id), model=()=>window.AutoPilotWorkTime, commands=()=>window.AutoPilotPlanCommands;
+const key='autopilot.arrivalFirst.v1';
+function read(){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch{return {}}}
+function save(date,data){const x=read();x[date]={...(x[date]||{}),...data};localStorage.setItem(key,JSON.stringify(x));if(JSON.parse(localStorage.getItem(key)||'{}')[date].arrival!==x[date].arrival)throw Error('Your browser did not retain the target')}
+function str(m){return Number.isInteger(m)&&m>=0&&m<1440?model().display(m):''}
+function mins(v){return model()?.parse(v)}
+function depart(target,travel,buffer){const t=mins(target);if(t===null||!Number.isFinite(travel)||travel<1||travel>240||!Number.isFinite(buffer)||buffer<0||buffer>90)return null;return Math.floor((t-travel-buffer)/5)*5}
+function note(card,message,error=false){const el=card.querySelector('.af-status');if(el){el.textContent=message;el.dataset.error=error?'yes':'no'} }
+function onsite(card){const sel=card.querySelector('[data-field="workSite"]');const value=sel?.value||'';return value&&!/^(remote|off|holiday)/i.test(value)}
+function setVisibility(card){const panel=card.querySelector('.af-panel');if(!panel)return;panel.hidden=!onsite(card);const legacy=card.querySelectorAll('.v507-workedit > label.v507-mini');legacy.forEach(el=>{const field=el.querySelector('[data-field]')?.dataset.field;if(field==='arrival'||field==='departure')el.hidden=true})}
+function render(card){if(!card?.dataset.date)return;const date=card.dataset.date;if(!card.querySelector('.af-panel')){
+ const work=card.querySelector('.v507-workedit');if(!work)return;
+ const panel=document.createElement('section');panel.className='af-panel';panel.innerHTML=`<strong>When do you need to be there?</strong><div class="af-grid"><label>Arrive at work by<input class="af-arrival" inputmode="text" placeholder="8:30 AM" aria-label="Target work arrival"></label><label>Home by (optional)<input class="af-home" inputmode="text" placeholder="5:30 PM" aria-label="Target home arrival"></label><label>Travel minutes<input class="af-travel" type="number" min="1" max="240" value="45"></label><label>Buffer minutes<input class="af-buffer" type="number" min="0" max="90" value="10"></label></div><div class="af-results" aria-live="polite"></div><div class="af-actions"><button type="button" class="af-route">Get Google route estimate</button><button type="button" class="af-apply">Apply to plan</button></div><div class="af-status" role="status" aria-live="polite">Targets are suggestions until applied.</div>`;
+ work.appendChild(panel);
+ const x=read()[date]||{};
+ const arrival=card.querySelector('[data-field="arrival"]');const dep=card.querySelector('[data-field="departure"]');
+ panel.querySelector('.af-arrival').value=x.arrival||str(mins(arrival?.value))||'';
+ panel.querySelector('.af-home').value=x.home||'';
+ panel.querySelector('.af-travel').value=x.travel||'45';panel.querySelector('.af-buffer').value=x.buffer??'10';
+ panel.addEventListener('input',()=>calculate(card));
+ panel.querySelector('.af-route').addEventListener('click',()=>route(card));
+ panel.querySelector('.af-apply').addEventListener('click',()=>apply(card));
+ }
+ setVisibility(card);calculate(card);
+}
+function values(card){const p=card.querySelector('.af-panel');return {arrival:p.querySelector('.af-arrival').value.trim(),home:p.querySelector('.af-home').value.trim(),travel:Number(p.querySelector('.af-travel').value),buffer:Number(p.querySelector('.af-buffer').value)}}
+function calculate(card){const p=card.querySelector('.af-panel');if(!p)return;const v=values(card),morning=depart(v.arrival,v.travel,v.buffer),evening=v.home?depart(v.home,v.travel,v.buffer):null,out=p.querySelector('.af-results');
+ if(mins(v.arrival)===null){out.textContent='Enter a work arrival such as 8:30 AM.';return}
+ if(morning===null||morning<0){out.textContent='Enter a valid travel duration and buffer.';return}
+ if(v.home&&(evening===null||evening<0||evening<mins(v.arrival))){out.textContent='Home-by time conflicts with the workday or is invalid. Correct it before applying.';return}
+ out.textContent=`Leave home by ${str(morning)}${v.home?' · Leave work by '+str(evening):' · Work departure unchanged'} · Arrive at work ${str(mins(v.arrival))}. Estimated travel ${v.travel} min + ${v.buffer} min buffer.`;
+}
+async function apply(card){const p=card.querySelector('.af-panel'),btn=p.querySelector('.af-apply');if(btn.disabled)return;const v=values(card),morning=depart(v.arrival,v.travel,v.buffer),evening=v.home?depart(v.home,v.travel,v.buffer):null,arrival=mins(v.arrival);if(!onsite(card)){note(card,'Select an onsite location first.',true);return}if(arrival===null||morning===null||morning<0||v.home&&(evening===null||evening<=arrival)){note(card,'Enter valid arrival, home-by and travel values before applying.',true);return}
+ btn.disabled=true;btn.textContent='Saving…';note(card,'Saving target and recalculating plan…');
+ try{await commands().commit(card.dataset.date,'travelMinutes',v.travel+v.buffer);await commands().commit(card.dataset.date,'arrival',str(arrival));if(v.home)await commands().commit(card.dataset.date,'departure',str(evening));save(card.dataset.date,v);const state=commands().getState();if(state.pending>1)throw Error('Other edits are still saving');note(card,'Saved to plan · leave home '+str(morning)+(v.home?' · leave work '+str(evening):'')+'. Travel duration includes your buffer and will be used in final outputs.');
+ 
+ }catch(e){note(card,'Could not apply: '+e.message+'. Your other edits remain. Correct the input and retry.',true)}finally{btn.disabled=false;btn.textContent='Apply to plan'}
+}
+async function route(card){const p=card.querySelector('.af-panel'),btn=p.querySelector('.af-route'),sel=card.querySelector('[data-field="workSite"]');const endpoint=(localStorage.getItem('autopilot.routingEndpoint.v1')||localStorage.getItem('autopilot.routingWorkerUrl')||'').replace(/\/$/,'');const home=$('homeAddress')?.value?.trim();const dest=(card.querySelector('[data-field="workSite"]')?.selectedOptions?.[0]?.dataset?.address||'').trim();if(!endpoint){note(card,'Configure the routing Worker in Saved Places → Optional secure routing service.',true);return}if(!home||!dest){note(card,'Home and a verified work-site street address are required. Configure the work-site address in Settings; a site name alone cannot be routed safely.',true);return}btn.disabled=true;btn.textContent='Getting route…';note(card,'Contacting cost-controlled routing Worker…');try{const r=await fetch(endpoint+'/route',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({origin:home,destination:dest})});const x=await r.json();if(!r.ok)throw Error(x.message||x.error||'Route request failed');const n=Number(x.minutes);if(!Number.isFinite(n)||n<=0||n>240)throw Error('Route returned an invalid duration');p.querySelector('.af-travel').value=String(Math.ceil(n));calculate(card);note(card,'Route estimate received ('+Math.ceil(n)+' min). Review the target and tap Apply to plan.');}catch(e){note(card,'Routing unavailable: '+e.message+'. Use a manual travel estimate.',true)}finally{btn.disabled=false;btn.textContent='Get Google route estimate'}}
+let pending=false;function refresh(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;document.querySelectorAll('#v500ReviewBody .v507-tile[data-date]').forEach(render)})}
+function init(){const host=$('v500ReviewBody');if(!host)return;new MutationObserver(refresh).observe(host,{childList:true,subtree:false});host.addEventListener('change',e=>{if(e.target.matches('[data-field="workSite"]'))requestAnimationFrame(refresh)},true);refresh()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+window.AutoPilotArrivalFirst={depart,parse:mins};
+})();</script>
