@@ -8681,7 +8681,7 @@ window.AutoPilotArrivalFirst={depart,parse:mins};
 (()=>{'use strict';
 function init(){
  if(document.getElementById('apNZRecipeExport'))return;
- const target=document.getElementById('apRecipesContent')||document.getElementById('apPage-meals');
+ const target=document.getElementById('apPage-meals');
  if(!target)return;
  const box=document.createElement('section');box.id='apNZRecipeExport';box.className='card';
  box.style.cssText='padding:14px;margin:12px 0;border:1px solid #81929c;border-radius:14px;background:#f7fafc;color:#182b39';
@@ -8690,8 +8690,21 @@ function init(){
  const btn=document.createElement('button');btn.type='button';btn.id='apNZExportRecipes';btn.textContent='Export recipes for NONZERO';btn.style.cssText='min-height:44px;padding:10px 14px;border-radius:10px;background:#163b53;color:white;border:0;font-weight:750';box.append(btn);
  const status=document.createElement('p');status.setAttribute('role','status');status.style.cssText='font-size:12px;color:#41576b';box.append(status);
  btn.addEventListener('click',()=>{try{const fn=window.__suiteMeals?.exportCatalog;if(typeof fn!=='function')throw Error('Meal HQ is not ready. Open Meals and retry.');const data=fn();if(!data?.items?.length)throw Error('No recipe ingredients were found.');const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='AutoPilot-to-NONZERO-recipes.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);status.textContent='Exported '+data.items.length+' recipes. Import this file in NONZERO → Nutrition → Recipe Library.';}catch(e){status.textContent='Export failed: '+(e.message||e)}});
- target.prepend(box);
+ const pageHeading=target.querySelector('.ap-page-heading'); if(pageHeading)pageHeading.insertAdjacentElement('afterend',box);else target.prepend(box);
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+// AutoPilot builds #apPage-meals dynamically, sometimes after DOMContentLoaded.
+// Observe the page shell until the destination exists, then stop observing.
+function boot(){
+ init();
+ if(document.getElementById('apNZRecipeExport'))return;
+ const observer=new MutationObserver(()=>{
+   if(document.getElementById('apPage-meals')){
+     init();
+     if(document.getElementById('apNZRecipeExport'))observer.disconnect();
+   }
+ });
+ observer.observe(document.documentElement,{subtree:true,childList:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
